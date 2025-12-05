@@ -25,7 +25,9 @@ export function parseCSV(csvContent: string): Article[] {
 
 export async function loadCSV(filename: string): Promise<Article[]> {
   try {
-    const response = await fetch(`/${filename}`);
+    // Use BASE_URL from Vite to handle both dev and production paths
+    const baseUrl = import.meta.env.BASE_URL;
+    const response = await fetch(`${baseUrl}${filename}`);
     if (!response.ok) {
       throw new Error(`Failed to load ${filename}`);
     }
