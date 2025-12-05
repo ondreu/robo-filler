@@ -2,9 +2,14 @@ import Fuse from 'fuse.js';
 import type { Article, SearchResult, SearchOptions, SearchField } from '../types';
 import { MANUFACTURER_PREFIXES } from '../types';
 
-// Normalize string for comparison (remove formatting differences)
+// Remove diacritics from string
+function removeDiacritics(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+// Normalize string for comparison (remove formatting differences and diacritics)
 function normalizeString(str: string): string {
-  return str
+  return removeDiacritics(str)
     .toLowerCase()
     .replace(/[.,\-_\s]/g, '')
     .trim();
@@ -85,11 +90,23 @@ function calculateScore(query: string, target: string): {
 
 // Wildcard search
 function wildcardSearch(articles: Article[], query: string, field: SearchField): SearchResult[] {
-  const pattern = `*${query}*`;
-  const regex = new RegExp(
-    pattern.replace(/\*/g, '.*').replace(/\?/g, '.'),
-    'i'
-  );
+  // Auto-add wildcards between words if not already present
+  let pattern = query;
+  if (!pattern.includes('*') && !pattern.includes('?')) {
+    // Split by whitespace and add * between words
+    const words = pattern.trim().split(/\s+/);
+    pattern = words.join('*');
+  }
+  // Add * at beginning and end if not present
+  if (!pattern.startsWith('*')) pattern = '*' + pattern;
+  if (!pattern.endsWith('*')) pattern = pattern + '*';
+
+  // Create regex that ignores diacritics
+  const regexPattern = pattern
+    .replace(/\*/g, '.*')
+    .replace(/\?/g, '.');
+
+  const regex = new RegExp(regexPattern, 'i');
 
   const results: SearchResult[] = [];
 
@@ -97,13 +114,14 @@ function wildcardSearch(articles: Article[], query: string, field: SearchField):
     const fields = getSearchableFields(article, field);
 
     for (const [fieldName, value] of Object.entries(fields)) {
-      if (regex.test(value)) {
+      // Test against value without diacritics
+      if (regex.test(removeDiacritics(value))) {
         results.push({
           ...article,
           score: 100,
           matchType: 'wildcard',
           highlightedFields: {
-            [fieldName]: highlightMatch(value, query),
+            [fieldName]: highlightMatchWildcard(value, query),
           },
         });
         break;
@@ -195,47 +213,113 @@ function getSearchableFields(article: Article, field: SearchField): Record<strin
   }
 }
 
-// Highlight matching parts
-function highlightMatch(text: string, query: string): string {
-  const normalizedText = normalizeString(text);
-  const normalizedQuery = normalizeString(query);
+// Highlight matching parts for wildcard search
+function highlightMatchWildcard(text: string, originalQuery: string): string {
+  // Split query into words (ignore wildcards)
+  const queryWords = originalQuery.trim().split(/\s+/).filter(w => w && w !== '*' && w !== '?');
 
-  let startIndex = normalizedText.indexOf(normalizedQuery);
+  if (queryWords.length === 0) return text;
+
+  let result = text;
+  const matches: Array<{start: number; end: number; word: string}> = [];
+
+  // Find all matching positions for each query word
+  for (const word of queryWords) {
+    const wordNormalized = removeDiacritics(word.toLowerCase());
+    const textNormalized = removeDiacritics(text.toLowerCase());
+
+    let pos = 0;
+    while ((pos = textNormalized.indexOf(wordNormalized, pos)) !== -1) {
+      // Check if this position overlaps with existing matches
+      const overlaps = matches.some(m =>
+        (pos >= m.start && pos < m.end) ||
+        (pos + word.length > m.start && pos + word.length <= m.end)
+      );
+
+      if (!overlaps) {
+        matches.push({start: pos, end: pos + word.length, word});
+      }
+      pos++;
+    }
+  }
+
+  // Sort matches by position (descending) so we can replace from end to start
+  matches.sort((a, b) => b.start - a.start);
+
+  // Apply highlights
+  for (const match of matches) {
+    const before = result.slice(0, match.start);
+    const highlighted = result.slice(match.start, match.end);
+    const after = result.slice(match.end);
+    result = `${before}<mark>${highlighted}</mark>${after}`;
+  }
+
+  return result;
+}
+
+// Highlight matching parts for fuzzy search
+function highlightMatch(text: string, query: string): string {
+  // Remove prefixes and normalize for comparison
+  const textNoPrefixNorm = normalizeString(removePrefix(text));
+  const queryNoPrefixNorm = normalizeString(removePrefix(query));
+
+  // Find the position in normalized text
+  const startIndex = textNoPrefixNorm.indexOf(queryNoPrefixNorm);
 
   if (startIndex === -1) {
-    // Try fuzzy matching for highlighting
     return text;
   }
 
-  // Map normalized positions back to original text
-  let charCount = 0;
-  let realStartIndex = 0;
+  // Map back to original text positions
+  // We need to find where in the original text the normalized match starts
+  const textNormalized = removeDiacritics(text.toLowerCase());
+  const queryNormalized = removeDiacritics(query.toLowerCase());
+
+  // Try to find continuous match in text
+  let bestMatch = { start: -1, end: -1, score: 0 };
 
   for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    if (!/[.,\-_\s]/.test(char)) {
-      if (charCount === startIndex) {
-        realStartIndex = i;
+    let matchCount = 0;
+    let j = i;
+    let qIdx = 0;
+
+    while (j < text.length && qIdx < query.length) {
+      const tChar = textNormalized[j];
+      const qChar = queryNormalized[qIdx];
+
+      // Skip formatting chars in text
+      if (/[.,\-_\s]/.test(text[j])) {
+        j++;
+        continue;
+      }
+
+      // Skip formatting chars in query
+      if (/[.,\-_\s]/.test(query[qIdx])) {
+        qIdx++;
+        continue;
+      }
+
+      if (tChar === qChar) {
+        matchCount++;
+        j++;
+        qIdx++;
+      } else {
         break;
       }
-      charCount++;
+    }
+
+    if (qIdx >= query.replace(/[.,\-_\s]/g, '').length && matchCount > bestMatch.score) {
+      bestMatch = { start: i, end: j, score: matchCount };
     }
   }
 
-  let realEndIndex = realStartIndex;
-  charCount = 0;
-
-  for (let i = realStartIndex; i < text.length && charCount < normalizedQuery.length; i++) {
-    const char = text[i];
-    if (!/[.,\-_\s]/.test(char)) {
-      charCount++;
-    }
-    realEndIndex = i + 1;
+  if (bestMatch.start === -1) {
+    return text;
   }
 
-  const before = text.slice(0, realStartIndex);
-  const match = text.slice(realStartIndex, realEndIndex);
-  const after = text.slice(realEndIndex);
+  const before = text.slice(0, bestMatch.start);
+  const match = text.slice(bestMatch.start, bestMatch.end);
+  const after = text.slice(bestMatch.end);
 
   return `${before}<mark>${match}</mark>${after}`;
 }

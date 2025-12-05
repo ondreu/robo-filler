@@ -54,10 +54,14 @@ function App() {
   // Active articles (custom or default)
   const activeArticles = customArticles || articles;
 
-  // Get unique manufacturers
+  // Get unique manufacturers from search results (top 200)
   const manufacturers = useMemo(
-    () => getUniqueManufacturers(activeArticles),
-    [activeArticles]
+    () => {
+      if (results.length === 0) return [];
+      const topResults = results.slice(0, 200);
+      return getUniqueManufacturers(topResults);
+    },
+    [results]
   );
 
   // Load data on mount or when dataSource changes
