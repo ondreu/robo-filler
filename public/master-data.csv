@@ -1,4 +1,4 @@
-Typové oznaèení;Artikl;Výrobce;Èíslo dílu výrobce;
+Typové oznaèení;Artikl;Výrobce;Název;Èíslu dílu výrobce
 151390;151390;SCHALTAG CZ;Kanal kabelovy 40x60x620     Rev.00;
 281-673/281-401;155274;WAGO;RADOVE SVORKY DIODA 1,5A II GY 1/2;
 155458;155458;SCHALTAG;Pásek uzemìní 6mm2 L190 v01;
@@ -285,6 +285,7 @@ MD-537RG/3-L1000;10087812;OSHINO LAMPS;Led rt/gn 24-48V d5,0/Geh8,0mm Litze1000;
 MBB02070C1200FCT00;10097136;VISHAY;ODPOR Metall-Schichtw. 120 Ohm;
 10097501;10097501;SCHALTAG;KABELOVY KANAL 60x40x730      Rev.02;
 10097506;10097506;SCHALTAG;KABELOVY KANAL 60x40x530    Rev.02;
+;10098340;HUBER+SUHNER;Koaxialstecker 50Ohm, QN-Type, male, ger;
 ;10103045;Lintech;Šítek_AL støíbrný_DE,EN,FR,IT,ES,PT;10103045
 ;10103054;Lintech;Šítek_AL støíbrný_EL,CS,HU,TR,KO,ZH;10103054
 ;10103055;Lintech;Šítek_AL støíbrný_NL,NO,FI,DA,SV,LV;10103055
@@ -1143,7 +1144,7 @@ LLPA-10S;10389341;PMA;Ochranna hadice GY NW10;
 10403089;10403089;SCHALTAG;KABEL ROBOT Nr. 108 v04;
 10404103;10404103;SCHALTAG CZ;Kabelový kanál 40x40  L=250mm   Rev.01;
 10404104;10404104;SCHALTAG;KABELOVY KANAL 40x40x145     Rev.02;
-;10404447;;Distancni sloupek - 122380;
+122380;10404447;VÝKRESOVÝ DÍL;Dist. sloupek 6HR F/F OK24 M8x85 speciál;
 6-12442-2518;10404832;NORGREN;ZASUVKA KAB. 3p sw 90G Pg 7 Dio;
 35001397;10404838;LAPP;ZDIRKA 0.75mm2 CP;
 8000455237;10404978;;SPONA HADICE 16.8-17.7mm;
@@ -2839,7 +2840,7 @@ P600K;10628156;;Dioda P600K 800V6A;
 ;10628422;;JEDNOTKA PNEUMATICKA 145886;
 ;10628423;;RÍDÍCÍ BLOK 145957;
 ;10628424;;RÍDÍCÍ BLOK KRYT 145421;
-DUCTAFIX R6 06511;10628427;IBOCO;NYT PLASTOVY èervený  6mm;
+DUCTAFIX R6 06511;10628427;IBOCO;NYT IBOCO DUCTAFIX R6 06511;
 ;10628563;;ZPETNY VENTIL D6/4x120 139210;
 2056741;10629042;MULTICOMP PRO;Kabel RJ45 3000mm Eternet           ;
 4521021;10629118;LAPP;Vodic H07V-K 25 LBU;
@@ -3920,7 +3921,7 @@ VYKRES 10701914.03;10701914;LPS MEDIA;"Samolepka ""poraneni ruky""";
 ;10701985;;SVORKOVNICE KOMPLETNI X12     Rev.01;
 10702036;10702036;SCHALTAG CZ;MODUL RC KPL    Rev.01;
 ;10702081;;KABEL D-sub Nullmodem 9.Bu/9.BU, 3,6;
-;10702082;;KABEL ROVNÝ 5m, 3pol, M8 , 0LED,St;
+EVC142;10702082;IFM;KABEL ROVNÝ 5m, 3pol, M8 , 0LED,St;
 PSEN CABLE AXIAL M;10702084;PILZ;KABEL signalni Pilz;540320
 114-463;10702216;GME;ODPOR MBB 0207 1,0 k Ohm, 1%;
 53112924;10702265;LAPP;Kabelova pruchodka CLICK 32;
@@ -7708,6 +7709,7 @@ VYKRES RIETER 11056420;11056420;;Dvere kompletni R;
 11057442;11057442;SCHALTAG CZ;Sada kabelu CD1200 6F 2R      Rev.01;
 11057461;11057461;SCHALTAG CZ;Kabel X7 KD 1200    Rev.02;
 VÝKRES RIETER 11057647;11057647;;Dveøe odpadního boxu   Rev.02;
+11058263;11058263;SCHALTAG CZ;Kabel pøídavný ventilátor W8  Rev.06;
 11058405.01;11058405;SCHALTAG CZ;Popisky elektrická skøíò CS v01;
 11058406.01;11058406;SCHALTAG CZ;Popisky komponentù CS v01;
 11058602;11058602;SCHALTAG CZ;Kable ventilator M15 W152  rev.03;
@@ -9112,6 +9114,7 @@ PQDE6W-Q24-S5-T;11269617;CUI;Prevodnik stejn. napeti 10-36V/5V;
 11277851;11277851;SCHALTAG CZ;Elektroskøíò 2_2 Robofil   Rev.05;
 VÝKRES 11277852.04;11277852;CHKOVO;Skrin mechanicka_Robofil;
 11277893;11277893;SCHALTAG CZ;Elektromateriál Robofil  Rev.06;
+11279952;11279952;SCHALTAG CZ;Konektorový set    Rev.04;
 11280800;11280800;SCHALTAG CZ;Oznacovaci stitek Rob K   Rev.02;
 XN-312-GW-CAN;11281087;EATON;Modul bus CANopen DC24V;178782
 XN-322-16DO-P05;11281088;EATON;Vstupni modul digitalni 16x DC24V 0.5A;178787
@@ -9343,6 +9346,7 @@ KEL-DP 10/12;11330457;ICOTEK;Prùchozí pøíruba šedá 12;43467
 11337254;11337254;SCHALTAG CZ;Kanál kabelový 40x40 L=150mm    Rev.01;
 11338352;11338352;SCHALTAG CZ;Kabelová sada RR-2S    Rev.01;
 11338589;11338589;VÝKRESOVÝ DÍL;Skøíò 1800x1000x400;
+11340148;11340148;SCHALTAG CZ;Tlašítkový set    Rev.01;
 DTJ1524D05;11340747;XP POWER;DC-DC pøevodník 15W;
 11340817;11340817;CHKOVO;Podpìra pøevodníku;
 11341467;11341467;SCHALTAG CZ;Elektrický panel 24V J70 11+   Rev.01;
@@ -9353,6 +9357,12 @@ S201-B3;11342246;ABB;Jistiè 1p 3A AC230/400V B;2CDS251001R0035
 11342287;11342287;SCHALTAG CZ;Svorkovnice montáž L X5  Rev.01;
 11342321;11342321;SCHALTAG CZ;Svorkovnice montáž R X6  Rev.01;
 11342829;11342829;SCHALTAG CZ;Svorkovnice X2     Rev.01;
+11343429;11343429;SCHALTAG CZ;Robofil_Elektroskøíò kompletní    Rev.01;
+11343430;11343430;SCHALTAG CZ;Elektroskøíò mechanicky    Rev.01;
+11343461;11343461;SCHALTAG CZ;Svorkovnice X1     Rev.01;
+11343494;11343494;SCHALTAG CZ;Deska velká Robofil    Rev.01;
+11343496;11343496;SCHALTAG CZ;Svorkovnice X2     Rev.01;
+11343516;11343516;SCHALTAG CZ;Deska malá Robofil    Rev.01;
 11344377;11344377;SCHALTAG CZ;Kabel CAN IPC W701    Rev.01;
 TFPTL15L2201JL2B;11344703;VISHAY;Èidlo teploty 2020 Ohm;
 11345651;11345651;SCHALTAG CZ;Kabel CAN SEC-TL W710   Rev.01;
@@ -9394,11 +9404,16 @@ TFPTL15L2201JL2B;11344703;VISHAY;Èidlo teploty 2020 Ohm;
 1727040150;12015661;MOLEX;Kontaktbuchse D-Sub, Hochstrom 10A,0.5..;1727040150
 FMP003S103;12029194;FCT ELECTRONIC;Kontaktbuchse D-Sub, Hochstrom 20A, 1.95;FMP003S103
 762089;12064649;LUETZE;Relaisbaustein 24VDC/39mA;762089
+BU_2007986;12092399;;Kabelhalter 10x4, L=125mm;
+BU_2007986;12092506;;Kabelhalter 10x4, L=175mm;
+BU_2007986;12092512;;Kabelhalter 10x4, L=325mm;
 1074 M4 NL4SPSS;12098536;NORD LOCK;Podlozka poj. M4 (4,4x9,0x2,2) 1.4404;
 B03010021;12149806;TELMA;Stoerstrommonitor ICM;B03010021
+;12173276;HUBER+SUHNER;Koaxialstecker 50Ohm, TNC-Type, male, ge;
 BN3319;12215607;;Distancni sloupek Zn OK7/M4x12 F/F;
 8820710000;12217864;WEIDMUELLER;Halbleiterrelais 24..110VDC, 250mA, 1S;8820710000
 DOS-2312-G;12233680;SICK;Konektor 12pol, 1mm2, 160V, 7A;
+;12269186;BOSSARD;Trhací nýt TAPD 56 BSLF, pr.4;
 669;12294248;WALTHER;Stecker 5pol, 63A, 400V, IP67;
 704.609.9 / 01.667;12295098;EAO;Textplatte Unterdrueckung Brandloeschung;01.667
 5107.428.232;12316288;FLEXA;Vývodka M32-8;5107.428.232
@@ -9536,6 +9551,7 @@ POLIM-C 0.66 LB;12385545;HITACHI ENERGY;Ueberspannungsableiter 0.66kV, 10kA, 100
 ;12526082;;Stecker-Satz Kabelkonfektion FR+MR W.B;
 ;12526139;;Kabelbaum komplett Dach-EWB;
 RIC20-020-SR/DC24V;12591047;COMAT RELECO;Schuetz 2NC, 24VDC, 2.6W, 2pol, 20A, 7kW;RIC20-020-SR/DC24V
+1027476;12601498;PHOENIX CONTACT;Rundsteckverbinder M12;
 ;12641120;;Bestueckung +A60.D2;
 ;12641156;;Bestueckung +A60.D4;
 ;12641157;;Bestueckung +B60.D2;
@@ -9836,6 +9852,30 @@ BU_5671128;12755381;;Halteplatte Stecker;BU_5671128
 ;12879619;;Bestueckung +C41.X1/+C51.X1;
 ;12879627;;Kabelbaum komplett Tuersaeule-MWC;
 BU_6178980;12880698;VYKRESOVY DIL;Blechteil;
+;12883039;;Stecker-Satz Kabelkonfektion FR;
+;12883097;;Kabelbaum komplett Dach-EWB;
+;12883098;;Kabelbaum komplett UG-EWB;
+;12883099;;Kabelbaum komplett Stromr.-Trafo-EWB;
+;12883100;;Kabelbaum komplett Dachstromr.-EWB;
+;12883184;;Stecker-Satz Kabelkonfektion FGR;
+;12883186;;Kabelbaum komplett Boden-EWB;
+;12883251;;Kabelbaum komplett Dach-MWC;
+;12883338;;Stecker-Satz Kabelkonfektion FGR;
+;12883405;;Kabelbaum komplett Dach-MWD;
+;12883492;;Stecker-Satz Kabelkonfektion FGR;
+;12883559;;Kabelbaum komplett Dach-MWE;
+;12883646;;Stecker-Satz Kabelkonfektion FGR;
+;12883712;;Kabelbaum komplett Dach-MWF;
+;12883799;;Stecker-Satz Kabelkonfektion FGR;
+;12883867;;Kabelbaum komplett Dach-MWG;
+;12883954;;Stecker-Satz Kabelkonfektion FGR;
+;12884029;;Stecker-Satz Kabelkonfektion FR;
+;12884087;;Kabelbaum komplett Dach-EWA;
+;12884088;;Kabelbaum komplett UG-EWA;
+;12884089;;Kabelbaum komplett Stromr.-Trafo-EWA;
+;12884090;;Kabelbaum komplett Dachstromr.-EWA;
+;12884175;;Stecker-Satz Kabelkonfektion FGR;
+;12884177;;Kabelbaum komplett Boden-EWA;
 ;12887926;;Kabelbaum komplett Dach-MWC;
 ;12900203;HAPPICH;Kantenschutzprofil;461M523
 ;12908763;;Bestueckung +D96.S1;
@@ -9907,11 +9947,23 @@ BU_6323290;12910585;;Blechteil;
 ;12911575;;Bestueckung +B91.Z2;
 ;12911578;;Bestueckung +A90.S1;
 ;12911579;;Bestueckung +B90.S1;
+BU_6352118;12915921;;Tafel +x40.G1;
 ;12916999;;Bestueckung +A91.Z1;
 ;12917001;;Bestueckung +B91.Z1;
 ;12917012;;Bestueckung +B93.Z1;
 BU_6358427;12917586;;Grundplatte Flansch-Dachdurchfuehrung;
+;12918989;;Bestueckung +A90.S1;
+;12919015;;Bestueckung +B90.S1;
+;12919020;;Bestueckung +E98.S3;
 BU_6370150;12923940;;Support komplett;
+;12925186;;Bestueckung +A60.D3;
+;12925192;;Bestueckung +B60.D3;
+;12925201;;Bestueckung +C60.D3;
+;12925208;;Bestueckung +D60.D3;
+;12925213;;Bestueckung +E60.D3;
+;12925221;;Bestueckung +F60.D2;
+;12925222;;Bestueckung +F60.D3;
+;12925230;;Bestueckung +G60.D3;
 ;12926204;EAO;"Textplatte ""ETCS Reset""";704.609.9
 ;12926205;EAO;"Textplatte ""KVB Reset""";704.609.9
 BU_6417904;12929944;;Tafel +x91.H1;
@@ -9921,7 +9973,121 @@ BU_6418591;12930086;;Mechanischer Aufbau +B91.Z3 - nový  vrch;
 ;12930255;;Bestueckung +B91.Z3;
 BU_6419353;12930323;;Tafel +B93.Z1 - nový vrchol;
 BU_5443396;12931521;;Adapterplatte geschweisst Antennenkabel;
+;12932467;;Bestueckung +A91.H1;
+;12932476;;Bestueckung +C99.H1;
+;12932992;;Bestueckung +G99.H1;
+;12933036;;Bestueckung +E99.H1;
+;12933234;;Bestueckung +B96.S1;
+;12933242;;Bestueckung +C96.S1;
+;12933246;;Bestueckung +D96.S1;
+;12933258;;Bestueckung +E96.S1;
+;12933260;;Bestueckung +F96.S1;
+;12933262;;Bestueckung +G96.S1;
+;12933265;;Bestueckung +A96.S1;
+BU_6455433;12941093;;Tafel +x96.S1;
+BU_6455500;12941125;;Tafel +E98.S3;
+;12941181;;Bestueckung +A97.H1;
+;12941182;;Bestueckung +B97.H1;
+;12941187;;Bestueckung +C97.H1;
+;12941192;;Bestueckung +D97.H1;
+;12941250;;Bestueckung +E97.H1;
+BU_6455651;12941426;;Tafel komplett +x97.H1;
+;12941536;;Bestueckung +F97.H1;
+;12941541;;Bestueckung +G97.H1;
+;12941951;;Bestueckung +A15.S1;
+;12941952;;Bestueckung +B15.S1;
+;12942967;;Kabelbaum komplett Bugmaske-EWA;
+;12942968;;Kabelbaum komplett Bugmaske-EWB;
+;12943195;;Kabelbaum komplett Motorenkabel-EWA;
+;12943196;;Kabelbaum komplett Motorenkabel-EWB;
+;12945181;;Bestueckung +A60.D1;
+;12945187;;Bestueckung +B60.D1;
+;12945191;;Bestueckung +C60.D1;
+;12945200;;Bestueckung +D60.D1;
+;12945210;;Bestueckung +E60.D1;
+;12945216;;Bestueckung +F60.D1;
+;12945220;;Bestueckung +G60.D1;
+;12945302;;Bestueckung +C60.D4;
+;12945332;;Bestueckung +G60.D4;
+;12945611;;Bestueckung +A60.Z1;
+;12945612;;Bestueckung +C60.Z1;
+;12945614;;Bestueckung +F60.Z1;
+;12945776;;Bestueckung +A80.X2;
+;12945779;;Bestueckung +B80.X2;
+;12945780;;Bestueckung +D80.X2;
+;12945948;;Bestueckung +E82.X2;
+;12945950;;Bestueckung +C82.X2;
+;12945958;;Bestueckung +D82.X2;
+;12945973;;Bestueckung +A81.X1;
+;12945983;;Bestueckung +B81.X1;
+;12945985;;Bestueckung +D81.X1;
+;12946075;;Bestueckung +F81.X1;
+;12946092;;Bestueckung +C83.X1;
+;12946101;;Bestueckung +D83.X1;
+;12946431;;Bestueckung +A50.G1;
+;12946436;;Bestueckung +B50.G1;
+BU_6466694;12946462;;Blechteil gebogen komplett;
+;12946988;;Bestueckung +A41.X1/+A51.X1;
+;12946991;;Bestueckung +B41.X1/+B51.X1;
+;12946992;;Bestueckung +C41.X1/+C51.X1;
+;12946995;;Bestueckung +D41.X1/+D51.X1;
+;12946996;;Bestueckung +E41.X1/+E51.X1;
+;12946998;;Bestueckung +F41.X1/+F51.X1;
+;12947000;;Bestueckung +F42.X1/+F52.X1;
+;12947002;;Bestueckung +G41.X1/+G51.X1;
+;12947004;VARIOHM;Temperaturfuehler;
 BU_6478961;12947250;VYKRESOVY DIL;Biegeteil Test-Connector;
+;12955716;;Bestueckung +B91.H1;
+BU_6322633;12955718;;Tafel +x91.H1;
+;12955732;;Bestueckung +A91.Z1;
+;12955742;;Bestueckung +B91.Z1;
+;12955767;;Bestueckung +B93.Z1;
+;12955875;;Bestueckung +A40.G1;
+;12955880;;Bestueckung +B40.G1;
+;12955881;;Bestueckung +C40.G1;
+;12955890;;Bestueckung +D40.G1;
+;12955900;;Bestueckung +E40.G1;
+;12955902;;Bestueckung +F40.G1;
+;12955912;;Bestueckung +G40.G1;
+;12956078;;Bestueckung +B91.Z2;
+BU_6556765;12962804;;Tafel +A60.Y1;
+BU_6560026;13000291;;Tafel komplett +F60.Z1;
+BU_6582341;13004546;;Halter fuer Kabel;
+BU_6585057;13004981;;Tafel +x99.H1;
+;13007549;;Bestueckung +C80.X2;
+;13007550;;Bestueckung +C81.X1;
+;13007555;;Bestueckung +E80.X2;
+;13007556;;Bestueckung +E81.X1;
+;13007558;;Bestueckung +E83.X1;
+;13007566;;Bestueckung +F80.X2;
+;13007568;;Bestueckung +F82.X2;
+;13007573;;Bestueckung +F83.X1;
+;13007590;;Bestueckung +G80.X2;
+;13007594;;Bestueckung +G82.X2;
+;13007595;;Bestueckung +G81.X1;
+;13007597;;Bestueckung +G83.X1;
+BU_6323398;13008000;;Halteplatte Stecker;
+BU_6323394;13008001;;Winkelblech Halter-Schottplatte;
+BU_6602316;13008296;;Blechteil Steckerhalter;
+BU_6466684;13008947;;Beruehrungsschutz Erdungstrenner-EWA;
+BU_6466774;13008972;;Beruehrungsschutz Erdungstrenner-EWB;
+BU_6616350;13010660;;Grundplatte Flansch-Dachdurchfuehrung;
+BU_6623722;13011940;;Tafel +x98.S3;
+;13011945;;Bestueckung +C98.S3;
+;13011950;;Bestueckung +D98.S3;
+;13011955;;Bestueckung +G98.S3;
+BU_6621101;13011967;;Verstaerkungswinkel gebogen;
+BU_6622533;13012539;;Blechteil zusammenbau;
+BU_6621982;13012556;;Tafel +F98.S3;
+;13012793;;Bestueckung +F98.S3;
+BU_6637852;13014499;;Winkelblech Hartingstecker;
+BU_6648795;13016167;;Blechteil;
+;13017189;;Kabelbaum komplett UG-MWD;
+;13017193;;Kabelbaum komplett UG-MWE;
+;13017194;;Kabelbaum komplett UG-MWF;
+;13017195;;Kabelbaum komplett UG-MWG;
+;13017242;;Bestueckung +A60.Y1;
+BU_6657323;13017283;;Kabeldurchfuehrung geschweisst Schottbox;
 ISO14580;18159797;BOSSARD;Sroub nizk.hl. A2-70 TORX M3x10;BN15857
 18437290;18437290;GETRIEBEBAU NORD;KABEL X50 - M50 10913708 SCHALTAG;
 ;19883005;SCHALTAG;Rozvadìè Metox_+EC1;
@@ -10860,6 +11026,7 @@ Podsestava Netstal - 110.241.5051;110.241.5051;Schaltag;Podsestava Netstal - 110
 Podsestava Netstal - 110.241.5093;110.241.5093;Schaltag;Podsestava Netstal - 110.241.5093;
 Podsestava Netstal - 110.241.5105;110.241.5105;Schaltag;Podsestava Netstal - 110.241.5105;
 110.241.5154;110.241.5154;;Netstal plech - 600X160X20;110.241.5154
+Podsestava Netstal - 110.241.5169;110.241.5169;Schaltag;Podsestava Netstal - 110.241.5169;
 Podsestava Netstal - 110.250.1410;110.250.1410;Schaltag;Podsestava Netstal - 110.250.1410;
 Podsestava Netstal - 110.250.1411;110.250.1411;Schaltag;Podsestava Netstal - 110.250.1411;
 Podsestava Netstal - 110.250.1412;110.250.1412;Schaltag;Podsestava Netstal - 110.250.1412;
@@ -10883,6 +11050,7 @@ Podsestava Netstal - 110.250.1653;110.250.1653;Schaltag;Podsestava Netstal - 110
 Podsestava Netstal - 110.250.1678;110.250.1678;Schaltag;Podsestava Netstal - 110.250.1678;
 Podsestava Netstal - 110.250.1698;110.250.1698;Schaltag;Podsestava Netstal - 110.250.1698;
 Podsestava Netstal - 110.250.1705;110.250.1705;Schaltag;Podsestava Netstal - 110.250.1705;
+Podsestava Netstal - 110.250.1734;110.250.1734;Schaltag;Podsestava Netstal - 110.250.1734;
 Podsestava Netstal -110.250.1747;110.250.1747;Schaltag;Podsestava Netstal -110.250.1747;
 Podsestava Netstal - 110.250.1749;110.250.1749;Schaltag;Podsestava Netstal - 110.250.1749;
 Podsestava Netstal - 110.250.1750;110.250.1750;Schaltag;Podsestava Netstal - 110.250.1750;
@@ -10962,6 +11130,7 @@ Podsestava Netstal - 110.250.3479;110.250.3479;Schaltag;Podsestava Netstal - 110
 Podsestava Netstal - 110.250.3499;110.250.3499;Schaltag;Podsestava Netstal - 110.250.3499;
 Podsestava Netstal - 110.250.3500;110.250.3500;Schaltag;Podsestava Netstal - 110.250.3500;
 PODSESTAVA NETSTAL - 110.250.3501;110.250.3501;SCHALTAG;Podsestava Netstal - 110.250.3501;
+Podsestava Netstal - 110.250.3503;110.250.3503;Schaltag;Podsestava Netstal - 110.250.3503;
 Podsestava Netstal - 110.250.3504;110.250.3504;Schaltag;Podsestava Netstal - 110.250.3504;
 Podsestava Netstal - 110.250.3505;110.250.3505;Schaltag;Podsestava Netstal - 110.250.3505;
 Podsestava Netstal - 110.250.3506;110.250.3506;Schaltag;Podsestava Netstal - 110.250.3506;
@@ -11104,18 +11273,37 @@ Podsestava Netstal - 110.250.3758;110.250.3758;Schaltag;Podsestava Netstal - 110
 Podsestava Netstal - 110.250.3762;110.250.3762;Schaltag;Podsestava Netstal - 110.250.3762;
 Podsestava Netstal - 110.250.3768;110.250.3768;Schaltag;Podsestava Netstal - 110.250.3768;
 Podsestava Netstal - 110.250.3783;110.250.3783;Schaltag;Podsestava Netstal - 110.250.3783;
+Podsestava Netstal - 110.250.3784;110.250.3784;Schaltag;Podsestava Netstal - 110.250.3784;
 Podsestava Netstal - 110.250.3787;110.250.3787;Schaltag;Podsestava Netstal - 110.250.3787;
 Podsestava Netstal - 110.250.3794;110.250.3794;Schaltag;Podsestava Netstal - 110.250.3794;
 Podsestava Netstal - 110.250.3800;110.250.3800;Schaltag;Podsestava Netstal - 110.250.3800;
 Podsestava Netstal - 110.250.3808;110.250.3808;Schaltag;Podsestava Netstal - 110.250.3808;
 Podsestava Netstal - 110.250.3812;110.250.3812;Schaltag;Podsestava Netstal - 110.250.3812;
+Podsestava Netstal - 110.250.3817;110.250.3817;Schaltag;Podsestava Netstal - 110.250.3817;
+Podsestava Netstal - 110.250.3822;110.250.3822;Schaltag;Podsestava Netstal - 110.250.3822;
+Podsestava Netstal - 110.250.3826;110.250.3826;Schaltag;Podsestava Netstal - 110.250.3826;
+Podsestava Netstal - 110.250.3828;110.250.3828;Schaltag;Podsestava Netstal - 110.250.3828;
+Podsestava Netstal - 110.250.3829;110.250.3829;Schaltag;Podsestava Netstal - 110.250.3829;
+Podsestava Netstal - 110.250.3831;110.250.3831;Schaltag;Podsestava Netstal - 110.250.3831;
+Podsestava Netstal - 110.250.3834;110.250.3834;Schaltag;Podsestava Netstal - 110.250.3834;
 Podsestava Netstal - 110.250.3835;110.250.3835;Schaltag;Podsestava Netstal - 110.250.3835;
+Podsestava Netstal - 110.250.3840;110.250.3840;Schaltag;Podsestava Netstal - 110.250.3840;
+Podsestava Netstal - 110.250.3841;110.250.3841;Schaltag;Podsestava Netstal - 110.250.3841;
+Podsestava Netstal - 110.250.3846;110.250.3846;Schaltag;Podsestava Netstal - 110.250.3846;
+Podsestava Netstal - 110.250.3847;110.250.3847;Schaltag;Podsestava Netstal - 110.250.3847;
+Podsestava Netstal - 110.250.3848;110.250.3848;Schaltag;Podsestava Netstal - 110.250.3848;
+Podsestava Netstal - 110.250.3849;110.250.3849;Schaltag;Podsestava Netstal - 110.250.3849;
+Podsestava Netstal - 110.250.3850;110.250.3850;Schaltag;Podsestava Netstal - 110.250.3850;
+Podsestava Netstal - 110.250.3851;110.250.3851;Schaltag;Podsestava Netstal - 110.250.3851;
+Podsestava Netstal - 110.250.3852;110.250.3852;Schaltag;Podsestava Netstal - 110.250.3852;
 Podsestava Netstal - 110.250.3860;110.250.3860;Schaltag;Podsestava Netstal - 110.250.3860;
 Podsestava Netstal - 110.250.3861;110.250.3861;Schaltag;Podsestava Netstal - 110.250.3861;
 Podsestava Netstal - 110.250.3873;110.250.3873;Schaltag;Podsestava Netstal - 110.250.3873;
 Podsestava Netstal - 110.250.3874;110.250.3874;Schaltag;Podsestava Netstal - 110.250.3874;
 Podsestava Netstal - 110.250.3875;110.250.3875;Schaltag;Podsestava Netstal - 110.250.3875;
 Podsestava Netstal - 110.250.3876;110.250.3876;Schaltag;Podsestava Netstal - 110.250.3876;
+Podsestava Netstal - 110.250.3898;110.250.3898;Schaltag;Podsestava Netstal - 110.250.3898;
+Podsestava Netstal - 110.250.3899;110.250.3899;Schaltag;Podsestava Netstal - 110.250.3899;
 Podsestava Netstal - 110.250.4412;110.250.4412;Schaltag;Podsestava Netstal - 110.250.4412;
 Podsestava Netstal - 110.250.4441;110.250.4441;Schaltag;Podsestava Netstal - 110.250.4441;
 Podsestava Netstal - 110.250.4443;110.250.4443;Schaltag;Podsestava Netstal - 110.250.4443;
@@ -11314,6 +11502,8 @@ SKØÍÒ_ECKPT_TANNER   EN/PT;1103818_ECKPT;SCHALTAG CZ;Skøíò_ECKPT_Tanner   EN/PT;
 X20SM1426;11043107_SATI;B&R;Modul krok. motoru 1x FB DC24V 1A;
 1104360_ECKPT;1104360_ECKPT;SCHALTAG CZ;Skøíò_ECKPT_Tanner   DE/EN;
 1104361_ECKPT;1104361_ECKPT;SCHALTAG CZ;Skøíò_ECKPT_Tanner   EN/RU;
+1104362_ECKPT;1104362_ECKPT;SCHALTAG CZ;Skøíò_ECKPT_Tanner   EN/RU;
+1104363_ECKPT;1104363_ECKPT;SCHALTAG CZ;Skøíò_ECKPT_Tanner   EN/IT;
 SKØÍÒ_ECKPT_TANNER   DE/EN   RAL9016;1104538_ECKPT;;Skøíò_ECKPT_Tanner   DE/EN   RAL9016;
 1104570_ECVZT;1104570_ECVZT;SCHALTAG CZ;Skøíò_ECVZT_Tanner   DE,EN;
 1104570_JBKPT;1104570_JBKPT;SCHALTAG CZ;Skøíò_JBKPT_Tanner   DE,EN;
@@ -11668,6 +11858,7 @@ F1000.25.85.190;12005258_STA;AGRO;Kabelverschr Progress EMV mit Spannzange;
 2410.40;12035924_STA;AGRO;Universal-Drehadapter;
 9691000022;12042455_STA;HARTING;D-Sub Stecker 2W2C;
 66670090346;12048624_STA;HARTING;Metallhaube;
+9110006122;12051500_STA;HARTING;Kontaktstift Han 200A / versilbert / 50m;
 9110006121;12051503_STA;HARTING;Kontaktstift;
 F1060.25;12055519_STA;AGRO;Kabelverschraubung Progress;
 F1160.12.065;12058677_STA;AGRO;Kabelverschraubung Progress;
@@ -11677,10 +11868,13 @@ F1160.12.065;12058677_STA;AGRO;Kabelverschraubung Progress;
 F1165.80.20.110;12082669_STA;AGRO;Adapter Progress mit Kabelverschraubung;
 9691827420;12085044_STA;HARTING;Federkontakt fuer Kabelanwendung;
 19407030411;12088739_STA;HARTING;Tuellengehaeuse;
+1SBN010140R1122;12093943_STA;ABB;Hilfskontaktblock 2S, 2O;
 CA4-04E;12093950_STA;ABB;Hilfskontaktblock 4S;1SBN010140R1004
+1SBL 236 061 R2100;12096921_STA;ABB;Leistungsschuetz 20..60VDC, 3pol;
 9670007576;12099917_STA;HARTING;Kontaktstift;
 9110006262;12106716_STA;HARTING;Kontaktbuchse;
 9110013112;12106722_STA;HARTING;Buchseneinsatz;
+9110006222;12106723_STA;HARTING;Crimpkontakt  HAN 200A;
 9140063041;12108496_STA;HARTING;Stifteinsatz Han E / 6 Kontakte / 0.14..;9140063041
 9140063141;12108783_STA;HARTING;Buchseneinsatz Han-Modular / 6 Kontakte;9140063141
 19400161261;12113750_STA;HARTING;Sockelgehaeuse;
@@ -11696,6 +11890,7 @@ S202MT-C2UC;12147069_STA;ABB;Leitungsschutzschalter, 2pol, 2A, C;2CDS272065R0024
 857-800;12166494_STA;WAGO;Mìøicí transformátor teploty 24V DC;
 9691827421;12166915_STA;HARTING;Federleiste;
 5107.428.225;12171444_STA;AGRO;Kunststoff-Schnellverschr m Anschlussgew;
+1SFL467063R1222;12177964_STA;ABB;Leistungsschuetz 48..130VDC, 3SHK, 2S, 2;
 769-130;12189419_STA;WAGO;Svorkovnice prizinova 10pol, 4mm2;
 231-104/037-000/033-000;12210003_STA;WAGO;Federleiste inkl.Zugentlastungsplatte;
 EX1803.80.40.320;12226149_STA;AGRO;EMV Kabelverschraubung;
@@ -11711,6 +11906,7 @@ MGLP-B6-4;122631_STA;KVT;Magna-Lok® Flachkopf MGLP-B6-4;
 19400249901;12284799_STA;HARTING;Montagedeckel;
 9400249922;12300147_STA;HARTING;Halterahmen;
 FY1160.25.125;12303058_STA;AGRO;Kabelverschraubung;
+9670029050;12303267_STA;HARTING;Staubschutzkappe D-Sub IP 67 SHIELDED;09 67 002 9050
 FX1165.25.4.050;12308807_STA;AGRO;Adapter Progress mit Kabelverschraubung;
 9000105605;12315910_STA;HARTING;Griffblech mit Schraubadapter;9000105605
 19620400442;12323384_STA;HARTING;Tuellengehaeuse;
@@ -11865,6 +12061,7 @@ FX1100.25.105.900;12683911_STA;AGRO;Kabelverschraubung Progress MS geschlitz;FX1
 FX1165.40.3.904;12690518_STA;AGRO;Adapter Progress mit Kabelverschraubung;FX1165.40.3.904
 FX1165.40.5.906;12690521_STA;AGRO;Adapter Progress mit Kabelverschraubung;FX1165.40.5.906
 FX1165.32.3.919;12690522_STA;AGRO;Adapter Progress mit Kabelverschraubung;FX1165.32.3.919
+1SBN010146R1040;12694475_STA;ABB;Hilfskontaktblock 4S;
 ;12699142.K;;KKO - Bestueckung +A50.G1;
 ;12699147.K;;KKO-Kabelbaum komplett Tuersaeule-EWA;
 ;12699169.K;;KKO - Bestueckung +A60.D2;
@@ -11907,6 +12104,7 @@ FX1165.32.3.919;12690522_STA;AGRO;Adapter Progress mit Kabelverschraubung;FX1165
 ;12701537.K;;KKO-Kabelbaum komplett Boden-MWD;
 ;12705126.K;;KKO-Kabelbaum komplett Dach-EWA;
 ;12706395.K;;KKO-Kabelbaum komplett Motorenkabel-EWB;
+1SBN010146R1031;12708088_STA;ABB;Hilfskontaktblock3S, 1O;
 1236.202.012;12711475_STA;AGRO;Wellschlauch;1236.202.012
 1236.202.016;12711478_STA;AGRO;ROHRflex Wellschlauch Typ PA12 pr 21.2mm;
 1236.232.036;12711482_STA;AGRO;ROHRflex Wellschlauch Typ PA12 42.5mm;
@@ -17681,8 +17879,8 @@ ZQV 2.5/9;1816-0690;WEIDMÜLLER;Propojka ZQV 2,5/9;1608930000
 TRZ 24VDC 1CO;1816-0692;WEIDMÜLLER;"Rele; 24VDC; 1Wechsler";1122880000
 BLZF 3.50/10/180 S;1816-0693;WEIDMÜLLER;"Konektor; 10 Kontakte; weib. 3.5";1879810000
 BLZF 3.50/12/180 S;1816-0694;WEIDMÜLLER;"Konektor; 12 Kontakte; weib. 3.5";1690290000
-BLZF 3.50/14/180 S;1816-0696;WEIDMÜLLER;"Konektor; 14 Kontakte; weib. 3.5";1690310000
-BLZF 3.50/16/180 S;1816-0698;WEIDMÜLLER;"Konektor; 16 Kontakte; weib. 3.5";1690330000
+BLZF 3.50/14/180 SN OR BX;1816-0696;WEIDMÜLLER;"Konektor; 14 Kontakte; weib. 3.5";2459170000
+BLZF 3.50/16/180 SN OR BX;1816-0698;WEIDMÜLLER;"Konektor; 16 Kontakte; weib. 3.5";2459190000
 ZTR 2.5;1816-0701;WEIDMÜLLER;Oddelovaci svorka, grau, 160 868;1831280000
 G-16HMJ1A00505;1816-0702;GEMS;Urovnove rele 120V/5MOhm A415275;
 PKE-XTU-12;1816-0704;EATON;Kontaktni blok pro PKE12, 3-12A;121725
@@ -19509,7 +19707,7 @@ SV 3457.500;1816-4751;RITTAL;Svorka na CU-listu 10 16-50mm2;3457500
 3LD2318-1TL13;1816-4759;SIEMENS;Hlav. vypinac 4P 75,0kW 160A YE/RD;
 3LD2418-1TL13;1816-4760;SIEMENS;Hlav. vypinac 4P 132kW 250A YE/RD;
 3LD2814-0TK53;1816-4761;SIEMENS;Hlav. vypinac 3P 45,0kW 125A YE/RD;
-3LD9280-0C;1816-4762;SIEMENS;Vodic nulovy rozpinaci 100A a 125A;
+3LD9280-0C;1816-4762;SIEMENS;Blok kontaktu N rozpinaci 100A a 125A;
 3LD9281-2A;1816-4763;SIEMENS;Kryt svorek 1P pro100A/12A bezp.vypinace;
 3RV2411-0HA20;1816-4764;SIEMENS;Ochrana trafo nadpr. 0.55-0.8A S00 Sprin;
 3RV2411-1AA20;1816-4765;SIEMENS;Ochrana  trafo nadpr. 1,6A  S00 Screw;
@@ -22222,7 +22420,7 @@ KEL-QTE 20/2.5;1817-0473;ICOTEK;Pruchodkova deska KEL-QTE 20/2,5;43412
 KEL-DP 32/10;1817-0474;ICOTEK;Pruchodka membranova KEL-DP 32/10;43532
 227621;1817-0475;KASPER;Skrin FTOR-227621 RAL9006;
 ;1817-0477;GAF;Kryt stroje (992329) RAL9006;
-993136 RAL 9006;1817-0478;KASPER;Podavaci jednotka 993136 RAL9006;
+993136;1817-0478;VÝKRESOVÝ DÍL;Podavaci jednotka 993136 RAL9006;
 ;1817-0479;HYDAC;Cerpadlo hydr. 80bar 26l/min RAL9006;
 ;1817-0480;GAF;Dvere zadní Multiswiss 992446 RAL9006;
 WRAC 244261 ZTRO;1817-0481;STULZ;Chladic voda WRAC242261ZTRO 33kW RAL9006;
@@ -28565,7 +28763,7 @@ SP100077010;1818-0736;;Winkelprofil rechts 40x55x180x4;
 SP100077017;1818-0737;;Winkelprofil links;
 SP100083402;1818-0738;;Winkel;
 SP100089997;1818-0739;;Halter Komplett;
-SP000052894 A;1818-0740;;Alu šína 10x4, L=225, 2 otvory;
+12092508, VÝKRES BU_2007986;1818-0740;;Alu šína 10x4, L=225, 2 otvory;
 SP100114518;1818-0741;;Abdeckplatte fuer LS;
 SP100117036;1818-0742;;Tafel C96.S1;
 SP100117037;1818-0743;;Blechteil Steckerhalter;
@@ -32264,11 +32462,9 @@ ZGE007+ZGE010;1818-6148;BACHOFEN;Relé 24V-4A;
 FLEX-S 20-7/0.127 3030-SV;1818-6151;OKI ELECTRIC CABLE;Kabel OKI FLEX-S 20-7/0.127 3030-SV;
 ZAE212+ FREILAUFDIODE.;1818-6152;BACHOFEN;Relé + dioda ZAE212;
 DIN 125 B;1818-6156;KANBAN;Podlozka plocha M4 DIN 125 B 140HV Zn;
-DIN 125 B;1818-6157;KANBAN;Podlozka plocha M5 DIN 125 B 140HV Zn;
 BK 8;1818-6158;KANBAN;Kryci cepicka matice BK 8 na M5;
 BK 13;1818-6159;KANBAN;Kryci cepicka matice BK 13 na M8;
 DIN 912 12.9 ZN;1818-6160;KANBAN;Sroub valc.hl DIN912-M6x12 KL100;
-DIN 125 B;1818-6161;KANBAN;Podlozka plocha M6 DIN 125 B 140HV Zn;
 "DIN 7349; ÈSN 21708";1818-6162;SPOJOVACÍ MAT.;Podlozka kruhova M6 Zn;
 DIN 125 B;1818-6163;KANBAN;Podlozka plocha M8 DIN125 B 140HV Zn;000012504908410000
 DIN 912;1818-6165;KANBAN;Sroub valc.hl. DIN912 M10x12-10,9 Zn;
@@ -34361,8 +34557,8 @@ T0403B-100;1818-9327;SMC;SMC Pneu hadicka D= 4,0/ 2,5mm BK;T0403B-100
 221005;1818-9337;LAPP;ÖLFLEX TRAY II 5G6, nestínìný;
 1123308;1818-9338;LAPP;ÖLFLEX® CLASSIC 135 CH Control lead 3 x;
 1123238;1818-9339;LAPP;ÖLFLEX® CLASSIC 135 CH øídicí kabel 5 x;
-227621 RAL9006;1818-9342;;Skrin FTOR-227621 RAL7035;
-993136 RAL7035;1818-9343;;Podavaci jednotka 993136 RAL7035;
+227621;1818-9342;VÝKRESOVÝ DÍL;Skrin FTOR-227621 RAL7035;
+993136;1818-9343;VÝKRESOVÝ DÍL;Podavaci jednotka 993136 RAL7035;
 1074883;1818-9344;EATON;Class CC Fuse 3A time delayed;
 ;1818-9345;;Vana GOLD RAL7043+RAL7035;
 DID 16-16 UL;1818-9346;GPH;Dvojdutinka izol UL 16mm2 L=16;
@@ -36512,7 +36708,7 @@ CK2,5-ED-1,50ST AG;1819-3070;PHOENIX CONTACT;Krimpovací kontakt;
 140166409_02;1819-3072;PROMET;Wiring frame PFT;
 140239980 / 2425741;1819-3073;VÝKRESOVÝ DÍL;Transportation Rack PCC-NG;
 140201943 / 2372177;1819-3074;VÝKRESOVÝ DÍL;PCC-NG Cabinet Basic;
-140188339_02;1819-3075;PROMET;Wiring frame PCC-NG 800;
+140188339_03;1819-3075;PROMET;Wiring frame PCC-NG 800;
 140188339_02;1819-3075_SPARE;PROMET;NÁHRADNÍ_Wiring frame PCC;3123-0023
 140209861 / 2378626;1819-3076;VÝKRESOVÝ DÍL;MMC Large Cabinet 600x2000x600;
 140210353 / 2379148;1819-3077;VÝKRESOVÝ DÍL;Basic electrical housing MMC-NG;
@@ -37668,7 +37864,7 @@ CABLE-D15SUB/S/S/300/KONFEK/S;1819-4937;PHOENIX CONTACT;D-SUB Kabel 15P  3.0m M/
 PBFQ6012;1819-4938_GRE;ABB;Verteilsammelschienen 60x10 4p direkt;
 XT5S 630 BREAKING PART 4P F F;1819-4939_GRE;ABB;Schalteinheit XT5S 630 4p Icu=50kA;
 Ekip Hi-Touch LSI In=400 XT5 4p;1819-4940_GRE;ABB;Schutzausl”ser XT5 In=400 4p;
-AUX-C 1Q+1SY 250Vac/dc XT1...XT6 F/P;1819-4942_GRE;ABB;Meldekontakt XT6 AUX-C 1Q+1SY 250V AC;
+1SDA066431R1;1819-4942_GRE;ABB;Meldekontakt XT6 AUX-C 1Q+1SY 250V AC;
 EKIP COM MODBUS TCP XT5 INT;1819-4943_GRE;ABB;Kommunikationsmodul MODBUS TCP XT5;
 KIT R- REAR TERMINALS - XT5 4pcs;1819-4944_GRE;ABB;Leistungsanschluss R XT5;
 KIT ES XT5 4PCS;1819-4945_GRE;ABB;Leistungsanschluss ES XT5;
@@ -37834,12 +38030,12 @@ FMAD-0956-H310;1819-5206;SCHURTER AG;Mains filter 3L+N+PE 4x250A/440V, FMAD;
 801664;1819-5208;PHOENIX CONTACT AG;Cable sleeve CES-SRG-BK-2X6;0801664
 1410152;1819-5209;PHOENIX CONTACT AG;Cable sleeve CES-SRG-BK-4X6;1410152
 1418787;1819-5210;PHOENIX CONTACT AG;D-SUB-Crimpcontact CUC-DSC-J1BAU-S/DSC28;1418787
-1663653;1819-5211;PHOENIX CONTACT AG;Crimpcontact CK2,5-ED-0,75BU AG;1663653
+CK2,5-ED-0,75BU AU;1819-5211;PHOENIX CONTACT;Crimpcontact CK2,5-ED-0,75BU AG;1663653
 1663640;1819-5212;PHOENIX CONTACT AG;Crimpcontact CK2,5-ED-0,50BU AG;
 3063947;1819-5213;PHOENIX CONTACT AG;Blind plug KDT-ST 5;3063947
 1410107;1819-5214;PHOENIX CONTACT AG;Cable sleeve CES-SRG-BK-4X5;1410107
 801719;1819-5215;PHOENIX CONTACT AG;Cable sleeve CES-LRC-BK;0801719
-1418788;1819-5216;PHOENIX CONTACT AG;D-SUB-Crimpcontact CUC-DSC-J1BAU-S/DSC24;1418788
+CUC-DSC-J1BAU-S/DSC24;1819-5216;PHOENIX CONTACT AG;D-SUB-Crimpcontact CUC-DSC-J1BAU-S/DSC24;1418788
 1414375;1819-5217;PHOENIX CONTACT AG;Contact insert module HC-M-25-CT-F;1414375
 801670;1819-5218;PHOENIX CONTACT AG;Blind sleeve CES-SRC-BK;0801670
 801718;1819-5219;PHOENIX CONTACT AG;Cable sleeve CES-SRC-BK;0801718
@@ -37947,7 +38143,7 @@ VK6070 3500-800MM;1819-5417;DØEVOOBAL;Transportni paleta 4cestna 24mm 3500/800;
 VK6070 2200-800MM;1819-5418;DØEVOOBAL;Transportni paleta 4cestna 24mm 2200/800;
 VK6070 1800-800MM;1819-5419;DØEVOOBAL;Transportni paleta 4cestna 24mm 1800/800;
 VX 8204.000;1819-5420;Rittal;Skøíò 2000x1200x400 RAL 7035;
-ISO 14581 / DIN 7991TX;1819-5421;Wurth;Sroub zapust. hlava M6x16 torx VA2;
+ISO 14581 / DIN 7991TX;1819-5421;SPOJOVACÍ MAT.;Sroub zapust. hlava M6x16 torx VA2;
 24852;1819-5433_GRE;NORMRAHMEN;Isolator schwarz, H=30mm - M8;
 24861;1819-5434_GRE;NORMRAHMEN;Isolator schwarz, H=45mm - M8;
 569030;1819-5435;nVent;Distribution block 10-70mm2/7x2.5-16mm2;569030
@@ -38283,30 +38479,50 @@ BN 25010 PRO TL. 1,5-4MM;1819-6114;SPOJOVACÍ MAT.;Nýt. mat. radlovana ZH 90 Zn M
 ;1819-6120;RS PRO;Signálka OG, 230V AC, panel, fastony;846-2910
 110.241.5114_00;1819-6125;;Steuerschrank 110.241.5114_00;
 374292;1819-6126;PILZ;PILZ sada svorkových konektorù P5+P5;
-SV 3570.005;1819-6154;RITTAL;Lamelova pripojnice 20x5 CU;
+SV 3570.005;1819-6154;RITTAL;Lamelova pripojnice 20x5 CU;3570005
 Výkresový díl;1819-6155;;Vys. Samolep.- Neodpojuj zdroj pod napet;
 type S;1819-6156;Schnorr;podl. zebrovana ZN d3.2xD7 H0,9;
 DIN 125A;1819-6157;spojovací mat.;podl. Plocha 140HV ZN 5,3;
-DIN 125A;1819-6158;spojovací mat.;podl. Plocha 140HV ZN 3.2;
 FAZ-C2/2-NA;1819-6182;EATON;Jistiè 2p. 2A 2-pole  C;102160
 Výkresový dílec;1819-6184;SOLPAP;Kartonová krabice bez víka - Ecorobotix;
 Výkresový dílec;1819-6185;SOLPAP;Proklad Ecorobotix 1200x900;
-900197;1819-6186;AMPHENOL AEROSPACE;Pin size 8 900197;
-M39029/58-360;1819-6187;AMPHENOL AEROSPACE;Pin size 20 M39029/58-360;
-M39029/58-363;1819-6188;AMPHENOL AEROSPACE;Pin size 20 M39029/58-363;
-M39029/58-365;1819-6189;AMPHENOL AEROSPACE;Pin size 12 M39029/58-365;
-M39029/58-364;1819-6190;AMPHENOL AEROSPACE;Pin size 16 M39029/58-364;
-;1819-6191;ABB;Frekvencni menic 11A 500V;
+900197;1819-6186;AMPHENOL AEROSPACE;Pin size 8 900197;900197
+M39029/58-360;1819-6187;AMPHENOL AEROSPACE;Pin size 20 M39029/58-360;M39029/58-360
+M39029/58-363;1819-6188;AMPHENOL AEROSPACE;Pin size 20 M39029/58-363;M39029/58-363
+M39029/58-365;1819-6189;AMPHENOL AEROSPACE;Pin size 12 M39029/58-365;M39029/58-365
+M39029/58-364;1819-6190;AMPHENOL AEROSPACE;Pin size 16 M39029/58-364;M39029/58-364
+;1819-6191;ABB;Frekvencni menic 11A 500V;ACS880-01-11A0-5+E200+Q986+R700
 TG-ALC;1819-6192;T-GLOBAL;Teplovodivá podložka 270x270x0.2 TG-ALC;
 6SL3210-1PB13-8AL0;1819-6193;SIEMENS;SINAMICS Výkonová jednotka 0,75KW 4,2A;
 6SL3203-0CE13-2AA0;1819-6194;SIEMENS;SINAMICS Tlumivka k mìnièi;
 5SY4613-6;1819-6195;SIEMENS;Proudový chrániè 3P+N 13A (B);
-8806199 / MODCZ;1819-6196;RITTAL;Skøíò VX 8806.000 RAL9001;
-8006199 / MODCZ;1819-6197;RITTAL;Skøíò VX 8006.000 RAL9001;
-8606199 / MODCZ;1819-6198;RITTAL;Skøíò VX 8606.000 RAL9001;
-11139544;1819-6199;LAPP;UNITRONIC® FD CP (TP) plus A 1X2X0,25;
-0031370;1819-6200;LAPP;UNITRONIC® LI2YCY (TP) 1X2X0,25;
-0011125;1819-6201;LAPP;ÖLFLEX® 191 9G1,5;
+8806199 / MODCZ;1819-6196;RITTAL;Skøíò VX 8806.000 RAL9001;8806199 / MODCZ
+8006199 / MODCZ;1819-6197;RITTAL;Skøíò VX 8006.000 RAL9001;8006199 / MODCZ
+8606199 / MODCZ;1819-6198;RITTAL;Skøíò VX 8606.000 RAL9001;8606199 / MODCZ
+11139544;1819-6199;LAPP;UNITRONIC® FD CP (TP) plus A 1X2X0,25;11139544
+0031370;1819-6200;LAPP;UNITRONIC® LI2YCY (TP) 1X2X0,25;0031370
+0011125;1819-6201;LAPP;ÖLFLEX® 191 9G1,5;0011125
+IE-C6FP8LD0150M40M40-D;1819-6222;WEIDMÜLLER;Ethernet kabel, CAT 6A, 15m;1165940150
+Amphenol aerospace;1819-6223;AMPHENOL AEROSPACE;Pin size 6 600664 PE;600664
+Amphenol aerospace;1819-6224;AMPHENOL AEROSPACE;Pin size 6 600663 L;600663
+104-0B;1819-6225;PC ELECTRIC;Zásuvka 230V-16A-panelová-50x50-FR/BEL;104-0B
+3RT2016-1BB41-0CC0;1819-6228;SIEMENS;Stykaè 3P + 1NO komunikace-schopný;3RT2016-1BB41-0CC0
+HAN EMC/B 6B HSM2 HC SL M20;1819-6229;HARTING;Panelový kryt Han EMC/B 6B;19628062290
+110.241.5151_00;1819-6230;;Plech 110.241.5151_00;110.241.5151_00
+PA6-F17;1819-6231;HELUKABEL;PA vlnitá trubice PA6-F 17, black;90459
+110.241.5174_00 RAL 9006;1819-6232;;Kryt 110.241.5174_00 RAL 9006;110.241.5174_00
+110.241.3029_04;1819-6233;;Dveøe 110.241.3029_04 RAL PF1004ARG910;110.241.3029_04
+110.241.4822_01 RAL PF1004ARG9;1819-6234;;Dveøe 110.241.4822_01 RAL PF1004ARG910;110.241.4822_01
+PCE420P7S;1819-6235;PC ELECTRIC;CEE-Stecker 20A 3P4W 7h IP44 UL;0149-7
+20250616-TG-0007;1819-6245;T-GLOBAL;Die-cut teplovodivá podložka 0.2mm ERX;TG-ALC-71-14-0.2-DWG
+20250616-TG-0001;1819-6246;T-GLOBAL;Die-cut teplovodivá podložka 2mm ERX;TG-A38KX-43-34-2.0-DWG
+A4C 4 PE;1819-6247;WEIDMUELLER;Borne sur rail de protection Schutzleite;2051560000
+VX 5302.021;1819-6248;RITTAL;Combination rails;5302021
+TS-UK 6-T;1819-6254;PHOENIX CONTACT;Oddìlovací deska TS-UK 6-T;
+PTMED 4;1819-6255;PHOENIX CONTACT;Prùchozí svornice PTMED 4;
+KZ-2;1819-6256;KRUP;CAT 6A Patchkabel, S/FTP (PiMF), 1000mm;
+KZ-1;1819-6257;KRUP;Patchkabel CAT 6A S/FTP (PiMF), 500 MHz;
+Edding 8750 - èervený;1819-6258;EDDING;Lakový popisovaè Edding 8750 - èervený;
 30UF 400VAC M8 400MM COMAR;1819-7000;AWAG;Kondenzátor s kabelem 30U 450VAC  5%;
 50UF 400VAC M8 400MM COMAR;1819-7002;AWAG;Kondenzátor s kabelem 50U 450VAC  5%;
 3365-50;1840-6007;3M;Plochy kabel     GRAU         3365-50;
@@ -39387,6 +39603,7 @@ SFTX62;1892-3640_A;SCHALTAG;Schneidtisch var UL SFTX62 B1031581;
 140713V1;1892-4987;SCHALTAG;Opt.PMML113B Stecker kompl.ZG3  140713V1;
 140713V1;1892-4987.01;SCHALTAG;Opt.PMML113B Stecker kompl.ZG3  140713V1;
 ;1892-4991;SCHALTAG;NLS PMML1B Verkn. Füllg.ZFGRP   140775V2;
+;1892-5003;SCHALTAG;NLS PMML1B Steck. Abfallbürsten 140785V1;
 ;1892-5007;SCHALTAG;NLS PMML1B Stecker kompl.ZG2    140793V1;
 ;1892-5016;SCHALTAG;Opt.PMML112B Ver.Füllg.ZFGP.A   140636V1;
 140637V1;1892-5017;SCHALTAG;Opt.PMML113B Ver.Füllg.ZFGP.A   140637V1;
@@ -39884,12 +40101,14 @@ Kabel Netstal - 242.731.0370;242.731.0370;Schaltag;Podsestava Netstal - 242.731.
 Podsestava Netstal - 242.731.0380;242.731.0380;Schaltag;Podsestava Netstal - 242.731.0380;
 Podsestava Netstal - 242.731.0400;242.731.0400;Schaltag;Podsestava Netstal - 242.731.0400;
 Podsestava Netstal - 242.731.0420;242.731.0420;Schaltag;Podsestava Netstal - 242.731.0420;
+Podsestava Netstal - 242.731.0430;242.731.0430;Schaltag;Podsestava Netstal - 242.731.0430;
 Podsestava Netstal - 242.731.0440;242.731.0440;Schaltag;Podsestava Netstal - 242.731.0440;
 Podsestava Netstal - 242.731.0450;242.731.0450;Schaltag;Podsestava Netstal - 242.731.0450;
 Podsestava Netstal - 242.731.0470;242.731.0470;Schaltag;Podsestava Netstal - 242.731.0470;
 Kabel Netstal - 242.731.0490;242.731.0490;Schaltag;Podsestava Netstal - 242.731.0490;
 Podsestava Netstal - 242.731.0530;242.731.0530;Schaltag;Podsestava Netstal - 242.731.0530;
 Podsestava Netstal - 242.731.0540;242.731.0540;Schaltag;Podsestava Netstal - 242.731.0540;
+Podsestava Netstal - 242.731.0550;242.731.0550;Schaltag;Podsestava Netstal - 242.731.0550;
 Podsestava Netstal - 242.731.0640;242.731.0640;Schaltag;Podsestava Netstal - 242.731.0640;
 Podsestava Netstal - 242.731.0750;242.731.0750;Schaltag;Podsestava Netstal - 242.731.0750;
 Podsestava Netstal - 242.731.0760;242.731.0760;Schaltag;Podsestava Netstal - 242.731.0760;
@@ -39924,6 +40143,7 @@ Podsestava Netstal - 242.749.0210;242.749.0210;Schaltag;Podsestava Netstal - 242
 Podsestava Netstal - 242.749.0290;242.749.0290;Schaltag;Podsestava Netstal - 242.749.0290;
 Podsestava Netstal - 242.749.0370;242.749.0370;Schaltag;Podsestava Netstal - 242.749.0370;
 Podsestava Netstal - 242.749.0460;242.749.0460;Schaltag;Podsestava Netstal - 242.749.0460;
+Podsestava Netstal - 242.750.0080;242.750.0080;Schaltag;Podsestava Netstal - 242.750.0080;
 Podsestava Netstal - 242.750.0160;242.750.0160;;Podsestava Netstal - 242.750.0160;
 Podsestava Netstal - 242.750.0190;242.750.0190;;Podsestava Netstal - 242.750.0190;
 Kabel Netstal - 242.750.0200;242.750.0200;Schaltag;Kabel Netstal - 242.750.0200;
@@ -40184,6 +40404,7 @@ Kabel Netstal - 243.058.0860;243.058.0860;Schaltag;Kabel Netstal - 243.058.0860;
 Kabel Netstal - 243.058.1180;243.058.1180;Schaltag;Kabel Netstal - 243.058.1180;
 Kabel Netstal - 243.059.1160;243.059.1160;Schaltag;Kabel Netstal - 243.059.1160;
 Kabel Netstal - 243.059.1280;243.059.1280;Schaltag;Kabel Netstal - 243.059.1280;
+Kabel Netstal - 243.059.1400;243.059.1400;Schaltag;Kabel Netstal - 243.059.1400;
 Kabel Netstal - 243.059.1460;243.059.1460;Schaltag;Kabel Netstal - 243.059.1460;
 Kabel Netstal - 243.059.1560;243.059.1560;Schaltag;Kabel Netstal - 243.059.1560;
 Kabel Netstal - 243.993.0340;243.059.1700;Schaltag;kabel Netstal -243.059.1700;
@@ -40311,6 +40532,7 @@ Kabel Netstal - 243.090.0860;243.090.0860;Schaltag;Kabel Netstal - 243.090.0860;
 Kabel Netstal - 243.090.1040;243.090.1040;Schaltag;Kabel Netstal - 243.090.1040;
 Kabel Netstal - 243.090.1060;243.090.1060;Schaltag;Kabel Netstal - 243.090.1060;
 243.090.1120;243.090.1120;;Kabel Netstal - 243.090.1120;
+Kabel Netstal - 243.090.1260;243.090.1260;Schaltag;Kabel Netstal - 243.090.1260;
 Kabel Netstal - 243.090.1380;243.090.1380;Schaltag;Kabel Netstal - 243.090.1380;
 243.090.1420;243.090.1420;;Kabel Netstal - 243.090.1420;
 Kabel Netstal - 243.090.1500;243.090.1500;Schaltag;Kabel Netstal - 243.090.1500;
@@ -40367,6 +40589,7 @@ Kabel Netstal - 243.100.0680;243.100.0680;Schaltag;Kabel Netstal - 243.100.0680;
 Kabel Netstal - 243.100.0920;243.100.0920;Schaltag;Kabel Netstal - 243.100.0920;
 243.100.0960;243.100.0960;;Kabel Netstal - 243.100.0960;
 Kabel Netstal - 243.104.0520;243.104.0520;Schaltag;Kabel Netstal - 243.104.0520;
+Kabel Netstal - 243.107.1440;243.107.1440;Schaltag;Kabel Netstal - 243.107.1440;
 Kabel Netstal - 243.145.0480;243.145.0480;Schaltag;Kabel Netstal - 243.145.0480;
 Kabel Netstal - 243.147.0600;243.147.0600;Schaltag;Kabel Netstal - 243.147.0600;
 Kabel Netstal - 243.157.0160;243.157.0160;Schaltag;Kabel Netstal - 243.157.0160;
@@ -40487,6 +40710,7 @@ Kabel Netstal - 243.227.1600;243.227.1600;Schaltag;Kabel Netstal - 243.227.1600;
 Kabel Netstal -243.227.1680;243.227.1680;Schaltag;Kabel Netstal -243.227.1680;
 Kabel Netstal - 243.227.1980;243.227.1980;Schaltag;Kabel Netstal - 243.227.1980;
 Kabel Netstal - 243.230.0600;243.230.0600;Schaltag;Kabel Netstal - 243.230.0600;
+Kabel Netstal - 243.232.0600;243.232.0600;Schaltag;Kabel Netstal - 243.232.0600;
 Kabel Netstal - 243.239.0440;243.239.0440;Schaltag;Kabel Netstal - 243.239.0440;
 KABEL NETSTAL - 243.242.0300;243.242.0300;SCHALTAG;Kabel Netstal - 243.242.0300;
 Kabel Netstal - 243.243.0300;243.243.0300;Schaltag;Kabel Netstal - 243.243.0300;
@@ -40569,6 +40793,7 @@ Kabel Netstal - 243.317.0040;243.317.0040;Schaltag;Kabel Netstal - 243.317.0040;
 Kabel Netstal - 243.318.0700;243.318.0700;Schaltag;Kabel Netstal - 243.318.0700;
 Kabel Netstal - 243.318.0780;243.318.0780;Schaltag;Kabel Netstal - 243.318.0780;
 Kabel Netstal - 243.318.0800;243.318.0800;Schaltag;Kabel Netstal - 243.318.0800;
+Kabel Netstal - 243.318.0860;243.318.0860;Schaltag;Kabel Netstal - 243.318.0860;
 Kabel Netstal - 243.318.0900;243.318.0900;Schaltag;Kabel Netstal - 243.318.0900;
 Kabel Netstal - 243.318.0940;243.318.0940;Schaltag;Kabel Netstal - 243.318.0940;
 Kabel Netstal - 243.318.0960;243.318.0960;Schaltag;Kabel Netstal - 243.318.0960;
@@ -40604,6 +40829,7 @@ Kabel Netstal - 243.331.0700;243.331.0700;Schaltag;Kabel Netstal - 243.331.0700;
 Kabel Netstal - 243.331.0740;243.331.0740;Schaltag;Kabel Netstal - 243.331.0740;
 Kabel Netstal - 243.331.0800;243.331.0800;Schaltag;Kabel Netstal - 243.331.0800;
 Kabel Netstal - 243.332.0240;243.332.0240;Schaltag;Kabel Netstal - 243.332.0240;
+Kabel Netstal - 243.333.0070;243.333.0070;Schaltag;Kabel Netstal - 243.333.0070;
 243.337.0220;243.337.0220;;Kabel Netstal - 243.337.0220;
 Kabel Netstal - 243.339.0520;243.339.0520;Schaltag;Kabel Netstal - 243.339.0520;
 Kabel Netstal - 243.340.0600;243.340.0600;Schaltag;Kabel Netstal - 243.340.0600;
@@ -40740,6 +40966,7 @@ Kabel Netstal - 243.515.0920;243.515.0920;Schaltag;Kabel Netstal - 243.515.0920;
 Kabel Netstal - 243.519.0900;243.519.0900;Schaltag;Kabel Netstal - 243.519.0900;
 Kabel Netstal - 243.519.1080;243.519.1080;Schaltag;Kabel Netstal - 243.519.1080;
 Kabel Netstal - 243.519.1740;243.519.1740;Schaltag;Kabel Netstal - 243.519.1740;
+Kabel Netstal - 243.523.0360;243.523.0360;Schaltag;Kabel Netstal - 243.523.0360;
 Kabel Netstal - 243.523.0660;243.523.0660;Schaltag;Kabel Netstal - 243.523.0660;
 Kabel Netstal - 243.538.1140;243.538.1140;Schaltag;Kabel Netstal - 243.538.1140;
 Kabel Netstal - 243.565.1020;243.565.1020;Schaltag;Kabel Netstal - 243.565.1020;
@@ -40773,6 +41000,7 @@ Kabel Netstal - 243.651.1180;243.651.1180;Schaltag;Kabel Netstal - 243.651.1180;
 Kabel Netstal - 243.651.1220;243.651.1220;Schaltag;Kabel Netstal - 243.651.1220;
 Kabel Netstal - 243.653.0460;243.653.0460;Schaltag;Kabel Netstal - 243.653.0460;
 Kabel Netstal - 243.657.0040;243.657.0040;Schaltag;Kabel Netstal - 243.657.0040;
+Kabel Netstal - 243.661.0600;243.661.0600;Schaltag;Kabel Netstal - 243.661.0600;
 PODSESTAVA NETSTAL - 243.662.1000;243.662.1000;SCHALTAG;Podsestava Netstal - 243.662.1000;
 Kabel Netstal - 243.664.0500;243.664.0500;Schaltag;Kabel Netstal - 243.664.0500;
 Kabel Netstal - 243.664.0540;243.664.0540;Schaltag;Kabel Netstal - 243.664.0540;
@@ -40794,6 +41022,7 @@ KABEL NETSTAL - 243.697.0500;243.697.0500;SCHALTAG;Kabel Netstal - 243.697.0500;
 KABEL NETSTAL - 243.697.0750;243.697.0750;;Kabel Netstal - 243.697.0750;
 Kabel Netstal - 243.697.0900;243.697.0900;Schaltag;Kabel Netstal - 243.697.0900;
 Kabel Netstal - 243.697.1000;243.697.1000;Schaltag;Kabel Netstal - 243.697.1000;
+Kabel Netstal - 243.697.1500;243.697.1500;Schaltag;Kabel Netstal - 243.697.1500;
 KABEL NETSTAL - 243.698.0140;243.698.0140;SCHALTAG;Kabel Netstal - 243.698.0140;
 Kabel Netstal - 243.739.0080;243.739.0080;Schaltag;Kabel Netstal - 243.739.0080;
 243.739.0680;243.739.0680;;Kabel Netstal - 243.739.0680;
@@ -40923,12 +41152,15 @@ Kabel Netstal - 243.885.1240;243.885.1240;Schaltag;Kabel Netstal - 243.885.1240;
 Kabel Netstal - 243.886.1380;243.886.1380;Schaltag;Kabel Netstal - 243.886.1380;
 Kabel Netstal - 243.888.0180;243.888.0180;Schaltag;Kabel Netstal - 243.888.0180;
 Kabel Netstal -243.888.0800;243.888.0800;Schaltag;Kabel Netstal -243.888.0800;
+Kabel Netstal - 243.888.1120;243.888.1120;Schaltag;Kabel Netstal - 243.888.1120;
+Kabel Netstal - 243.888.1320;243.888.1320;Schaltag;Kabel Netstal - 243.888.1320;
 Kabel Netstal - 243.897.0960;243.897.0960;Schaltag;Kabel Netstal - 243.897.0960;
 Kabel Netstal - 243.897.1100;243.897.1100;Schaltag;Kabel Netstal - 243.897.1100;
 243.901.0080;243.901.0080;;Kabel Netstal - 243.901.0080;
 243.901.0100;243.901.0100;;Kabel Netstal - 243.901.0100;
 243.901.0160;243.901.0160;;Kabel Netstal - 243.901.0160;
 Kabel Netstal - 243.905.1160;243.905.1160;Schaltag;Kabel Netstal - 243.905.1160;
+Kabel Netstal - 243.905.1380;243.905.1380;Schaltag;Kabel Netstal - 243.905.1380;
 Kabel Netstal -243.905.1480;243.905.1480;Schaltag;Kabel Netstal -243.905.1480;
 Kabel Netstal - 243.909.1020;243.909.1020;Schaltag;Kabel Netstal - 243.909.1020;
 Kabel Netstal - 243.909.1180;243.909.1180;Schaltag;Kabel Netstal - 243.909.1180;
@@ -41102,6 +41334,7 @@ Kabel Netstal - 243.970.1620;243.970.1620;Schaltag;Kabel Netstal - 243.970.1620;
 Kabel Netstal - 243.970.1780;243.970.1780;Schaltag;Kabel Netstal - 243.970.1780;
 Kabel Netstal - 243.974.0960;243.974.0960;Schaltag;Kabel Netstal - 243.974.0960;
 243.974.1000;243.974.1000;;Kabel Netstal - 243.974.1000;
+Kabel Netstal - 243.974.1020;243.974.1020;Schaltag;Kabel Netstal - 243.974.1020;
 Kabel Netstal - 243.974.1120;243.974.1120;Schaltag;Kabel Netstal - 243.974.1120;
 Kabel Netstal - 243.975.0240;243.975.0240;Schaltag;Kabel Netstal - 243.975.0240;
 KABEL NETSTAL - 243.975.0280;243.975.0280;SCHALTAG;Kabel Netstal - 243.975.0280;
@@ -41386,6 +41619,7 @@ Kabel Netstal - 244.148.0120;244.148.0120;Schaltag;Kabel Netstal - 244.148.0120;
 Kabel Netstal - 244.148.0140;244.148.0140;Schaltag;Kabel Netstal - 244.148.0140;
 Kabel Netstal - 244.148.0180;244.148.0180;Schaltag;Kabel Netstal - 244.148.0180;
 KABEL NETSTAL - 244.149.1800;244.149.1800;SCHALTAG;Kabel Netstal - 244.149.1800;
+Kabel Netstal - 244.151.1800;244.151.1800;Schaltag;Kabel Netstal - 244.151.1800;
 Kabel Netstal - 244.152.0220;244.152.0220;Schaltag;Kabel Netstal - 244.152.0220;
 244.152.0280;244.152.0280;;Kabel Netstal - 244.152.0280;
 Kabel Netstal - 244.153.0780;244.153.0780;Schaltag;Kabel Netstal - 244.153.0780;
@@ -41395,6 +41629,7 @@ Kabel Netstal - 244.159.1360;244.159.1360;Schaltag;Kabel Netstal - 244.159.1360;
 Kabel Netstal - 243.993.0340;244.159.1480;Schaltag;kabel Netstal -244.159.1480;
 Kabel Netstal - 244.160.1340;244.160.1340;Schaltag;Kabel Netstal - 244.160.1340;
 Kabel Netstal - 244.160.1420;244.160.1420;Schaltag;Kabel Netstal - 244.160.1420;
+Kabel Netstal - 244.163.0740;244.163.0740;Schaltag;Kabel Netstal - 244.163.0740;
 Kabel Netstal - 244.163.1400;244.163.1400;Schaltag;Kabel Netstal - 244.163.1400;
 Kabel Netstal - 244.164.1080;244.164.1080;Schaltag;Kabel Netstal - 244.164.1080;
 Kabel Netstal - 244.167.0060;244.167.0060;Schaltag;Kabel Netstal - 244.167.0060;
@@ -41526,6 +41761,7 @@ Kabel Netstal - 244.209.1080;244.209.1080;Schaltag;Kabel Netstal - 244.209.1080;
 Kabel Netstal - 244.214.0820;244.214.0820;Schaltag;Kabel Netstal - 244.214.0820;
 Kabel Netstal - 244.214.0860;244.214.0860;Schaltag;Kabel Netstal - 244.214.0860;
 Kabel Netstal - 244.214.0880;244.214.0880;Schaltag;Kabel Netstal - 244.214.0880;
+Kabel Netstal - 244.214.0920;244.214.0920;Schaltag;Kabel Netstal - 244.214.0920;
 Kabel Netstal - 244.214.0980;244.214.0980;Schaltag;Kabel Netstal - 244.214.0980;
 Kabel Netstal - 244.214.1040;244.214.1040;Schaltag;Kabel Netstal - 244.214.1040;
 Kabel Netstal - 244.214.1080;244.214.1080;Schaltag;Kabel Netstal - 244.214.1080;
@@ -41616,13 +41852,19 @@ Kabel Netstal - 244.267.0260;244.267.0260;Schaltag;Kabel Netstal - 244.267.0260;
 Kabel Netstal - 244.268.0600;244.268.0600;Schaltag;Kabel Netstal - 244.268.0600;
 Kabel Netstal - 244.275.1640;244.275.1640;Schaltag;Kabel Netstal - 244.275.1640;
 Kabel Netstal - 244.278.0200;244.278.0200;Schaltag;Kabel Netstal - 244.278.0200;
+Kabel Netstal - 244.279.0300;244.279.0300;Schaltag;Kabel Netstal - 244.279.0300;
+Kabel Netstal - 244.279.0360;244.279.0360;Schaltag;Kabel Netstal - 244.279.0360;
+Kabel Netstal - 244.279.0540;244.279.0540;Schaltag;Kabel Netstal - 244.279.0540;
+Kabel Netstal - 244.279.0880;244.279.0880;Schaltag;Kabel Netstal - 244.279.0880;
 Kabel Netstal - 244.280.0300;244.280.0300;Schaltag;Kabel Netstal - 244.280.0300;
 Kabel Netstal - 244.280.0320;244.280.0320;Schaltag;Kabel Netstal - 244.280.0320;
 Kabel Netstal - 244.280.0340;244.280.0340;Schaltag;Kabel Netstal - 244.280.0340;
 Kabel Netstal - 244.280.0360;244.280.0360;Schaltag;Kabel Netstal - 244.280.0360;
+Kabel Netstal - 244.280.0400;244.280.0400;Schaltag;Kabel Netstal - 244.280.0400;
 Kabel Netstal - 244.283.1020;244.283.1020;Schaltag;Kabel Netstal - 244.283.1020;
 Kabel Netstal - 244.284.1020;244.284.1020;Schaltag;Kabel Netstal - 244.284.1020;
 Kabel Netstal - 244.286.0560;244.286.0560;Schaltag;Kabel Netstal - 244.286.0560;
+Kabel Netstal - 244.286.0860;244.286.0860;Schaltag;Kabel Netstal - 244.286.0860;
 Kabel Netstal - 244.287.0420;244.287.0420;Schaltag;Kabel Netstal - 244.287.0420;
 Kabel Netstal - 244.288.0380;244.288.0380;Schaltag;Kabel Netstal - 244.288.0380;
 Kabel Netstal - 244.292.0360;244.292.0360;Schaltag;Kabel Netstal - 244.292.0360;
@@ -41635,21 +41877,30 @@ Kabel Netstal - 244.296.1000;244.296.1000;Schaltag;Kabel Netstal - 244.296.1000;
 Kabel Netstal - 244.297.0200;244.297.0200;Schaltag;Kabel Netstal - 244.297.0200;
 Kabel Netstal - 244.298.0500;244.298.0500;Schaltag;Kabel Netstal - 244.298.0500;
 Kabel Netstal - 244.300.0160;244.300.0160;Schaltag;Kabel Netstal - 244.300.0160;
+Kabel Netstal - 244.301.0380;244.301.0380;Schaltag;Kabel Netstal - 244.301.0380;
 Kabel Netstal - 244.301.0400;244.301.0400;Schaltag;Kabel Netstal - 244.301.0400;
+Kabel Netstal - 244.301.0420;244.301.0420;Schaltag;Kabel Netstal - 244.301.0420;
 Kabel Netstal - 244.303.0340;244.303.0340;Schaltag;Kabel Netstal - 244.303.0340;
 Kabel Netstal - 244.303.0380;244.303.0380;Schaltag;Kabel Netstal - 244.303.0380;
 Kabel Netstal - 244.303.0400;244.303.0400;Schaltag;Kabel Netstal - 244.303.0400;
 Kabel Netstal - 244.303.0420;244.303.0420;Schaltag;Kabel Netstal - 244.303.0420;
+Kabel Netstal - 244.307.0820;244.307.0820;Schaltag;Kabel Netstal - 244.307.0820;
+Kabel Netstal - 244.308.0820;244.308.0820;Schaltag;Kabel Netstal - 244.308.0820;
 Kabel Netstal - 244.309.1080;244.309.1080;Schaltag;Kabel Netstal - 244.309.1080;
 Kabel Netstal - 244.310.0100;244.310.0100;Schaltag;Kabel Netstal - 244.310.0100;
 Kabel Netstal - 244.311.0140;244.311.0140;Schaltag;Kabel Netstal - 244.311.0140;
 Kabel Netstal - 244.313.0180;244.313.0180;Schaltag;Kabel Netstal - 244.313.0180;
+Kabel Netstal - 244.313.0420;244.313.0420;Schaltag;Kabel Netstal - 244.313.0420;
+Kabel Netstal - 244.313.0540;244.313.0540;Schaltag;Kabel Netstal - 244.313.0540;
 Kabel Netstal - 244.314.0280;244.314.0280;Schaltag;Kabel Netstal - 244.314.0280;
 Kabel Netstal - 244.315.0280;244.315.0280;Schaltag;Kabel Netstal - 244.315.0280;
 Kabel Netstal - 244.316.0280;244.316.0280;Schaltag;Kabel Netstal - 244.316.0280;
+Kabel Netstal - 244.317.0260;244.317.0260;Schaltag;Kabel Netstal - 244.317.0260;
+Kabel Netstal - 244.317.0280;244.317.0280;Schaltag;Kabel Netstal - 244.317.0280;
 Kabel Netstal - 244.317.0380;244.317.0380;Schaltag;Kabel Netstal - 244.317.0380;
 Kabel Netstal - 244.318.0460;244.318.0460;Schaltag;Kabel Netstal - 244.318.0460;
 Kabel Netstal - 244.319.0480;244.319.0480;Schaltag;Kabel Netstal - 244.319.0480;
+Kabel Netstal - 244.319.0880;244.319.0880;Schaltag;Kabel Netstal - 244.319.0880;
 Kabel Netstal - 244.320.0140;244.320.0140;Schaltag;Kabel Netstal - 244.320.0140;
 Kabel Netstal - 244.321.0340;244.321.0340;Schaltag;Kabel Netstal - 244.321.0340;
 Kabel Netstal - 244.325.0240;244.325.0240;Schaltag;Kabel Netstal - 244.325.0240;
@@ -41658,32 +41909,83 @@ Kabel Netstal - 244.326.0700;244.326.0700;Schaltag;Kabel Netstal - 244.326.0700;
 Kabel Netstal - 244.326.1520;244.326.1520;Schaltag;Kabel Netstal - 244.326.1520;
 Kabel Netstal - 244.326.1540;244.326.1540;Schaltag;Kabel Netstal - 244.326.1540;
 Kabel Netstal - 244.329.0660;244.329.0660;Schaltag;Kabel Netstal - 244.329.0660;
+Kabel Netstal - 244.332.0900;244.332.0900;Schaltag;Kabel Netstal - 244.332.0900;
+Kabel Netstal - 244.337.0160;244.337.0160;Schaltag;Kabel Netstal - 244.337.0160;
 Kabel Netstal - 244.337.0260;244.337.0260;Schaltag;Kabel Netstal - 244.337.0260;
 Kabel Netstal - 244.338.0740;244.338.0740;Schaltag;Kabel Netstal - 244.338.0740;
 Kabel Netstal - 244.339.0720;244.339.0720;Schaltag;Kabel Netstal - 244.339.0720;
 Kabel Netstal - 244.340.1020;244.340.1020;Schaltag;Kabel Netstal - 244.340.1020;
 Kabel Netstal - 244.340.1140;244.340.1140;Schaltag;Kabel Netstal - 244.340.1140;
 Kabel Netstal - 244.340.1340;244.340.1340;Schaltag;Kabel Netstal - 244.340.1340;
+Kabel Netstal - 244.340.1500;244.340.1500;Schaltag;Kabel Netstal - 244.340.1500;
+Kabel Netstal - 244.340.1620;244.340.1620;Schaltag;Kabel Netstal - 244.340.1620;
 Kabel Netstal - 244.341.1660;244.341.1660;Schaltag;Kabel Netstal - 244.341.1660;
 Kabel Netstal - 244.343.0600;244.343.0600;Schaltag;Kabel Netstal - 244.343.0600;
+Kabel Netstal - 244.343.0640;244.343.0640;Schaltag;Kabel Netstal - 244.343.0640;
 Kabel Netstal - 244.344.0600;244.344.0600;Schaltag;Kabel Netstal - 244.344.0600;
+Kabel Netstal - 244.344.0640;244.344.0640;Schaltag;Kabel Netstal - 244.344.0640;
 Kabel Netstal - 244.345.0080;244.345.0080;Schaltag;Kabel Netstal - 244.345.0080;
 Kabel Netstal - 244.348.0680;244.348.0680;Schaltag;Kabel Netstal - 244.348.0680;
 Kabel Netstal - 244.349.0420;244.349.0420;Schaltag;Kabel Netstal - 244.349.0420;
+Kabel Netstal - 244.349.0460;244.349.0460;Schaltag;Kabel Netstal - 244.349.0460;
+Kabel Netstal - 244.350.1300;244.350.1300;Schaltag;Kabel Netstal - 244.350.1300;
 Kabel Netstal -244.351.0300;244.351.0300;Schaltag;Kabel Netstal -244.351.0300;
 Kabel Netstal - 244.353.0340;244.353.0340;Schaltag;Kabel Netstal - 244.353.0340;
 Kabel Netstal - 244.354.0340;244.354.0340;Schaltag;Kabel Netstal - 244.354.0340;
 Kabel Netstal - 244.356.0340;244.356.0340;Schaltag;Kabel Netstal - 244.356.0340;
 Kabel Netstal - 244.357.0180;244.357.0180;Schaltag;Kabel Netstal - 244.357.0180;
+Kabel Netstal - 244.365.0140;244.365.0140;Schaltag;Kabel Netstal - 244.365.0140;
+Kabel Netstal - 244.366.1320;244.366.1320;Schaltag;Kabel Netstal - 244.366.1320;
+Kabel Netstal - 244.367.0340;244.367.0340;Schaltag;Kabel Netstal - 244.367.0340;
+Kabel Netstal - 244.367.0360;244.367.0360;Schaltag;Kabel Netstal - 244.367.0360;
+Kabel Netstal - 244.368.0060;244.368.0060;Schaltag;Kabel Netstal - 244.368.0060;
+Kabel Netstal - 244.369.0120;244.369.0120;Schaltag;Kabel Netstal - 244.369.0120;
+Kabel Netstal - 244.370.0140;244.370.0140;Schaltag;Kabel Netstal - 244.370.0140;
+Kabel Netstal - 244.371.0180;244.371.0180;Schaltag;Kabel Netstal - 244.371.0180;
+Kabel Netstal - 244.372.0680;244.372.0680;Schaltag;Kabel Netstal - 244.372.0680;
+Kabel Netstal - 244.373.0200;244.373.0200;Schaltag;Kabel Netstal - 244.373.0200;
+Kabel Netstal - 244.373.0220;244.373.0220;Schaltag;Kabel Netstal - 244.373.0220;
+Kabel Netstal - 244.373.0240;244.373.0240;Schaltag;Kabel Netstal - 244.373.0240;
+Kabel Netstal - 244.373.0260;244.373.0260;Schaltag;Kabel Netstal - 244.373.0260;
+Kabel Netstal - 244.373.0280;244.373.0280;Schaltag;Kabel Netstal - 244.373.0280;
+Kabel Netstal - 244.373.0320;244.373.0320;Schaltag;Kabel Netstal - 244.373.0320;
+Kabel Netstal - 244.374.1240;244.374.1240;Schaltag;Kabel Netstal - 244.374.1240;
+Kabel Netstal - 244.375.1420;244.375.1420;Schaltag;Kabel Netstal - 244.375.1420;
+Kabel Netstal - 244.376.1580;244.376.1580;Schaltag;Kabel Netstal - 244.376.1580;
+Kabel Netstal - 244.380.0640;244.380.0640;Schaltag;Kabel Netstal - 244.380.0640;
+Kabel Netstal - 244.382.1420;244.382.1420;Schaltag;Kabel Netstal - 244.382.1420;
+Kabel Netstal - 244.383.1680;244.383.1680;Schaltag;Kabel Netstal - 244.383.1680;
+Kabel Netstal - 244.384.1360;244.384.1360;Schaltag;Kabel Netstal - 244.384.1360;
+Kabel Netstal - 244.385.1420;244.385.1420;Schaltag;Kabel Netstal - 244.385.1420;
+Kabel Netstal - 244.388.0340;244.388.0340;Schaltag;Kabel Netstal - 244.388.0340;
 Kabel Netstal - 244.389.1500;244.389.1500;Schaltag;Kabel Netstal - 244.389.1500;
+Kabel Netstal - 244.390.1060;244.390.1060;Schaltag;Kabel Netstal - 244.390.1060;
+Kabel Netstal - 244.391.1060;244.391.1060;Schaltag;Kabel Netstal - 244.391.1060;
+Kabel Netstal - 244.392.1060;244.392.1060;Schaltag;Kabel Netstal - 244.392.1060;
 Kabel Netstal - 244.393.1500;244.393.1500;Schaltag;Kabel Netstal - 244.393.1500;
+Kabel Netstal - 244.397.0380;244.397.0380;Schaltag;Kabel Netstal - 244.397.0380;
+Kabel Netstal - 244.398.0540;244.398.0540;Schaltag;Kabel Netstal - 244.398.0540;
+Kabel Netstal - 244.399.0360;244.399.0360;Schaltag;Kabel Netstal - 244.399.0360;
+Kabel Netstal - 244.400.0520;244.400.0520;Schaltag;Kabel Netstal - 244.400.0520;
+Kabel Netstal - 244.401.0340;244.401.0340;Schaltag;Kabel Netstal - 244.401.0340;
+Kabel Netstal - 244.402.0540;244.402.0540;Schaltag;Kabel Netstal - 244.402.0540;
+Kabel Netstal - 244.403.0680;244.403.0680;Schaltag;Kabel Netstal - 244.403.0680;
+Kabel Netstal - 244.404.0480;244.404.0480;Schaltag;Kabel Netstal - 244.404.0480;
+Kabel Netstal - 244.405.0080;244.405.0080;Schaltag;Kabel Netstal - 244.405.0080;
 Kabel Netstal - 244.406.0980;244.406.0980;Schaltag;Kabel Netstal - 244.406.0980;
+Kabel Netstal - 244.406.1460;244.406.1460;Schaltag;Kabel Netstal - 244.406.1460;
+Kabel Netstal - 244.406.1500;244.406.1500;Schaltag;Kabel Netstal - 244.406.1500;
+Kabel Netstal - 244.411.1200;244.411.1200;Schaltag;Kabel Netstal - 244.411.1200;
+Kabel Netstal - 244.415.0280;244.415.0280;Schaltag;Kabel Netstal - 244.415.0280;
+Kabel Netstal - 244.415.0420;244.415.0420;Schaltag;Kabel Netstal - 244.415.0420;
+Kabel Netstal - 244.416.0480;244.416.0480;Schaltag;Kabel Netstal - 244.416.0480;
 Kabel Netstal - 244.417.0180;244.417.0180;Schaltag;Kabel Netstal - 244.417.0180;
 Kabel Netstal - 244.417.0200;244.417.0200;Schaltag;Kabel Netstal - 244.417.0200;
 Kabel Netstal - 244.419.0240;244.419.0240;Schaltag;Kabel Netstal - 244.419.0240;
 Kabel Netstal - 244.420.0220;244.420.0220;Schaltag;Kabel Netstal - 244.420.0220;
 Kabel Netstal - 244.421.0180;244.421.0180;Schaltag;Kabel Netstal - 244.421.0180;
 Kabel Netstal - 244.427.0880;244.427.0880;Schaltag;Kabel Netstal - 244.427.0880;
+Kabel Netstal - 244.428.0840;244.428.0840;Schaltag;Kabel Netstal - 244.428.0840;
 Podsestava Netstal - 248.102.0190;248.102.0190;Schaltag;Podsestava Netstal - 248.102.0190;
 Podsestava Netstal - 248.102.0200;248.102.0200;Schaltag;Podsestava Netstal - 248.102.0200;
 Podsestava Netstal - 248.102.0210;248.102.0210;Schaltag;Podsestava Netstal - 248.102.0210;
@@ -41698,6 +42000,7 @@ WO 24S0100437.016;24S0100437;SCHALTAG;CABLE SET FOR LINE PIPE;
 870088-24S0600160.0;24S0600160;MAILLEFER;Cable set for line pipe;
 870088-25S0100098.0;25S0100098;MAILLEFER;Cable set for Cinegran;
 870088-25S0100103.0;25S0100103;MAILLEFER;Cable set for Extruder;
+870088-25S0100164.0;25S0100164;MAILLEFER;Cable set for line pipe;
 870088-25S0400090.0;25S0400090;MAILLEFER;Cable set for line pipe;
 870088-25S0400092.0;25S0400092;MAILLEFER;Cable set for Extruder;
 2M20213;2M20213;SCHALTAG CZ;Kabelový svazek Drager   Rev.08;
@@ -52764,8 +53067,8 @@ ROZVADEC SDZ7 TTC 1202087831.210;5001-2352;SCHALTAG CZ;Rozvadec SDZ7 TTc 1202087
 4000-7300;5001-2354;SCHALTAG CZ;PET LINE N-20250157-0100;
 4000-7300;5001-2355;SCHALTAG CZ;PET LINE N-20250158-0100;
 67337.11;5001-2356;Schaltag CZ;Bioengineerin W42413_101AZ716;
-67337.2;5001-2357;Schaltag CZ;Bioengineering W42413_201AZ700;
-67337.12;5001-2358;Schaltag CZ;Bioengineering W42413_201AZ716;
+67337.2;5001-2357;SCHALTAG CZ;Bioengineering W42413_201AZ700;
+67337.12;5001-2358;SCHALTAG CZ;Bioengineering W42413_201AZ716;
 67337.3;5001-2359;Schaltag CZ;Bioengineering W42413_501AZ700;
 67337.13;5001-2360;Schaltag CZ;Bioengineering W42413_501AZ716;
 ROZVADEC SDZ8 TTC 1202085016.80;5001-2361;SCHALTAG CZ;Rozvadec SDZ8 TTc 1202085016.80;
@@ -52788,7 +53091,7 @@ ROZVADEC SDZ5 TTC 1202096971.60;5001-2385;SCHALTAG CZ;Rozvadec SDZ5 TTc 12020969
 67447.2;5001-2387;Schaltag CZ;Bioengineering W42528_1AZ716;
 141443;5001-2388;Schaltag CZ;5,0m RS 232 Kabel Für CTI, Steckverbindu;
 5005449;5001-2389;Schaltag CZ;10m Interlock-Kabel 25BU-frei 2pin;
-5005665;5001-2390;Schaltag CZ;11,0m HV Kabel 10mm? ARQ - free End;
+5005665;5001-2390;SCHALTAG CZ;11,0m HV Kabel 10mm? ARQ - free End;
 ELION ZMÌNA;5001-2391;Schaltag CZ;ELIOS N-20250162-0100;
 ELION ZMÌNA;5001-2392;Schaltag CZ;ELIOS N-20250161-0100;
 5008317;5001-2393;Schaltag CZ;Beschriftungsmaterial 5008317;
@@ -52891,6 +53194,18 @@ ROZVADEC SDZ5 TTC 1202107258.120;5001-2502;SCHALTAG CZ;Rozvadec SDZ5 TTc 1202107
 ROZVADEC SDZ5 TTC 1202121827.10;5001-2503;SCHALTAG CZ;Rozvadec SDZ5 TTc 1202121827.10;
 4200-2000;5001-2504;SCHALTAG CZ;ELION N-20250202-0100;
 1750-250;5001-2505;SCHALTAG CZ;ELION N-20250183-0100;
+4000-7300;5001-2506;SCHALTAG CZ;PET LINE N-20250215-0100;
+ROZVADEC SDZ5 TTC 1202111261.60;5001-2511;SCHALTAG CZ;Rozvadec SDZ5 TTc 1202111261.60;
+5009579;5001-2512;Schaltag CZ;Beschriftungsmaterial 5009579;
+5009576;5001-2513;Schaltag CZ;E-Komponenten Extern 5009576;
+5009576;5001-2514;Schaltag CZ;E-Komponenten Extern 5009576 - Kabely;
+CABINET WAB 262985;5001-2515;SCHALTAG CZ;Cabinet WAB 262985;
+ROZVADEC SDZ5 TTC 1202113672.110;5001-2521;SCHALTAG CZ;Rozvadec SDZ5 TTc 1202113672.110;
+ROZVADEC SDZ7 TTC 1202094592.70;5001-2522;SCHALTAG CZ;Rozvadec SDZ7 TTc 1202094592.70;
+25S0100164.020;5001-2523;SCHALTAG CZ;Maillefer Line Control 9552129E.0;
+11343429;5001-2524;SCHALTAG CZ;KKO: Robofil 11343429;
+ROZVADEC SDZ7 TTC 1202096634.60;5001-2525;SCHALTAG CZ;Rozvadec SDZ7 TTc 1202096634.60;
+2378830;5001-2526;SCHALTAG CZ;Oerlikon_Zeus_MMC_small+el.mod-2378830;
 Kabel W151_X11;5001-3001;Schaltag;Kabel W151_X11;
 Kabel W151_X12;5001-3002;Schaltag;Kabel W151_X12;
 Aksa;5001-3003;Schaltag;Kabel - M401;
@@ -53747,6 +54062,18 @@ PET LINE N-20250174-0100-KKO 7;5003-0842;Schaltag;PET LINE N-20250174-0100-KKO 7
 PET LINE N-20250174-0100-KKO 8;5003-0843;Schaltag;PET LINE N-20250174-0100-KKO 8;
 PET LINE N-20250174-0100-KKO 9;5003-0844;Schaltag;PET LINE N-20250174-0100-KKO 9;
 PET LINE N-20250174-0100-KKO 10;5003-0845;Schaltag;PET LINE N-20250174-0100-KKO 10;
+PET LINE N-20250215-0100-A1+A3;5003-0846;Schaltag;PET LINE N-20250215-0100-A1+A3;
+PET LINE N-20250215-0100-DZL;5003-0847;Schaltag;PET LINE N-20250215-0100-DZL;
+PET LINE N-20250215-0100-SVAZKY;5003-0848;Schaltag;PET LINE N-20250215-0100-SVAZKY;
+PET LINE N-20250215-0100-KKO 2;5003-0849;Schaltag;PET LINE N-20250215-0100-KKO 2;
+PET LINE N-20250215-0100-KKO 3;5003-0850;Schaltag;PET LINE N-20250215-0100-KKO 3;
+PET LINE N-20250215-0100-KKO 4;5003-0851;Schaltag;PET LINE N-20250215-0100-KKO 4;
+PET LINE N-20250215-0100-KKO 5;5003-0852;Schaltag;PET LINE N-20250215-0100-KKO 5;
+PET LINE N-20250215-0100-KKO 6;5003-0853;Schaltag;PET LINE N-20250215-0100-KKO 6;
+PET LINE N-20250215-0100-KKO 7;5003-0854;Schaltag;PET LINE N-20250215-0100-KKO 7;
+PET LINE N-20250215-0100-KKO 8;5003-0855;Schaltag;PET LINE N-20250215-0100-KKO 8;
+PET LINE N-20250215-0100-KKO 9;5003-0856;Schaltag;PET LINE N-20250215-0100-KKO 9;
+PET LINE N-20250215-0100-KKO 10;5003-0857;Schaltag;PET LINE N-20250215-0100-KKO 10;
 VODIÈE A1;5003-9998;SCHALTAG CZ;KKO-Vodièe PET Netstal A1;
 VODIÈE A3;5003-9999;SCHALTAG CZ;KKO-Vodièe PET Netstal A3;
 ;5003179 REV.A;SCHALTAG CZ;Kabel für Stellungsmelder 10m;
@@ -54822,6 +55149,30 @@ ELION N-20250182-0100-KKO 7;5006-1072;Schaltag;ELION N-20250182-0100-KKO 7;
 ELION N-20250182-0100-KKO 8;5006-1073;Schaltag;ELION N-20250182-0100-KKO 8;
 ELION N-20250182-0100-KKO 9;5006-1074;Schaltag;ELION N-20250182-0100-KKO 9;
 ELION N-20250182-0100-KKO 10;5006-1075;Schaltag;ELION N-20250182-0100-KKO 10;
+ELION N-20250202-0100-A1+A3;5006-1076;Schaltag;ELION N-20250202-0100-A1+A3;
+ELION N-20250202-0100-DZL;5006-1077;Schaltag;ELION N-20250202-0100-DZL;
+ELION N-20250202-0100-SVAZKY;5006-1078;Schaltag;ELION N-20250202-0100-SVAZKY;
+ELION N-20250202-0100-KKO 2;5006-1079;Schaltag;ELION N-20250202-0100-KKO 2;
+ELION N-20250202-0100-KKO 3;5006-1080;Schaltag;ELION N-20250202-0100-KKO 3;
+ELION N-20250202-0100-KKO 4;5006-1081;Schaltag;ELION N-20250202-0100-KKO 4;
+ELION N-20250202-0100-KKO 5;5006-1082;Schaltag;ELION N-20250202-0100-KKO 5;
+ELION N-20250202-0100-KKO 6;5006-1083;Schaltag;ELION N-20250202-0100-KKO 6;
+ELION N-20250202-0100-KKO 7;5006-1084;Schaltag;ELION N-20250202-0100-KKO 7;
+ELION N-20250202-0100-KKO 8;5006-1085;Schaltag;ELION N-20250202-0100-KKO 8;
+ELION N-20250202-0100-KKO 9;5006-1086;Schaltag;ELION N-20250202-0100-KKO 9;
+ELION N-20250202-0100-KKO 10;5006-1087;Schaltag;ELION N-20250202-0100-KKO 10;
+ELION N-20250183-0100-A1+A3;5006-1088;Schaltag;ELION N-20250183-0100-A1+A3;
+ELION N-20250183-0100-DZL;5006-1089;Schaltag;ELION N-20250183-0100-DZL;
+ELION N-20250183-0100-SVAZKY;5006-1090;Schaltag;ELION N-20250183-0100-SVAZKY;
+ELION N-20250183-0100-KKO 2;5006-1091;Schaltag;ELION N-20250183-0100-KKO 2;
+ELION N-20250183-0100-KKO 3;5006-1092;Schaltag;ELION N-20250183-0100-KKO 3;
+ELION N-20250183-0100-KKO 4;5006-1093;Schaltag;ELION N-20250183-0100-KKO 4;
+ELION N-20250183-0100-KKO 5;5006-1094;Schaltag;ELION N-20250183-0100-KKO 5;
+ELION N-20250183-0100-KKO 6;5006-1095;Schaltag;ELION N-20250183-0100-KKO 6;
+ELION N-20250183-0100-KKO 7;5006-1096;Schaltag;ELION N-20250183-0100-KKO 7;
+ELION N-20250183-0100-KKO 8;5006-1097;Schaltag;ELION N-20250183-0100-KKO 8;
+ELION N-20250183-0100-KKO 9;5006-1098;Schaltag;ELION N-20250183-0100-KKO 9;
+ELION N-20250183-0100-KKO 10;5006-1099;Schaltag;ELION N-20250183-0100-KKO 10;
 NETSTAL KKO TESTER-DZL;5006-9876;Schaltag;NETSTAL KKO TESTER-DZL;
 KKO-VODICE,KANALY,LISTY ELION NETSTAL A3;5006-9999;SCHALTAG;KKO-Vodièe ELION Netstal;
 KKO-VodiŸe,kan ly,liçty ELIOS Netstal;5007-9999;Schaltag;KKO-Vodièe,kanály,lišty ELIOS Netstal;
@@ -55071,7 +55422,7 @@ PC-025-6;A01-00111111;PCE;Zásuvka CEE 32, 3PNE IP44;
 3691750;A01-00200270;BOSSARD AG;Matice M25x1,5 (PA)  SGY;
 ;A01-00200271;GENERISCH;Matice pruchodky(PA)M32       SGY;
 52006131;A01-00200288;LAPP;Zátka (PA) M25x1,5   SGY;
-50.616PA/SW;A01-00200584;JACOB;Cable Gland BN 22066, BK;
+50.616PA/SW;A01-00200584;JACOB;Cable Gland BN 22066, BK;3692889
 999740526;A01-00200713;HEINIGER;Kabel PUR-PUR 5 x 6mm2 3LNPE;
 EZAEVE028;A01-00201603;BUCHER MOTOR;Stecker EMD Set 26pol. kpl.;EZAEVE028
 SB4420900;A01-00201658;HOELZLE;AMP Steckverbinder Junior Power - 2 poli;
@@ -56371,6 +56722,8 @@ CAG06COM-E18-10S;EVA_1814-0446;CANNON;Konektor BU  4P+E CP GER  CAG06COM;
 029;EXUNI-29;EXTERNI;Polozka na externim skladu 29;
 030;EXUNI-30;EXTERNI;Polozka na externim skladu 30;
 FLEXTRONICS FORECAST;FLEXTRONICS.FCST;;Flextronics forecast;
+HOVAL_FORECAST MATERIALU SDZ;FORECAST_HOVAL;SCHALTAG CZ;Hoval_Forecast materialu SDZ;
+FORECAST_TANNER;FORECAST_TANNER;SCHALTAG CZ;Tanner_Forecast materialu;
 20/019.100.2;GDL_10137474;MAYR;ROBA-Multiswitch;8185591
 CHARGER V2;HER_ CHARGER V2;VARTA;Nabíjeèka baterie Varta V2;
 MW 19MM;HER_45102479;HEREAUS;Clamp Spring;
@@ -56857,6 +57210,7 @@ PET LINE 4000-7300;PET_LINE_6.FCST;SCHALTAG CZ;Forecast 4000-7300 PETLine.FCST;
 ;PET_LINE_WORK.FCST;SCHALTAG CZ;Capacity Forecast kapacit PETLine;
 PET LINE 4000-6000;PET_LINE.FCST;SCHALTAG CZ;4000-6000 PETLine.FCST;
 ;POMOCNA;;Pomocný vrchol pro nabidky 6024;
+PREDPLANOVANÍ MATERIALU WAB;PREDPL.MAT.WAB;SCHALTAG CZ;Predplanovaní materialu WAB;
 ;R901219678;;Mnichov1 +VOKP2 - P077E63V114;
 ;R901219682;;Mnichov1 +VOK - P077E63V123;
 ;R901219704;;Mnichov1 +KKB6 - P077E63V116;
@@ -57769,6 +58123,7 @@ MMI 54 5-10, L=5000;STA_12224531;FUNKWERK;Systemkabel;
 44720007;STA_12384900;SELECTRON;Knotenbaugruppe;44720007
 1C22BJ46800;STA_12422425;ANGELSTAR;Verbindungskabel komplett DATA-RIU (422);1C22BJ46800
 315804;STA_12427661;LEONI;Kabel BETAtrans 2x0.75mm2+S tuerkis;
+;STA_12431680;ERVOCOM;Audio Verstaerker;
 1C117424100;STA_12433014;ANGELSTAR;ETCS Steckkarte ALIM;1C11W800700
 BU_4903829;STA_12433018;ANGELSTAR;INVI Karte;1C11X285300
 BU_4903855;STA_12433033;ANGELSTAR;ETCS Steckkarte;1C11X285400
@@ -57850,6 +58205,7 @@ SG370058P00003;STA_12664158;SECHERON;Transformator messen fuer Uprim;SG370058P00
 ;STA_12748881;Angelstar;50Ohm;1C09S449300
 ;STA_12751054;;HF-Kabel KK Wagen B;
 IC305_5;STA_12768173;INTREXIS;DC/DC Wandler;IC305_5
+;STA_12778771;MOXA;Secure Gateway;
 TN-4908-WV-CT-T;STA_12780882;MOXA;Fast Ethernet Security Router;TN-4908-WV-CT-T
 DTR2000018581;STA_12838969;ALSTOM;STM-KVB rack;DTR2000018581
 A581713;STA_12844789;FAIVELEY;ATESS 4G EN50155, 24...110Vdc;A581713
@@ -57870,6 +58226,7 @@ ZA582090;STA_12889879;FAIVELEY;Crimpkontakt 1.00..1.50mm2;ZA582090
 ;STA_12923351;LETRONA;Mechanischer Aufbau +B90.S1;176938
 ;STA_12925870;LETRONA;Mechanischer Aufbau +B91.Z1;176937
 ;STA_12926355;HYPERTAC;ATESS-Pruefstecker LGN 520 02 00 14;LGN 520 02 00 14
+T59849;STA_12955752;LETRONA AG;Mechanischer Aufbau +x90.S1;
 ;STA_18168505;THALES RAIL;Rechner;3JA-18529-CAAA
 ;STA_18168506;THALES RAIL;Blindabdeckung;22 3904 3005
 ;STA_18168508;THALES RAIL;Anschlussfeld;3JA-18510-CBAA
