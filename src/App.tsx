@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Download } from 'lucide-react';
 import type { Article, SearchResult, SearchMode, SearchField, DataSource } from './types';
 import { loadCSV } from './utils/csvParser';
 import { search, getUniqueManufacturers } from './utils/searchEngine';
@@ -66,20 +66,23 @@ function App() {
 
   // Load data on mount or when dataSource changes
   useEffect(() => {
-    if (customArticles) return; // Don't load if using custom data
+    if (customArticles) return;
 
     setIsLoading(true);
     setError(null);
 
-    const filename =
-      dataSource === 'usti' ? 'master-data.csv' : 'master-data-effi.csv';
+    const filenames =
+      dataSource === 'usti' ? ['master-data.csv'] :
+      dataSource === 'effi' ? ['master-data-effi.csv'] :
+      ['master-data.csv', 'master-data-effi.csv'];
 
-    loadCSV(filename)
-      .then((data) => {
-        if (data.length === 0) {
-          setError(`Nepodařilo se načíst data z ${filename}`);
+    Promise.all(filenames.map(f => loadCSV(f)))
+      .then((datasets) => {
+        const merged = datasets.flat();
+        if (merged.length === 0) {
+          setError(`Nepodařilo se načíst data`);
         } else {
-          setArticles(data);
+          setArticles(merged);
         }
       })
       .catch((err) => {
@@ -133,6 +136,25 @@ function App() {
     setSelectedManufacturers([]);
   };
 
+  const handleExportCSV = () => {
+    if (results.length === 0) return;
+
+    const header = 'Typové označení;Artikl;Výrobce;Název;Číslo dílu výrobce;Shoda %';
+    const rows = results.map(r =>
+      [r.typoveOznaceni, r.artikl, r.vyrobce, r.nazev, r.cisloDiluVyrobce, r.score.toFixed(0)]
+        .map(v => `"${String(v).replace(/"/g, '""')}"`)
+        .join(';')
+    );
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `vysledky-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="min-h-screen bg-base text-text p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -155,6 +177,16 @@ function App() {
           />
           <div className="flex flex-wrap items-center gap-3">
             <ExcelImport articles={activeArticles} />
+            {results.length > 0 && (
+              <button
+                onClick={handleExportCSV}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text"
+                title="Exportovat výsledky do CSV"
+              >
+                <Download size={18} />
+                Export CSV
+              </button>
+            )}
             <AdvancedSettings
               onCustomDataLoad={handleCustomDataLoad}
               onClearCustomData={handleClearCustomData}
@@ -217,7 +249,7 @@ function App() {
               <p>
                 {customArticles
                   ? `Vlastní databáze: ${activeArticles.length.toLocaleString('cs-CZ')} záznamů`
-                  : `Databáze ${dataSource === 'usti' ? 'Ústí' : 'Effretikon'}: ${activeArticles.length.toLocaleString('cs-CZ')} záznamů`}
+                  : `Databáze ${dataSource === 'usti' ? 'Ústí' : dataSource === 'effi' ? 'Effretikon' : 'Ústí + Effretikon'}: ${activeArticles.length.toLocaleString('cs-CZ')} záznamů`}
               </p>
               {query && (
                 <p>
