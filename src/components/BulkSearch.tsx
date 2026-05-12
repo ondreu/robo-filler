@@ -18,7 +18,7 @@ function parseLines(raw: string): string[] {
 
 export function BulkSearch({ articles }: BulkSearchProps) {
   const [rawInput, setRawInput] = useState('');
-  const [topN, setTopN] = useState<1 | 3 | 5>(3);
+  const [topN, setTopN] = useState<3 | 6 | 9>(3);
   const [bulkResults, setBulkResults] = useState<BulkQueryResult[]>([]);
   const [selections, setSelections] = useState<Record<number, SearchResult | null>>({});
   const [isSearching, setIsSearching] = useState(false);
@@ -54,7 +54,6 @@ export function BulkSearch({ articles }: BulkSearchProps) {
   };
 
   const getGridCols = () => {
-    if (topN === 1) return 'grid-cols-1';
     if (topN === 3) return 'grid-cols-1 md:grid-cols-3';
     return 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3';
   };
@@ -85,7 +84,7 @@ export function BulkSearch({ articles }: BulkSearchProps) {
           <div className="flex items-center gap-3">
             <span className="text-subtext1 text-sm">Počet shod na výraz:</span>
             <div className="flex bg-surface0 rounded-xl p-1 gap-1">
-              {([1, 3, 5] as const).map(n => (
+              {([3, 6, 9] as const).map(n => (
                 <button
                   key={n}
                   onClick={() => setTopN(n)}
