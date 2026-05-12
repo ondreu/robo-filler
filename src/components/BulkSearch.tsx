@@ -232,7 +232,7 @@ export function BulkSearch({ articles }: BulkSearchProps) {
                       {canShowMore && (
                         <button
                           onClick={() => handleShowMore(rowIndex)}
-                          className="flex-shrink-0 md:w-16 flex items-center justify-center
+                          className="flex-shrink-0 md:w-8 flex items-center justify-center
                             bg-surface0 hover:bg-surface1 text-mauve font-bold text-3xl
                             rounded-2xl border-2 border-surface2 hover:border-mauve
                             transition-all cursor-pointer py-4 md:py-0 shadow"
