@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import type { Article } from '../types';
+import type { Article, BulkQueryResult, SearchResult } from '../types';
 import { search } from './searchEngine';
 
 interface ExcelRow {
@@ -110,6 +110,29 @@ function s2ab(s: string): ArrayBuffer {
     view[i] = s.charCodeAt(i) & 0xff;
   }
   return buf;
+}
+
+export function exportBulkCSV(
+  results: BulkQueryResult[],
+  selections: Record<number, SearchResult | null>
+): void {
+  const header = 'Vstup;Artikl;Typové označení;Název';
+  const rows = results.map((r, i) => {
+    const sel = selections[i];
+    return [r.query, sel?.artikl ?? '', sel?.typoveOznaceni ?? '', sel?.nazev ?? '']
+      .map(v => `"${String(v).replace(/"/g, '""')}"`)
+      .join(';');
+  });
+  const csv = '﻿' + [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `hromadne-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 export function downloadExcel(blob: Blob, originalFilename: string): void {

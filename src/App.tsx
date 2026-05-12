@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Loader2, AlertCircle, Download } from 'lucide-react';
-import type { Article, SearchResult, SearchMode, SearchField, DataSource } from './types';
+import type { Article, SearchResult, SearchMode, SearchField, DataSource, AppMode } from './types';
 import { loadCSV } from './utils/csvParser';
 import { search, getUniqueManufacturers } from './utils/searchEngine';
 import { SearchBar } from './components/SearchBar';
@@ -9,6 +9,7 @@ import { FilterPanel } from './components/FilterPanel';
 import { DataSourceToggle } from './components/DataSourceToggle';
 import { ExcelImport } from './components/ExcelImport';
 import { AdvancedSettings } from './components/AdvancedSettings';
+import { BulkSearch } from './components/BulkSearch';
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -47,6 +48,9 @@ function App() {
   // Results state
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  // App mode (single / bulk)
+  const [appMode, setAppMode] = useState<AppMode>('single');
 
   // Debounced query for search
   const debouncedQuery = useDebounce(query, 300);
@@ -168,6 +172,30 @@ function App() {
           </p>
         </header>
 
+        {/* Mode tabs */}
+        <div className="flex bg-surface0 rounded-2xl p-1 gap-1 w-fit">
+          <button
+            onClick={() => setAppMode('single')}
+            className={`px-5 py-2 rounded-xl font-medium transition-all ${
+              appMode === 'single'
+                ? 'bg-mauve text-crust shadow-lg'
+                : 'text-subtext1 hover:text-text'
+            }`}
+          >
+            Vyhledávání
+          </button>
+          <button
+            onClick={() => setAppMode('bulk')}
+            className={`px-5 py-2 rounded-xl font-medium transition-all ${
+              appMode === 'bulk'
+                ? 'bg-mauve text-crust shadow-lg'
+                : 'text-subtext1 hover:text-text'
+            }`}
+          >
+            Hromadné
+          </button>
+        </div>
+
         {/* Data source toggle and advanced settings */}
         <div className="flex flex-wrap items-center justify-between gap-4 bg-mantle rounded-2xl p-4">
           <DataSourceToggle
@@ -214,104 +242,112 @@ function App() {
         {/* Main content */}
         {!isLoading && !error && activeArticles.length > 0 && (
           <>
-            {/* Search bar */}
-            <div className="bg-mantle rounded-2xl p-6">
-              <SearchBar
-                query={query}
-                onQueryChange={setQuery}
-                mode={mode}
-                onModeChange={setMode}
-                field={field}
-                onFieldChange={setField}
-                maxResults={maxResults}
-                onMaxResultsChange={setMaxResults}
-              />
-            </div>
-
-            {/* Filters */}
-            {manufacturers.length > 0 && (
-              <div className="flex flex-wrap items-center gap-3">
-                <FilterPanel
-                  manufacturers={manufacturers}
-                  selectedManufacturers={selectedManufacturers}
-                  onSelectionChange={setSelectedManufacturers}
-                />
-                {selectedManufacturers.length > 0 && (
-                  <span className="text-sm text-subtext1">
-                    Filtrováno: {selectedManufacturers.join(', ')}
-                  </span>
-                )}
-              </div>
+            {appMode === 'bulk' && (
+              <BulkSearch articles={activeArticles} />
             )}
 
-            {/* Results info */}
-            <div className="flex items-center justify-between text-sm text-subtext1">
-              <p>
-                {customArticles
-                  ? `Vlastní databáze: ${activeArticles.length.toLocaleString('cs-CZ')} záznamů`
-                  : `Databáze ${dataSource === 'usti' ? 'Ústí' : dataSource === 'effi' ? 'Effretikon' : 'Ústí + Effretikon'}: ${activeArticles.length.toLocaleString('cs-CZ')} záznamů`}
-              </p>
-              {query && (
-                <p>
-                  {isSearching ? (
-                    <span className="flex items-center gap-2">
-                      <Loader2 className="animate-spin" size={16} />
-                      Vyhledávám...
-                    </span>
-                  ) : (
-                    `Nalezeno ${results.length} výsledků`
-                  )}
-                </p>
-              )}
-            </div>
-
-            {/* Results */}
-            {query && !isSearching && (
-              <div className="space-y-4">
-                {results.length === 0 ? (
-                  <div className="bg-mantle rounded-2xl p-8 text-center">
-                    <p className="text-overlay1 text-lg">
-                      Žádné výsledky nenalezeny
-                    </p>
-                    <p className="text-overlay0 text-sm mt-2">
-                      Zkuste změnit režim vyhledávání nebo použít jiný výraz
-                    </p>
-                  </div>
-                ) : (
-                  results.map((result, index) => (
-                    <ResultCard key={`${result.artikl}-${index}`} result={result} />
-                  ))
-                )}
-              </div>
-            )}
-
-            {/* Welcome message */}
-            {!query && (
-              <div className="bg-mantle rounded-2xl p-8 text-center space-y-4">
-                <p className="text-subtext1 text-lg">
-                  Zadejte hledaný výraz pro zahájení vyhledávání
-                </p>
-                <div className="grid md:grid-cols-3 gap-4 text-left">
-                  <div className="bg-surface0 rounded-xl p-4">
-                    <h3 className="text-mauve font-semibold mb-2">Fuzzy Search</h3>
-                    <p className="text-sm text-subtext0">
-                      Hledá podobné shody s tolerancí překlépnutí a formátování
-                    </p>
-                  </div>
-                  <div className="bg-surface0 rounded-xl p-4">
-                    <h3 className="text-mauve font-semibold mb-2">Wild Card</h3>
-                    <p className="text-sm text-subtext0">
-                      Automaticky hledá výraz kdekoli v textu (*výraz*)
-                    </p>
-                  </div>
-                  <div className="bg-surface0 rounded-xl p-4">
-                    <h3 className="text-mauve font-semibold mb-2">Kombinovaný</h3>
-                    <p className="text-sm text-subtext0">
-                      Nejdříve zkusí Wild Card, pak Fuzzy search
-                    </p>
-                  </div>
+            {appMode === 'single' && (
+              <>
+                {/* Search bar */}
+                <div className="bg-mantle rounded-2xl p-6">
+                  <SearchBar
+                    query={query}
+                    onQueryChange={setQuery}
+                    mode={mode}
+                    onModeChange={setMode}
+                    field={field}
+                    onFieldChange={setField}
+                    maxResults={maxResults}
+                    onMaxResultsChange={setMaxResults}
+                  />
                 </div>
-              </div>
+
+                {/* Filters */}
+                {manufacturers.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <FilterPanel
+                      manufacturers={manufacturers}
+                      selectedManufacturers={selectedManufacturers}
+                      onSelectionChange={setSelectedManufacturers}
+                    />
+                    {selectedManufacturers.length > 0 && (
+                      <span className="text-sm text-subtext1">
+                        Filtrováno: {selectedManufacturers.join(', ')}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Results info */}
+                <div className="flex items-center justify-between text-sm text-subtext1">
+                  <p>
+                    {customArticles
+                      ? `Vlastní databáze: ${activeArticles.length.toLocaleString('cs-CZ')} záznamů`
+                      : `Databáze ${dataSource === 'usti' ? 'Ústí' : dataSource === 'effi' ? 'Effretikon' : 'Ústí + Effretikon'}: ${activeArticles.length.toLocaleString('cs-CZ')} záznamů`}
+                  </p>
+                  {query && (
+                    <p>
+                      {isSearching ? (
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="animate-spin" size={16} />
+                          Vyhledávám...
+                        </span>
+                      ) : (
+                        `Nalezeno ${results.length} výsledků`
+                      )}
+                    </p>
+                  )}
+                </div>
+
+                {/* Results */}
+                {query && !isSearching && (
+                  <div className="space-y-4">
+                    {results.length === 0 ? (
+                      <div className="bg-mantle rounded-2xl p-8 text-center">
+                        <p className="text-overlay1 text-lg">
+                          Žádné výsledky nenalezeny
+                        </p>
+                        <p className="text-overlay0 text-sm mt-2">
+                          Zkuste změnit režim vyhledávání nebo použít jiný výraz
+                        </p>
+                      </div>
+                    ) : (
+                      results.map((result, index) => (
+                        <ResultCard key={`${result.artikl}-${index}`} result={result} />
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {/* Welcome message */}
+                {!query && (
+                  <div className="bg-mantle rounded-2xl p-8 text-center space-y-4">
+                    <p className="text-subtext1 text-lg">
+                      Zadejte hledaný výraz pro zahájení vyhledávání
+                    </p>
+                    <div className="grid md:grid-cols-3 gap-4 text-left">
+                      <div className="bg-surface0 rounded-xl p-4">
+                        <h3 className="text-mauve font-semibold mb-2">Fuzzy Search</h3>
+                        <p className="text-sm text-subtext0">
+                          Hledá podobné shody s tolerancí překlépnutí a formátování
+                        </p>
+                      </div>
+                      <div className="bg-surface0 rounded-xl p-4">
+                        <h3 className="text-mauve font-semibold mb-2">Wild Card</h3>
+                        <p className="text-sm text-subtext0">
+                          Automaticky hledá výraz kdekoli v textu (*výraz*)
+                        </p>
+                      </div>
+                      <div className="bg-surface0 rounded-xl p-4">
+                        <h3 className="text-mauve font-semibold mb-2">Kombinovaný</h3>
+                        <p className="text-sm text-subtext0">
+                          Nejdříve zkusí Wild Card, pak Fuzzy search
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
