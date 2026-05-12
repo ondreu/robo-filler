@@ -45,7 +45,7 @@ export function SelectableCard({ result, selected, onSelect }: SelectableCardPro
       onClick={onSelect}
       className={`bg-surface0 rounded-2xl p-4 border-l-4 ${getMatchColor()}
         hover:bg-surface1 transition-all cursor-pointer animate-fade-in shadow-lg
-        ${selected ? 'ring-2 ring-mauve' : ''}`}
+        ${selected ? 'ring-2 ring-mauve ring-offset-2 ring-offset-mantle bg-mauve/10 shadow-mauve/20' : ''}`}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2 flex-wrap">
