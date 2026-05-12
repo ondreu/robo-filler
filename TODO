@@ -1,0 +1,8 @@
+## 1. Odstranit citlivost na diakritiku.
+  - vyhledávač by měl ignrovat diakritiku, např.: "Pásek" = "pasek"
+
+## 2. Zlepšit nalezení shod.
+  - momentálně, vyhledávání "Pásek", výsledky:
+    - Distan�n� sloupek 18mm M6 nerez IVECO =40% shoda
+    - Stahovaci pasek 203x4.7mm natur =29% shoda
+  - To je samozřejmě špatně, 2. výsledek obsahuje celé toto slovo a mělo by to najít to.
