@@ -47,6 +47,25 @@ function calculateScore(query: string, target: string): {
     return { score: 98, matchType: 'minimal' };
   }
 
+  // Word-level matching (before full normalization removes spaces)
+  const queryForWords = removeDiacritics(removePrefix(query)).toLowerCase().trim();
+  const targetForWords = removeDiacritics(removePrefix(target)).toLowerCase().trim();
+  const targetWords = targetForWords.split(/[\s,.\-_/\\]+/).filter(Boolean);
+
+  for (const word of targetWords) {
+    if (word === queryForWords) {
+      return { score: 92, matchType: 'minimal' };
+    }
+    if (word.length >= 2 && queryForWords.length >= 2) {
+      if (word.includes(queryForWords) || queryForWords.includes(word)) {
+        const lenRatio = Math.abs(word.length - queryForWords.length) / Math.max(word.length, queryForWords.length);
+        if (lenRatio < 0.3) {
+          return { score: 87, matchType: 'medium' };
+        }
+      }
+    }
+  }
+
   // Check for partial matches (missing beginning or end)
   if (normalizedTarget.includes(normalizedQuery) || normalizedQuery.includes(normalizedTarget)) {
     const lengthDiff = Math.abs(normalizedQuery.length - normalizedTarget.length);
@@ -101,8 +120,8 @@ function wildcardSearch(articles: Article[], query: string, field: SearchField):
   if (!pattern.startsWith('*')) pattern = '*' + pattern;
   if (!pattern.endsWith('*')) pattern = pattern + '*';
 
-  // Create regex that ignores diacritics
-  const regexPattern = pattern
+  // Create regex that ignores diacritics (strip diacritics from query too)
+  const regexPattern = removeDiacritics(pattern)
     .replace(/\*/g, '.*')
     .replace(/\?/g, '.');
 
@@ -147,9 +166,15 @@ function fuzzySearch(articles: Article[], query: string, field: SearchField): Se
     includeMatches: true,
     ignoreLocation: true,
     minMatchCharLength: 2,
+    getFn: (obj: Article, path: string | string[]) => {
+      const pathStr = Array.isArray(path) ? path[0] : path;
+      const value = (obj as unknown as Record<string, unknown>)[pathStr];
+      if (typeof value === 'string') return removeDiacritics(value);
+      return (value ?? '') as string;
+    },
   });
 
-  const fuseResults = fuse.search(query);
+  const fuseResults = fuse.search(removeDiacritics(query));
   const results: SearchResult[] = [];
 
   for (const result of fuseResults) {
