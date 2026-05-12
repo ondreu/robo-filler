@@ -2,12 +2,10 @@ import Fuse from 'fuse.js';
 import type { Article, SearchResult, SearchOptions, SearchField } from '../types';
 import { MANUFACTURER_PREFIXES } from '../types';
 
-// Remove diacritics from string
 function removeDiacritics(str: string): string {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
-// Normalize string for comparison (remove formatting differences and diacritics)
 function normalizeString(str: string): string {
   return removeDiacritics(str)
     .toLowerCase()
@@ -15,7 +13,6 @@ function normalizeString(str: string): string {
     .trim();
 }
 
-// Remove manufacturer prefixes
 function removePrefix(str: string): string {
   const upper = str.toUpperCase();
   for (const prefix of MANUFACTURER_PREFIXES) {
@@ -26,7 +23,7 @@ function removePrefix(str: string): string {
   return str;
 }
 
-// Calculate similarity score with custom weights
+// Score a single-word query against a target field value
 function calculateScore(query: string, target: string): {
   score: number;
   matchType: SearchResult['matchType'];
@@ -34,12 +31,10 @@ function calculateScore(query: string, target: string): {
   const normalizedQuery = normalizeString(removePrefix(query));
   const normalizedTarget = normalizeString(removePrefix(target));
 
-  // Exact match (including formatting differences and prefixes)
   if (normalizedQuery === normalizedTarget) {
     return { score: 100, matchType: 'exact' };
   }
 
-  // Check for missing leading zeros
   const queryWithoutLeadingZeros = normalizedQuery.replace(/^0+/, '');
   const targetWithoutLeadingZeros = normalizedTarget.replace(/^0+/, '');
 
@@ -66,7 +61,6 @@ function calculateScore(query: string, target: string): {
     }
   }
 
-  // Check for partial matches (missing beginning or end)
   if (normalizedTarget.includes(normalizedQuery) || normalizedQuery.includes(normalizedTarget)) {
     const lengthDiff = Math.abs(normalizedQuery.length - normalizedTarget.length);
     const lengthRatio = lengthDiff / Math.max(normalizedQuery.length, normalizedTarget.length);
@@ -78,7 +72,6 @@ function calculateScore(query: string, target: string): {
     }
   }
 
-  // Levenshtein-like distance calculation
   const maxLen = Math.max(normalizedQuery.length, normalizedTarget.length);
   let differences = 0;
   let i = 0, j = 0;
@@ -107,25 +100,63 @@ function calculateScore(query: string, target: string): {
   return { score: similarity, matchType };
 }
 
-// Wildcard search
-function wildcardSearch(articles: Article[], query: string, field: SearchField): SearchResult[] {
-  // Auto-add wildcards between words if not already present
-  let pattern = query;
-  if (!pattern.includes('*') && !pattern.includes('?')) {
-    // Split by whitespace and add * between words
-    const words = pattern.trim().split(/\s+/);
-    pattern = words.join('*');
+// Score a query (single or multi-word) against a target field value
+function scoreQuery(query: string, target: string): {
+  score: number;
+  matchType: SearchResult['matchType'];
+} {
+  const words = removeDiacritics(query).toLowerCase().trim().split(/\s+/).filter(w => w.length >= 2);
+
+  if (words.length <= 1) {
+    return calculateScore(query, target);
   }
-  // Add * at beginning and end if not present
-  if (!pattern.startsWith('*')) pattern = '*' + pattern;
-  if (!pattern.endsWith('*')) pattern = pattern + '*';
 
-  // Create regex that ignores diacritics (strip diacritics from query too)
-  const regexPattern = removeDiacritics(pattern)
-    .replace(/\*/g, '.*')
-    .replace(/\?/g, '.');
+  const targetNorm = removeDiacritics(target).toLowerCase();
+  const targetWordCount = targetNorm.split(/\s+/).filter(Boolean).length;
 
-  const regex = new RegExp(regexPattern, 'i');
+  let matchedCount = 0;
+  for (const word of words) {
+    if (targetNorm.includes(word)) matchedCount++;
+  }
+
+  if (matchedCount === 0) {
+    return { score: 0, matchType: 'large' };
+  }
+
+  const matchRatio = matchedCount / words.length;
+
+  if (matchedCount === words.length) {
+    // All words matched — bonus if target is compact (fewer extra words)
+    const extraWords = Math.max(0, targetWordCount - words.length);
+    const score = Math.min(98, 88 + Math.max(0, 8 - extraWords * 2));
+    return { score, matchType: 'minimal' };
+  }
+
+  return {
+    score: 40 + matchRatio * 40,
+    matchType: matchRatio >= 0.67 ? 'medium' : 'large',
+  };
+}
+
+// Wildcard search — multi-word uses AND logic, explicit wildcards use single pattern
+function wildcardSearch(articles: Article[], query: string, field: SearchField): SearchResult[] {
+  const hasExplicitWildcard = query.includes('*') || query.includes('?');
+
+  let regexes: RegExp[];
+
+  if (hasExplicitWildcard) {
+    let pattern = query;
+    if (!pattern.startsWith('*')) pattern = '*' + pattern;
+    if (!pattern.endsWith('*')) pattern = pattern + '*';
+    const regexPattern = removeDiacritics(pattern)
+      .replace(/\*/g, '.*')
+      .replace(/\?/g, '.');
+    regexes = [new RegExp(regexPattern, 'i')];
+  } else {
+    // Each word becomes its own regex — ALL must match (AND logic)
+    const words = query.trim().split(/\s+/).filter(Boolean);
+    regexes = words.map(w => new RegExp(removeDiacritics(w), 'i'));
+  }
 
   const results: SearchResult[] = [];
 
@@ -133,12 +164,17 @@ function wildcardSearch(articles: Article[], query: string, field: SearchField):
     const fields = getSearchableFields(article, field);
 
     for (const [fieldName, value] of Object.entries(fields)) {
-      // Test against value without diacritics
-      if (regex.test(removeDiacritics(value))) {
+      const normalizedValue = removeDiacritics(value);
+
+      if (regexes.every(re => re.test(normalizedValue))) {
+        // Score based on actual match quality, not hardcoded 100
+        const queryForScore = hasExplicitWildcard ? query.replace(/[*?]/g, ' ').trim() : query;
+        const { score, matchType } = scoreQuery(queryForScore, value);
+
         results.push({
           ...article,
-          score: 100,
-          matchType: 'wildcard',
+          score,
+          matchType: hasExplicitWildcard ? 'wildcard' : matchType,
           highlightedFields: {
             [fieldName]: highlightMatchWildcard(value, query),
           },
@@ -151,14 +187,50 @@ function wildcardSearch(articles: Article[], query: string, field: SearchField):
   return results;
 }
 
-// Fuzzy search using Fuse.js
+// Fuzzy search — single-word uses Fuse.js, multi-word uses AND matching
 function fuzzySearch(articles: Article[], query: string, field: SearchField): SearchResult[] {
+  const queryWords = removeDiacritics(query).toLowerCase().trim().split(/\s+/).filter(w => w.length >= 2);
+  const isMultiWord = queryWords.length > 1;
+
   const keys = field === 'all'
     ? ['nazev', 'typoveOznaceni', 'vyrobce', 'artikl', 'cisloDiluVyrobce']
     : field === 'typoveOznaceni'
     ? ['typoveOznaceni', 'cisloDiluVyrobce']
     : [field];
 
+  if (isMultiWord) {
+    // Multi-word fuzzy: find articles where all words appear (AND, diacritic-insensitive)
+    // and score them by match quality
+    const results: SearchResult[] = [];
+
+    for (const article of articles) {
+      const fields = getSearchableFields(article, field);
+
+      for (const [fieldName, value] of Object.entries(fields)) {
+        const valueNorm = removeDiacritics(value).toLowerCase();
+        const matchedCount = queryWords.filter(w => valueNorm.includes(w)).length;
+
+        if (matchedCount === 0) continue;
+
+        const { score, matchType } = scoreQuery(query, value);
+        if (score > 0) {
+          results.push({
+            ...article,
+            score,
+            matchType,
+            highlightedFields: {
+              [fieldName]: highlightMatchWildcard(value, query),
+            },
+          });
+          break;
+        }
+      }
+    }
+
+    return results;
+  }
+
+  // Single-word: Fuse.js for typo tolerance
   const fuse = new Fuse(articles, {
     keys,
     threshold: 0.4,
@@ -205,18 +277,23 @@ function fuzzySearch(articles: Article[], query: string, field: SearchField): Se
   return results;
 }
 
-// Combined search (wildcard first, then fuzzy)
+// Combined search — runs both methods and merges, taking best score per article
 function combinedSearch(articles: Article[], query: string, field: SearchField): SearchResult[] {
   const wildcardResults = wildcardSearch(articles, query, field);
+  const fuzzyResults = fuzzySearch(articles, query, field);
 
-  if (wildcardResults.length > 0) {
-    return wildcardResults;
+  const byArtikl = new Map<string, SearchResult>();
+
+  for (const r of [...wildcardResults, ...fuzzyResults]) {
+    const existing = byArtikl.get(r.artikl);
+    if (!existing || r.score > existing.score) {
+      byArtikl.set(r.artikl, r);
+    }
   }
 
-  return fuzzySearch(articles, query, field);
+  return Array.from(byArtikl.values());
 }
 
-// Get searchable fields based on search field selection
 function getSearchableFields(article: Article, field: SearchField): Record<string, string> {
   if (field === 'all') {
     return {
@@ -238,40 +315,34 @@ function getSearchableFields(article: Article, field: SearchField): Record<strin
   }
 }
 
-// Highlight matching parts for wildcard search
 function highlightMatchWildcard(text: string, originalQuery: string): string {
-  // Split query into words (ignore wildcards)
   const queryWords = originalQuery.trim().split(/\s+/).filter(w => w && w !== '*' && w !== '?');
 
   if (queryWords.length === 0) return text;
 
   let result = text;
-  const matches: Array<{start: number; end: number; word: string}> = [];
+  const matches: Array<{start: number; end: number}> = [];
 
-  // Find all matching positions for each query word
   for (const word of queryWords) {
     const wordNormalized = removeDiacritics(word.toLowerCase());
     const textNormalized = removeDiacritics(text.toLowerCase());
 
     let pos = 0;
     while ((pos = textNormalized.indexOf(wordNormalized, pos)) !== -1) {
-      // Check if this position overlaps with existing matches
       const overlaps = matches.some(m =>
         (pos >= m.start && pos < m.end) ||
         (pos + word.length > m.start && pos + word.length <= m.end)
       );
 
       if (!overlaps) {
-        matches.push({start: pos, end: pos + word.length, word});
+        matches.push({ start: pos, end: pos + word.length });
       }
       pos++;
     }
   }
 
-  // Sort matches by position (descending) so we can replace from end to start
   matches.sort((a, b) => b.start - a.start);
 
-  // Apply highlights
   for (const match of matches) {
     const before = result.slice(0, match.start);
     const highlighted = result.slice(match.start, match.end);
@@ -282,25 +353,19 @@ function highlightMatchWildcard(text: string, originalQuery: string): string {
   return result;
 }
 
-// Highlight matching parts for fuzzy search
 function highlightMatch(text: string, query: string): string {
-  // Remove prefixes and normalize for comparison
   const textNoPrefixNorm = normalizeString(removePrefix(text));
   const queryNoPrefixNorm = normalizeString(removePrefix(query));
 
-  // Find the position in normalized text
   const startIndex = textNoPrefixNorm.indexOf(queryNoPrefixNorm);
 
   if (startIndex === -1) {
     return text;
   }
 
-  // Map back to original text positions
-  // We need to find where in the original text the normalized match starts
   const textNormalized = removeDiacritics(text.toLowerCase());
   const queryNormalized = removeDiacritics(query.toLowerCase());
 
-  // Try to find continuous match in text
   let bestMatch = { start: -1, end: -1, score: 0 };
 
   for (let i = 0; i < text.length; i++) {
@@ -312,13 +377,11 @@ function highlightMatch(text: string, query: string): string {
       const tChar = textNormalized[j];
       const qChar = queryNormalized[qIdx];
 
-      // Skip formatting chars in text
       if (/[.,\-_\s]/.test(text[j])) {
         j++;
         continue;
       }
 
-      // Skip formatting chars in query
       if (/[.,\-_\s]/.test(query[qIdx])) {
         qIdx++;
         continue;
@@ -349,7 +412,6 @@ function highlightMatch(text: string, query: string): string {
   return `${before}<mark>${match}</mark>${after}`;
 }
 
-// Main search function
 export function search(
   articles: Article[],
   options: SearchOptions
@@ -372,21 +434,17 @@ export function search(
       break;
   }
 
-  // Filter by manufacturers if specified
   if (options.manufacturers && options.manufacturers.length > 0) {
     results = results.filter(r =>
       options.manufacturers!.includes(r.vyrobce)
     );
   }
 
-  // Sort by score
   results.sort((a, b) => b.score - a.score);
 
-  // Limit results
   return results.slice(0, options.maxResults);
 }
 
-// Get unique manufacturers from articles
 export function getUniqueManufacturers(articles: Article[]): string[] {
   const manufacturers = new Set<string>();
   for (const article of articles) {

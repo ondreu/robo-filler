@@ -87,16 +87,17 @@ export function ResultCard({ result }: ResultCardProps) {
                 : 'bg-red/20 text-red'
             }`}
           >
-            {result.matchType === 'wildcard' ? 'Wild card' : `${result.score.toFixed(0)}% shoda`}
+            {result.matchType === 'wildcard'
+              ? `Wild card • ${result.score.toFixed(0)}%`
+              : `${result.score.toFixed(0)}% shoda`}
           </span>
-          {result.matchType !== 'wildcard' && (
-            <span className="text-xs text-overlay1">
-              {result.matchType === 'exact' && '(Přesná shoda)'}
-              {result.matchType === 'minimal' && '(Minimální rozdíl)'}
-              {result.matchType === 'medium' && '(Střední rozdíl)'}
-              {result.matchType === 'large' && '(Velký rozdíl)'}
-            </span>
-          )}
+          <span className="text-xs text-overlay1">
+            {result.matchType === 'exact' && '(Přesná shoda)'}
+            {result.matchType === 'minimal' && '(Minimální rozdíl)'}
+            {result.matchType === 'medium' && '(Střední rozdíl)'}
+            {result.matchType === 'large' && '(Velký rozdíl)'}
+            {result.matchType === 'wildcard' && '(Wildcard shoda)'}
+          </span>
         </div>
         <span className="text-xs text-subtext0 font-medium px-3 py-1 bg-surface2 rounded-xl">
           {result.vyrobce}

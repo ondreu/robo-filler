@@ -15,7 +15,7 @@ export function DataSourceToggle({
   return (
     <div className="flex items-center gap-3">
       <span className="text-subtext1 text-sm font-medium">Databáze:</span>
-      <Tooltip content="Přepínejte mezi databázemi Ústí a Effretikon" />
+      <Tooltip content="Přepínejte mezi databázemi Ústí, Effretikon nebo oběma najednou" />
       <div className="flex bg-surface0 rounded-2xl p-1 shadow-inner">
         <button
           onClick={() => onDataSourceChange('usti')}
@@ -38,6 +38,17 @@ export function DataSourceToggle({
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           Effretikon
+        </button>
+        <button
+          onClick={() => onDataSourceChange('both')}
+          disabled={isLoading}
+          className={`px-6 py-2 rounded-xl font-medium transition-all ${
+            dataSource === 'both'
+              ? 'bg-mauve text-crust shadow-lg'
+              : 'text-subtext1 hover:text-text'
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
+        >
+          Obě
         </button>
       </div>
     </div>

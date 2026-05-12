@@ -8,7 +8,7 @@ export interface Article {
 
 export type SearchMode = 'fuzzy' | 'wildcard' | 'combined';
 export type SearchField = 'all' | 'nazev' | 'typoveOznaceni' | 'vyrobce' | 'artikl';
-export type DataSource = 'usti' | 'effi';
+export type DataSource = 'usti' | 'effi' | 'both';
 
 export interface SearchResult extends Article {
   score: number;
