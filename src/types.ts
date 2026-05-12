@@ -30,6 +30,13 @@ export interface SearchOptions {
   manufacturers?: string[];
 }
 
+export interface BulkQueryResult {
+  query: string;
+  results: SearchResult[];
+}
+
+export type AppMode = 'single' | 'bulk';
+
 export const MANUFACTURER_PREFIXES = [
   'RIT.',
   'SE.',
