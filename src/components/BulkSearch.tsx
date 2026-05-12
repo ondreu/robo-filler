@@ -16,32 +16,44 @@ function parseLines(raw: string): string[] {
     .filter(l => l.length > 0);
 }
 
+const COLS = 3;
+
 export function BulkSearch({ articles }: BulkSearchProps) {
   const [rawInput, setRawInput] = useState('');
   const [topN, setTopN] = useState<3 | 6 | 9>(3);
   const [bulkResults, setBulkResults] = useState<BulkQueryResult[]>([]);
   const [selections, setSelections] = useState<Record<number, SearchResult | null>>({});
+  const [perRowVisible, setPerRowVisible] = useState<Record<number, number>>({});
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
   const queries = parseLines(rawInput);
   const selectionCount = Object.values(selections).filter(v => v != null).length;
 
+  const getVisible = (rowIndex: number) => perRowVisible[rowIndex] ?? topN;
+
   const handleSearch = () => {
     if (queries.length === 0 || articles.length === 0) return;
     setIsSearching(true);
     setSelections({});
+    setPerRowVisible({});
     setHasSearched(false);
 
     setTimeout(() => {
+      // Fetch extra buffer so "+" can reveal more without re-searching
+      const fetchCount = topN * 4;
       const results: BulkQueryResult[] = queries.map(query => ({
         query,
-        results: search(articles, { mode: 'combined', field: 'all', query, maxResults: topN }),
+        results: search(articles, { mode: 'combined', field: 'all', query, maxResults: fetchCount }),
       }));
       setBulkResults(results);
       setHasSearched(true);
       setIsSearching(false);
     }, 0);
+  };
+
+  const handleShowMore = (rowIndex: number) => {
+    setPerRowVisible(prev => ({ ...prev, [rowIndex]: getVisible(rowIndex) + 3 }));
   };
 
   const handleSelect = (rowIndex: number, result: SearchResult) => {
@@ -51,11 +63,6 @@ export function BulkSearch({ articles }: BulkSearchProps) {
       }
       return { ...prev, [rowIndex]: result };
     });
-  };
-
-  const getGridCols = () => {
-    if (topN === 3) return 'grid-cols-1 md:grid-cols-3';
-    return 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3';
   };
 
   return (
@@ -150,6 +157,16 @@ export function BulkSearch({ articles }: BulkSearchProps) {
           {/* Row results */}
           {bulkResults.map((row, rowIndex) => {
             const isRowSelected = selections[rowIndex] != null;
+            const visible = row.results.slice(0, getVisible(rowIndex));
+            const canShowMore = getVisible(rowIndex) < row.results.length;
+
+            // Split into full rows and last row so "+" sits inline with last row
+            const lastRowStart = visible.length > 0
+              ? Math.floor((visible.length - 1) / COLS) * COLS
+              : 0;
+            const prevRowCards = visible.slice(0, lastRowStart);
+            const lastRowCards = visible.slice(lastRowStart);
+
             return (
               <div
                 key={rowIndex}
@@ -186,15 +203,45 @@ export function BulkSearch({ articles }: BulkSearchProps) {
                     <p className="text-overlay1 text-sm">Žádné výsledky</p>
                   </div>
                 ) : (
-                  <div className={`grid gap-3 ${getGridCols()}`}>
-                    {row.results.map((result, cardIndex) => (
-                      <SelectableCard
-                        key={`${result.artikl}-${cardIndex}`}
-                        result={result}
-                        selected={selections[rowIndex]?.artikl === result.artikl}
-                        onSelect={() => handleSelect(rowIndex, result)}
-                      />
-                    ))}
+                  <div className="space-y-3">
+                    {/* Full rows (all except last) */}
+                    {prevRowCards.length > 0 && (
+                      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                        {prevRowCards.map((result, cardIndex) => (
+                          <SelectableCard
+                            key={`${result.artikl}-${cardIndex}`}
+                            result={result}
+                            selected={selections[rowIndex]?.artikl === result.artikl}
+                            onSelect={() => handleSelect(rowIndex, result)}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Last row + optional "+" button */}
+                    <div className="flex flex-col md:flex-row gap-3 items-stretch">
+                      {lastRowCards.map((result, i) => (
+                        <div key={`${result.artikl}-last-${i}`} className="flex-1 min-w-0">
+                          <SelectableCard
+                            result={result}
+                            selected={selections[rowIndex]?.artikl === result.artikl}
+                            onSelect={() => handleSelect(rowIndex, result)}
+                          />
+                        </div>
+                      ))}
+                      {canShowMore && (
+                        <button
+                          onClick={() => handleShowMore(rowIndex)}
+                          className="flex-shrink-0 md:w-16 flex items-center justify-center
+                            bg-surface0 hover:bg-surface1 text-mauve font-bold text-3xl
+                            rounded-2xl border-2 border-surface2 hover:border-mauve
+                            transition-all cursor-pointer py-4 md:py-0 shadow"
+                          title="Zobrazit další 3 výsledky"
+                        >
+                          +
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
