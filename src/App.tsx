@@ -48,6 +48,7 @@ function App() {
   // Results state
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [displayedCount, setDisplayedCount] = useState(10);
 
   // App mode (single / bulk)
   const [appMode, setAppMode] = useState<AppMode>('single');
@@ -96,6 +97,11 @@ function App() {
         setIsLoading(false);
       });
   }, [dataSource, customArticles]);
+
+  // Reset displayed count on new query
+  useEffect(() => {
+    setDisplayedCount(10);
+  }, [debouncedQuery]);
 
   // Perform search when query or parameters change
   useEffect(() => {
@@ -182,7 +188,7 @@ function App() {
                 : 'text-subtext1 hover:text-text'
             }`}
           >
-            Vyhledávání
+            Jednotlivé
           </button>
           <button
             onClick={() => setAppMode('bulk')}
@@ -311,11 +317,36 @@ function App() {
                           Zkuste změnit režim vyhledávání nebo použít jiný výraz
                         </p>
                       </div>
-                    ) : (
-                      results.map((result, index) => (
-                        <ResultCard key={`${result.artikl}-${index}`} result={result} />
-                      ))
-                    )}
+                    ) : (() => {
+                      const visible = results.slice(0, displayedCount);
+                      const canShowMore = displayedCount < results.length;
+                      return (
+                        <>
+                          {visible.slice(0, canShowMore ? -1 : undefined).map((result, index) => (
+                            <ResultCard key={`${result.artikl}-${index}`} result={result} />
+                          ))}
+                          {canShowMore && (
+                            <div className="flex flex-col md:flex-row gap-4 items-stretch">
+                              <div className="flex-1">
+                                <ResultCard
+                                  result={visible[visible.length - 1]}
+                                />
+                              </div>
+                              <button
+                                onClick={() => setDisplayedCount(c => c + 3)}
+                                className="flex items-center justify-center px-6 py-3 md:py-0 rounded-2xl
+                                  bg-surface0 hover:bg-surface1 text-mauve font-bold text-2xl
+                                  transition-all shadow border-2 border-surface2 hover:border-mauve
+                                  min-w-[56px]"
+                                title="Zobrazit další 3 výsledky"
+                              >
+                                +
+                              </button>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
 

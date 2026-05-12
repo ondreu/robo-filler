@@ -153,8 +153,10 @@ export function BulkSearch({ articles }: BulkSearchProps) {
             return (
               <div
                 key={rowIndex}
-                className={`bg-mantle rounded-2xl p-4 border-l-4 transition-colors ${
-                  isRowSelected ? 'border-l-mauve' : 'border-l-surface2'
+                className={`rounded-2xl p-4 border-l-4 transition-colors ${
+                  isRowSelected
+                    ? 'bg-mauve/5 border-l-mauve border border-mauve/30'
+                    : 'bg-mantle border-l-surface2'
                 }`}
               >
                 {/* Row header */}
