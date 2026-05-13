@@ -1,8 +1,0 @@
-## 1. Přejmenovat záložky "Vyhledávání" a "Hromadné" na "Jednotlivé a "Hromadné"
-
-## 2. Za karty výsledků přidat tlačítko "+" pro dynamické přidání počtu výsledků.
-    - bude na posledním řádku výsledků (takže nepřidá další řádek) v desktop zobrazení
-        - v úzkém mobilním zobrazení bude pod posledním výsledkem
-    - odkryje vždy další 3 výsledky 
-
-## 3. Zvýraznění zvolených karet v hromadném vyhledávání by mělo být o trošičku výraznější
