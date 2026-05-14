@@ -105,10 +105,15 @@ function scoreQuery(query: string, target: string): {
   score: number;
   matchType: SearchResult['matchType'];
 } {
+  const wholeScore = calculateScore(query, target);
+  if (wholeScore.score >= 95) {
+    return wholeScore;
+  }
+
   const words = removeDiacritics(query).toLowerCase().trim().split(/\s+/).filter(w => w.length >= 2);
 
   if (words.length <= 1) {
-    return calculateScore(query, target);
+    return wholeScore;
   }
 
   const targetNorm = removeDiacritics(target).toLowerCase();
