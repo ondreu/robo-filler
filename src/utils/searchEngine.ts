@@ -344,15 +344,16 @@ function highlightMatchWildcard(text: string, originalQuery: string): string {
   for (const word of sortedWords) {
     const wordNormalized = removeDiacritics(word.toLowerCase());
 
+    const wordLen = wordNormalized.length;
     let pos = 0;
     while ((pos = textNormalized.indexOf(wordNormalized, pos)) !== -1) {
       // Standard interval overlap: [pos, pos+len) overlaps [m.start, m.end) iff pos < m.end && pos+len > m.start
       const overlaps = matches.some(m =>
-        pos < m.end && pos + word.length > m.start
+        pos < m.end && pos + wordLen > m.start
       );
 
       if (!overlaps) {
-        matches.push({ start: pos, end: pos + word.length });
+        matches.push({ start: pos, end: pos + wordLen });
       }
       pos++;
     }
