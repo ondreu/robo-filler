@@ -325,18 +325,30 @@ function highlightMatchWildcard(text: string, originalQuery: string): string {
 
   if (queryWords.length === 0) return text;
 
+  const textNormalized = removeDiacritics(text.toLowerCase());
+
+  // Sort words by first occurrence in text so left-side matches get priority and
+  // adjacent spans (e.g. "40"→[1,3) + "000"→[3,6)) don't block each other.
+  const sortedWords = [...queryWords].sort((a, b) => {
+    const aPos = textNormalized.indexOf(removeDiacritics(a.toLowerCase()));
+    const bPos = textNormalized.indexOf(removeDiacritics(b.toLowerCase()));
+    if (aPos === -1 && bPos === -1) return b.length - a.length;
+    if (aPos === -1) return 1;
+    if (bPos === -1) return -1;
+    return aPos !== bPos ? aPos - bPos : b.length - a.length;
+  });
+
   let result = text;
   const matches: Array<{start: number; end: number}> = [];
 
-  for (const word of queryWords) {
+  for (const word of sortedWords) {
     const wordNormalized = removeDiacritics(word.toLowerCase());
-    const textNormalized = removeDiacritics(text.toLowerCase());
 
     let pos = 0;
     while ((pos = textNormalized.indexOf(wordNormalized, pos)) !== -1) {
+      // Standard interval overlap: [pos, pos+len) overlaps [m.start, m.end) iff pos < m.end && pos+len > m.start
       const overlaps = matches.some(m =>
-        (pos >= m.start && pos < m.end) ||
-        (pos + word.length > m.start && pos + word.length <= m.end)
+        pos < m.end && pos + word.length > m.start
       );
 
       if (!overlaps) {
