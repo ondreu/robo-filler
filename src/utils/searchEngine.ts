@@ -39,7 +39,7 @@ function calculateScore(query: string, target: string): {
   const targetWithoutLeadingZeros = normalizedTarget.replace(/^0+/, '');
 
   if (queryWithoutLeadingZeros === targetWithoutLeadingZeros) {
-    return { score: 98, matchType: 'minimal' };
+    return { score: 100, matchType: 'exact' };
   }
 
   // Word-level matching (before full normalization removes spaces)
