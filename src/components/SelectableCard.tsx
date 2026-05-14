@@ -1,4 +1,5 @@
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Copy } from 'lucide-react';
+import { useState } from 'react';
 import type { SearchResult } from '../types';
 
 interface SelectableCardProps {
@@ -8,6 +9,19 @@ interface SelectableCardProps {
 }
 
 export function SelectableCard({ result, selected, onSelect }: SelectableCardProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(result.artikl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+    }
+  };
+
   const getMatchColor = () => {
     switch (result.matchType) {
       case 'wildcard': return 'border-l-purple-500';
@@ -72,7 +86,27 @@ export function SelectableCard({ result, selected, onSelect }: SelectableCardPro
 
       <div className="space-y-1.5">
         {renderField('Název', result.nazev, result.highlightedFields.nazev)}
-        {renderField('Artikl', result.artikl, result.highlightedFields.artikl)}
+        <div className="flex items-start gap-2">
+          <span className="text-subtext0 text-xs min-w-[120px]">Artikl:</span>
+          <div className="flex-1 flex items-center gap-1.5">
+            <span
+              className="text-text text-sm font-medium"
+              dangerouslySetInnerHTML={{ __html: result.highlightedFields.artikl || result.artikl }}
+            />
+            <button
+              onClick={handleCopy}
+              className="text-overlay1 hover:text-mauve transition-colors flex-shrink-0"
+              aria-label="Kopírovat artikl"
+              title="Kopírovat artikl"
+            >
+              {copied ? (
+                <CheckCircle size={13} className="text-green" />
+              ) : (
+                <Copy size={13} />
+              )}
+            </button>
+          </div>
+        </div>
         {renderField('Typové označení', result.typoveOznaceni, result.highlightedFields.typoveOznaceni)}
         {result.cisloDiluVyrobce && renderField(
           'Číslo dílu výrobce',
