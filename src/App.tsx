@@ -35,6 +35,7 @@ function App() {
   const [customArticles, setCustomArticles] = useState<Article[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dbLastModified, setDbLastModified] = useState<Date | null>(null);
 
   // Search state
   const [query, setQuery] = useState('');
@@ -82,12 +83,14 @@ function App() {
       ['master-data.csv', 'master-data-effi.csv'];
 
     Promise.all(filenames.map(f => loadCSV(f)))
-      .then((datasets) => {
-        const merged = datasets.flat();
+      .then((results) => {
+        const merged = results.flatMap(r => r.articles);
         if (merged.length === 0) {
           setError(`Nepodařilo se načíst data`);
         } else {
           setArticles(merged);
+          // Use lastModified from master-data.csv (usti source), which is always first
+          setDbLastModified(results[0].lastModified);
         }
       })
       .catch((err) => {
@@ -290,6 +293,11 @@ function App() {
                     {customArticles
                       ? `Vlastní databáze: ${activeArticles.length.toLocaleString('cs-CZ')} záznamů`
                       : `Databáze ${dataSource === 'usti' ? 'Ústí' : dataSource === 'effi' ? 'Effretikon' : 'Ústí + Effretikon'}: ${activeArticles.length.toLocaleString('cs-CZ')} záznamů`}
+                    {!customArticles && dbLastModified && (
+                      <span className="ml-2 text-overlay1">
+                        • aktualizováno {dbLastModified.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' })}
+                      </span>
+                    )}
                   </p>
                   {query && (
                     <p>

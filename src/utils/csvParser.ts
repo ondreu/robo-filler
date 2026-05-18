@@ -29,18 +29,24 @@ export function parseCSV(csvContent: string): Article[] {
   return articles;
 }
 
-export async function loadCSV(filename: string): Promise<Article[]> {
+export interface CSVLoadResult {
+  articles: Article[];
+  lastModified: Date | null;
+}
+
+export async function loadCSV(filename: string): Promise<CSVLoadResult> {
   try {
-    // Use BASE_URL from Vite to handle both dev and production paths
     const baseUrl = import.meta.env.BASE_URL;
     const response = await fetch(`${baseUrl}${filename}`);
     if (!response.ok) {
       throw new Error(`Failed to load ${filename}`);
     }
+    const lastModifiedHeader = response.headers.get('Last-Modified');
+    const lastModified = lastModifiedHeader ? new Date(lastModifiedHeader) : null;
     const text = await response.text();
-    return parseCSV(text);
+    return { articles: parseCSV(text), lastModified };
   } catch (error) {
     console.error('Error loading CSV:', error);
-    return [];
+    return { articles: [], lastModified: null };
   }
 }
