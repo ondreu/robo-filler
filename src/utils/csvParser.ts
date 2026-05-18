@@ -34,6 +34,18 @@ export interface CSVLoadResult {
   lastModified: Date | null;
 }
 
+export async function loadCSVMeta(metaFilename: string): Promise<Date | null> {
+  try {
+    const baseUrl = import.meta.env.BASE_URL;
+    const response = await fetch(`${baseUrl}${metaFilename}`);
+    if (!response.ok) return null;
+    const json = await response.json();
+    return json.lastModified ? new Date(json.lastModified) : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function loadCSV(filename: string): Promise<CSVLoadResult> {
   try {
     const baseUrl = import.meta.env.BASE_URL;
@@ -41,10 +53,8 @@ export async function loadCSV(filename: string): Promise<CSVLoadResult> {
     if (!response.ok) {
       throw new Error(`Failed to load ${filename}`);
     }
-    const lastModifiedHeader = response.headers.get('Last-Modified');
-    const lastModified = lastModifiedHeader ? new Date(lastModifiedHeader) : null;
     const text = await response.text();
-    return { articles: parseCSV(text), lastModified };
+    return { articles: parseCSV(text), lastModified: null };
   } catch (error) {
     console.error('Error loading CSV:', error);
     return { articles: [], lastModified: null };

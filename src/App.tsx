@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Loader2, AlertCircle, Download } from 'lucide-react';
 import type { Article, SearchResult, SearchMode, SearchField, DataSource, AppMode } from './types';
-import { loadCSV } from './utils/csvParser';
+import { loadCSV, loadCSVMeta } from './utils/csvParser';
 import { search, getUniqueManufacturers } from './utils/searchEngine';
 import { SearchBar } from './components/SearchBar';
 import { ResultCard } from './components/ResultCard';
@@ -82,15 +82,17 @@ function App() {
       dataSource === 'effi' ? ['master-data-effi.csv'] :
       ['master-data.csv', 'master-data-effi.csv'];
 
-    Promise.all(filenames.map(f => loadCSV(f)))
-      .then((results) => {
+    Promise.all([
+      Promise.all(filenames.map(f => loadCSV(f))),
+      loadCSVMeta('master-data-meta.json'),
+    ])
+      .then(([results, lastModified]) => {
         const merged = results.flatMap(r => r.articles);
         if (merged.length === 0) {
           setError(`Nepodařilo se načíst data`);
         } else {
           setArticles(merged);
-          // Use lastModified from master-data.csv (usti source), which is always first
-          setDbLastModified(results[0].lastModified);
+          setDbLastModified(lastModified);
         }
       })
       .catch((err) => {
