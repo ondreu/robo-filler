@@ -107,21 +107,17 @@ export function parseBomTxt(text: string, articles: Article[]): ImportResult | n
     const poznamka2 = cols[12]?.trim() ?? '';
 
     let popis = '';
-    let origPopis: string | null = null;
     let typoveOznaceni = '';
-    let origTypoveOznaceni: string | null = null;
 
     if (type === 'L' && artikl) {
       const found = articleMap.get(artikl);
       if (found) {
         popis = found.nazev;
-        origPopis = found.nazev;
         typoveOznaceni = found.typoveOznaceni;
-        origTypoveOznaceni = found.typoveOznaceni;
       }
     }
 
-    return { id: genId(), type, artikl, popis, origPopis, typoveOznaceni, origTypoveOznaceni, mnozstvi, poznamka1, poznamka2 };
+    return { id: genId(), type, artikl, popis, typoveOznaceni, mnozstvi, poznamka1, poznamka2 };
   });
 
   return { header, rows };

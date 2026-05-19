@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { X, Plus, Trash2, Download, FileSpreadsheet, ArrowLeft, GripVertical, RotateCcw } from 'lucide-react';
+import { X, Plus, Trash2, Download, FileSpreadsheet, ArrowLeft, GripVertical } from 'lucide-react';
 import type { Article, BomRow, BomHeader, BulkQueryResult, SearchResult } from '../types';
 import { exportZbomTxt, exportZbomExcel, orderLabel, type ImportResult } from '../utils/bomExport';
 
@@ -48,25 +48,23 @@ let idCounter = 0;
 function genId(): string { return `r${++idCounter}`; }
 
 function emptyLRow(): BomRow {
-  return { id: genId(), type: 'L', artikl: '', popis: '', origPopis: null, typoveOznaceni: '', origTypoveOznaceni: null, mnozstvi: 1, poznamka1: '', poznamka2: '' };
+  return { id: genId(), type: 'L', artikl: '', popis: '', typoveOznaceni: '', mnozstvi: 1, poznamka1: '', poznamka2: '' };
 }
 function emptyTRow(): BomRow {
-  return { id: genId(), type: 'T', artikl: '', popis: '', origPopis: null, typoveOznaceni: '', origTypoveOznaceni: null, mnozstvi: 1, poznamka1: '', poznamka2: '' };
+  return { id: genId(), type: 'T', artikl: '', popis: '', typoveOznaceni: '', mnozstvi: 1, poznamka1: '', poznamka2: '' };
 }
 
-const EDITABLE_COLS = ['artikl', 'popis', 'typoveOznaceni', 'mnozstvi', 'poznamka1', 'poznamka2'] as const;
+// Editable columns only — popis and typoveOznaceni are auto-filled, not pasted
+const EDITABLE_COLS = ['artikl', 'mnozstvi', 'poznamka1', 'poznamka2'] as const;
 type EditableCol = typeof EDITABLE_COLS[number];
 const MAX_ROWS = 2000;
 
 const inputClass = 'w-full px-3 py-2 bg-surface0 text-text rounded-xl border border-surface2 focus:border-mauve focus:outline-none text-sm transition-colors';
-const cellBase = 'w-full px-1.5 py-0.5 bg-transparent text-text rounded focus:bg-surface0 focus:outline-none transition-colors text-xs';
+const cellInput = 'w-full px-1.5 py-0.5 bg-transparent text-text rounded focus:bg-surface0 focus:outline-none focus:ring-1 focus:ring-mauve/50 transition-colors text-xs';
+const cellReadonly = 'px-1.5 py-0.5 text-subtext1 text-xs truncate block w-full select-text';
 
 const thClass = 'px-2 py-2 font-medium border-r border-surface1 last:border-r-0 whitespace-nowrap';
 const tdClass = 'px-1 py-0.5 border-r border-surface1 last:border-r-0';
-
-function isDirty(cur: string, orig: string | null): boolean {
-  return orig !== null && cur !== orig;
-}
 
 function Field({ label, hint, children }: { label: React.ReactNode; hint?: string; children: React.ReactNode }) {
   return (
@@ -81,7 +79,6 @@ function Field({ label, hint, children }: { label: React.ReactNode; hint?: strin
 export function BomWizard({ bulkResults, selections, articles, onClose, importData }: BomWizardProps) {
   const [step, setStep] = useState<1 | 2>(importData ? 2 : 1);
 
-  // Lock body scroll while wizard is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
@@ -103,24 +100,12 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
     return bulkResults.map((r, i) => {
       const sel = selections[i];
       if (sel) {
-        return {
-          id: genId(), type: 'L' as const,
-          artikl: sel.artikl,
-          popis: sel.nazev, origPopis: sel.nazev,
-          typoveOznaceni: sel.typoveOznaceni, origTypoveOznaceni: sel.typoveOznaceni,
-          mnozstvi: 1, poznamka1: '', poznamka2: '',
-        };
+        return { id: genId(), type: 'L' as const, artikl: sel.artikl, popis: sel.nazev, typoveOznaceni: sel.typoveOznaceni, mnozstvi: 1, poznamka1: '', poznamka2: '' };
       }
-      return {
-        id: genId(), type: 'T' as const,
-        artikl: '', popis: '', origPopis: null,
-        typoveOznaceni: '', origTypoveOznaceni: null,
-        mnozstvi: 1, poznamka1: r.query, poznamka2: '',
-      };
+      return { id: genId(), type: 'T' as const, artikl: '', popis: '', typoveOznaceni: '', mnozstvi: 1, poznamka1: r.query, poznamka2: '' };
     });
   });
 
-  // O(1) article lookup map
   const articleMap = useMemo(() => new Map(articles.map(a => [a.artikl, a])), [articles]);
 
   // drag state
@@ -160,17 +145,8 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
       const arr = [...prev];
       const row = arr[idx];
       if (row.type === 'L') {
-        // L → T: move artikl to poznamka1, clear artikl + typoveOznaceni
-        arr[idx] = {
-          ...row,
-          type: 'T',
-          poznamka1: row.artikl || row.poznamka1,
-          artikl: '',
-          typoveOznaceni: '',
-          origTypoveOznaceni: null,
-        };
+        arr[idx] = { ...row, type: 'T', poznamka1: row.artikl || row.poznamka1, artikl: '', typoveOznaceni: '', popis: '' };
       } else {
-        // T → L: just switch type
         arr[idx] = { ...row, type: 'L' };
       }
       return arr;
@@ -183,32 +159,23 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
       return arr;
     }), []);
 
-  const revertCell = useCallback((idx: number, field: 'popis' | 'typoveOznaceni') =>
-    setRows(prev => {
-      const arr = [...prev];
-      const orig = field === 'popis' ? arr[idx].origPopis : arr[idx].origTypoveOznaceni;
-      if (orig !== null) arr[idx] = { ...arr[idx], [field]: orig };
-      return arr;
-    }), []);
-
-  // Auto-fill popis + typoveOznaceni from article DB on artikl blur
-  const handleArtiклBlur = useCallback((idx: number, value: string) => {
-    const trimmed = value.trim();
-    if (!trimmed) return;
-    const found = articleMap.get(trimmed);
-    if (!found) return;
+  // Lookup and fill popis + typoveOznaceni for a single row
+  const applyLookup = useCallback((idx: number, artiklValue: string) => {
+    const found = articleMap.get(artiklValue.trim());
     setRows(prev => {
       const arr = [...prev];
       arr[idx] = {
         ...arr[idx],
-        popis: found.nazev,
-        origPopis: found.nazev,
-        typoveOznaceni: found.typoveOznaceni,
-        origTypoveOznaceni: found.typoveOznaceni,
+        popis: found?.nazev ?? '',
+        typoveOznaceni: found?.typoveOznaceni ?? '',
       };
       return arr;
     });
   }, [articleMap]);
+
+  const handleArtiклBlur = useCallback((idx: number, value: string) => {
+    if (value.trim()) applyLookup(idx, value);
+  }, [applyLookup]);
 
   const handlePaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>, rowIdx: number, colName: EditableCol) => {
     const text = e.clipboardData.getData('text');
@@ -221,24 +188,49 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
 
     setRows(prev => {
       const arr = [...prev];
+      const lookupIndices: number[] = [];
+
       for (let r = 0; r < grid.length; r++) {
         const ri = rowIdx + r;
         while (arr.length <= ri && arr.length < MAX_ROWS) arr.push(emptyLRow());
         if (ri >= arr.length) break;
         const updated = { ...arr[ri] };
+        let artiklChanged = false;
         for (let c = 0; c < grid[r].length; c++) {
           const ci = startCol + c;
           if (ci >= EDITABLE_COLS.length) break;
           const f = EDITABLE_COLS[ci];
           const v = grid[r][c];
-          if (f === 'mnozstvi') (updated as Record<string, unknown>)[f] = parseFloat(v) || 1;
-          else (updated as Record<string, unknown>)[f] = v;
+          if (f === 'mnozstvi') {
+            (updated as Record<string, unknown>)[f] = parseFloat(v) || 1;
+          } else {
+            (updated as Record<string, unknown>)[f] = v;
+            if (f === 'artikl') artiklChanged = true;
+          }
         }
         arr[ri] = updated;
+        if (artiklChanged) lookupIndices.push(ri);
       }
+
+      // Schedule lookups after state update
+      if (lookupIndices.length > 0) {
+        setTimeout(() => {
+          setRows(current => {
+            const next = [...current];
+            for (const ri of lookupIndices) {
+              if (ri < next.length && next[ri].artikl) {
+                const found = articleMap.get(next[ri].artikl.trim());
+                next[ri] = { ...next[ri], popis: found?.nazev ?? '', typoveOznaceni: found?.typoveOznaceni ?? '' };
+              }
+            }
+            return next;
+          });
+        }, 0);
+      }
+
       return arr;
     });
-  }, []);
+  }, [articleMap]);
 
   // ── Step 1: header form ─────────────────────────────────────────────────
   if (step === 1) {
@@ -368,8 +360,8 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
               <th className={`${thClass} w-14 text-center`}>Pořadí</th>
               <th className={`${thClass} w-10 text-center`}>L/T</th>
               <th className={`${thClass}`} style={{ width: 96 }}>Artikl</th>
-              <th className={`${thClass}`} style={{ minWidth: 170 }}>Popis artiklu</th>
-              <th className={`${thClass}`} style={{ minWidth: 130 }}>Typové označení</th>
+              <th className={`${thClass} text-overlay0`} style={{ minWidth: 170 }}>Popis artiklu</th>
+              <th className={`${thClass} text-overlay0`} style={{ minWidth: 130 }}>Typové označení</th>
               <th className={`${thClass}`} style={{ width: 104 }}>Množství</th>
               <th className={`${thClass}`} style={{ minWidth: 150 }}>Poznámka 1</th>
               <th className={`${thClass}`} style={{ minWidth: 130 }}>Poznámka 2</th>
@@ -377,144 +369,111 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => {
-              const popisDirty = isDirty(row.popis, row.origPopis);
-              const typDirty = isDirty(row.typoveOznaceni, row.origTypoveOznaceni);
+            {rows.map((row, i) => (
+              <tr
+                key={row.id}
+                draggable
+                onDragStart={() => handleDragStart(i)}
+                onDragOver={e => handleDragOver(e, i)}
+                onDrop={() => handleDrop(i)}
+                onDragEnd={handleDragEnd}
+                className={`border-t transition-colors ${
+                  dragOverIdx === i
+                    ? 'border-t-2 border-t-mauve bg-mauve/5'
+                    : row.type === 'T'
+                      ? 'border-surface0 bg-yellow/5'
+                      : i % 2 === 0
+                        ? 'border-surface0 bg-base'
+                        : 'border-surface0 bg-mantle/40'
+                } ${dragIdx.current === i ? 'opacity-40' : ''}`}
+              >
+                {/* drag handle */}
+                <td className={`${tdClass} text-center cursor-grab active:cursor-grabbing`}>
+                  <GripVertical size={12} className="text-overlay0 mx-auto" />
+                </td>
 
-              return (
-                <tr
-                  key={row.id}
-                  draggable
-                  onDragStart={() => handleDragStart(i)}
-                  onDragOver={e => handleDragOver(e, i)}
-                  onDrop={() => handleDrop(i)}
-                  onDragEnd={handleDragEnd}
-                  className={`border-t transition-colors ${
-                    dragOverIdx === i
-                      ? 'border-t-2 border-t-mauve bg-mauve/5'
-                      : row.type === 'T'
-                        ? 'border-surface0 bg-yellow/5'
-                        : i % 2 === 0
-                          ? 'border-surface0 bg-base'
-                          : 'border-surface0 bg-mantle/40'
-                  } ${dragIdx.current === i ? 'opacity-40' : ''}`}
-                >
-                  {/* drag handle */}
-                  <td className={`${tdClass} text-center cursor-grab active:cursor-grabbing`}>
-                    <GripVertical size={12} className="text-overlay0 mx-auto" />
-                  </td>
+                {/* order */}
+                <td className={`${tdClass} text-center font-mono text-overlay0`}>
+                  {orderLabel(i)}
+                </td>
 
-                  {/* order */}
-                  <td className={`${tdClass} text-center font-mono text-overlay0`}>
-                    {orderLabel(i)}
-                  </td>
+                {/* L/T toggle */}
+                <td className={`${tdClass} text-center`}>
+                  <button
+                    onClick={() => toggleType(i)}
+                    title={row.type === 'L' ? 'Materiál – kliknutím změnit na T' : 'Textové pole – kliknutím změnit na L'}
+                    className={`w-7 h-5 rounded text-xs font-bold font-mono transition-all ${
+                      row.type === 'L'
+                        ? 'bg-blue/15 text-blue hover:bg-blue/30'
+                        : 'bg-yellow/15 text-yellow hover:bg-yellow/30'
+                    }`}
+                  >
+                    {row.type}
+                  </button>
+                </td>
 
-                  {/* L/T toggle */}
-                  <td className={`${tdClass} text-center`}>
-                    <button
-                      onClick={() => toggleType(i)}
-                      title={row.type === 'L' ? 'Materiál – kliknutím změnit na T' : 'Textové pole – kliknutím změnit na L'}
-                      className={`w-7 h-5 rounded text-xs font-bold font-mono transition-all ${
-                        row.type === 'L'
-                          ? 'bg-blue/15 text-blue hover:bg-blue/30'
-                          : 'bg-yellow/15 text-yellow hover:bg-yellow/30'
-                      }`}
-                    >
-                      {row.type}
-                    </button>
-                  </td>
+                {/* artikl */}
+                <td className={tdClass}>
+                  <input type="text" value={row.artikl}
+                    onChange={e => updateCell(i, 'artikl', e.target.value)}
+                    onBlur={e => handleArtiклBlur(i, e.target.value)}
+                    onPaste={e => handlePaste(e, i, 'artikl')}
+                    disabled={row.type === 'T'}
+                    placeholder={row.type === 'T' ? '—' : ''}
+                    className={cellInput + (row.type === 'T' ? ' opacity-20 cursor-not-allowed' : '')} />
+                </td>
 
-                  {/* artikl */}
-                  <td className={tdClass}>
-                    <input type="text" value={row.artikl}
-                      onChange={e => updateCell(i, 'artikl', e.target.value)}
-                      onBlur={e => handleArtiклBlur(i, e.target.value)}
-                      onPaste={e => handlePaste(e, i, 'artikl')}
-                      disabled={row.type === 'T'}
-                      placeholder={row.type === 'T' ? '—' : ''}
-                      className={cellBase + (row.type === 'T' ? ' opacity-20 cursor-not-allowed' : ' focus:ring-1 focus:ring-mauve/50')} />
-                  </td>
+                {/* popis artiklu – read-only */}
+                <td className={tdClass}>
+                  {row.type === 'T' ? (
+                    <span className={cellReadonly + ' italic text-overlay1'}>{row.poznamka1 || '—'}</span>
+                  ) : (
+                    <span className={cellReadonly} title={row.popis}>{row.popis || <span className="text-overlay0">—</span>}</span>
+                  )}
+                </td>
 
-                  {/* popis artiklu */}
-                  <td className={tdClass}>
-                    {row.type === 'T' ? (
-                      <span className="px-1.5 py-0.5 text-overlay1 italic truncate block">
-                        {row.poznamka1 || '—'}
-                      </span>
-                    ) : (
-                      <div className="relative flex items-center">
-                        <input type="text" value={row.popis}
-                          onChange={e => updateCell(i, 'popis', e.target.value)}
-                          onPaste={e => handlePaste(e, i, 'popis')}
-                          className={cellBase + ' flex-1 ' + (popisDirty
-                            ? 'ring-1 ring-red/60 bg-red/5 pr-5'
-                            : 'focus:ring-1 focus:ring-mauve/50')} />
-                        {popisDirty && (
-                          <button onClick={() => revertCell(i, 'popis')}
-                            title="Vrátit původní hodnotu"
-                            className="absolute right-1 text-red/70 hover:text-red transition-colors">
-                            <RotateCcw size={10} />
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </td>
+                {/* typové označení – read-only */}
+                <td className={tdClass}>
+                  <span className={cellReadonly} title={row.typoveOznaceni}>
+                    {row.typoveOznaceni || <span className="text-overlay0">—</span>}
+                  </span>
+                </td>
 
-                  {/* typové označení */}
-                  <td className={tdClass}>
-                    <div className="relative flex items-center">
-                      <input type="text" value={row.typoveOznaceni}
-                        onChange={e => updateCell(i, 'typoveOznaceni', e.target.value)}
-                        onPaste={e => handlePaste(e, i, 'typoveOznaceni')}
-                        className={cellBase + ' flex-1 ' + (typDirty
-                          ? 'ring-1 ring-red/60 bg-red/5 pr-5'
-                          : 'focus:ring-1 focus:ring-mauve/50')} />
-                      {typDirty && (
-                        <button onClick={() => revertCell(i, 'typoveOznaceni')}
-                          title="Vrátit původní hodnotu"
-                          className="absolute right-1 text-red/70 hover:text-red transition-colors">
-                          <RotateCcw size={10} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
+                {/* množství */}
+                <td className={tdClass}>
+                  <input type="number" value={row.mnozstvi}
+                    onChange={e => updateCell(i, 'mnozstvi', parseFloat(e.target.value) || 1)}
+                    onPaste={e => handlePaste(e, i, 'mnozstvi')}
+                    min={0} step={1}
+                    className={cellInput + ' text-center'} />
+                </td>
 
-                  {/* množství */}
-                  <td className={tdClass}>
-                    <input type="number" value={row.mnozstvi}
-                      onChange={e => updateCell(i, 'mnozstvi', parseFloat(e.target.value) || 1)}
-                      onPaste={e => handlePaste(e, i, 'mnozstvi')}
-                      min={0} step={1}
-                      className={cellBase + ' text-center focus:ring-1 focus:ring-mauve/50'} />
-                  </td>
+                {/* poznámka 1 */}
+                <td className={tdClass}>
+                  <input type="text" value={row.poznamka1}
+                    onChange={e => updateCell(i, 'poznamka1', e.target.value)}
+                    onPaste={e => handlePaste(e, i, 'poznamka1')}
+                    className={cellInput} />
+                </td>
 
-                  {/* poznámka 1 */}
-                  <td className={tdClass}>
-                    <input type="text" value={row.poznamka1}
-                      onChange={e => updateCell(i, 'poznamka1', e.target.value)}
-                      onPaste={e => handlePaste(e, i, 'poznamka1')}
-                      className={cellBase + ' focus:ring-1 focus:ring-mauve/50'} />
-                  </td>
+                {/* poznámka 2 */}
+                <td className={tdClass}>
+                  <input type="text" value={row.poznamka2}
+                    onChange={e => updateCell(i, 'poznamka2', e.target.value)}
+                    onPaste={e => handlePaste(e, i, 'poznamka2')}
+                    className={cellInput} />
+                </td>
 
-                  {/* poznámka 2 */}
-                  <td className={tdClass}>
-                    <input type="text" value={row.poznamka2}
-                      onChange={e => updateCell(i, 'poznamka2', e.target.value)}
-                      onPaste={e => handlePaste(e, i, 'poznamka2')}
-                      className={cellBase + ' focus:ring-1 focus:ring-mauve/50'} />
-                  </td>
-
-                  {/* delete */}
-                  <td className={`${tdClass} text-center`}>
-                    <button onClick={() => deleteRow(i)}
-                      className="p-0.5 text-overlay0 hover:text-red transition-all"
-                      title="Smazat řádek">
-                      <Trash2 size={12} />
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
+                {/* delete */}
+                <td className={`${tdClass} text-center`}>
+                  <button onClick={() => deleteRow(i)}
+                    className="p-0.5 text-overlay0 hover:text-red transition-all"
+                    title="Smazat řádek">
+                    <Trash2 size={12} />
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
 
