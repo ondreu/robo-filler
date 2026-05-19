@@ -1,6 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Loader2, AlertCircle, Download } from 'lucide-react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { Loader2, AlertCircle, Download, FolderOpen } from 'lucide-react';
 import type { Article, SearchResult, SearchMode, SearchField, DataSource, AppMode } from './types';
+import { parseBomTxt, type ImportResult } from './utils/bomExport';
+import { BomWizard } from './components/BomWizard';
 import { loadCSV, loadCSVMeta } from './utils/csvParser';
 import { search, getUniqueManufacturers } from './utils/searchEngine';
 import { SearchBar } from './components/SearchBar';
@@ -53,6 +55,24 @@ function App() {
 
   // App mode (single / bulk)
   const [appMode, setAppMode] = useState<AppMode>('single');
+
+  // ZBOM import
+  const [showBomImport, setShowBomImport] = useState(false);
+  const [bomImportData, setBomImportData] = useState<ImportResult | undefined>(undefined);
+  const zbomInputRef = useRef<HTMLInputElement>(null);
+
+  const handleOpenZbom = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const db = customArticles || articles;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const result = parseBomTxt(ev.target?.result as string, db);
+      if (result) { setBomImportData(result); setShowBomImport(true); }
+      if (zbomInputRef.current) zbomInputRef.current.value = '';
+    };
+    reader.readAsText(file, 'utf-8');
+  };
 
   // Debounced query for search
   const debouncedQuery = useDebounce(query, 300);
@@ -215,6 +235,15 @@ function App() {
             isLoading={isLoading}
           />
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => zbomInputRef.current?.click()}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text"
+              title="Otevřít uložený ZBOM soubor"
+            >
+              <FolderOpen size={18} />
+              Otevřít ZBOM
+            </button>
+            <input ref={zbomInputRef} type="file" accept=".txt" className="hidden" onChange={handleOpenZbom} />
             <ExcelImport articles={activeArticles} />
             {results.length > 0 && (
               <button
@@ -398,6 +427,16 @@ function App() {
           <p>Article Search App • Robo Filler</p>
         </footer>
       </div>
+
+      {showBomImport && (
+        <BomWizard
+          bulkResults={[]}
+          selections={{}}
+          articles={activeArticles}
+          importData={bomImportData}
+          onClose={() => { setShowBomImport(false); setBomImportData(undefined); }}
+        />
+      )}
     </div>
   );
 }
