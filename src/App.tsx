@@ -56,10 +56,23 @@ function App() {
   // App mode (single / bulk)
   const [appMode, setAppMode] = useState<AppMode>('single');
 
-  // ZBOM import
+  // ZBOM import/new
   const [showBomImport, setShowBomImport] = useState(false);
   const [bomImportData, setBomImportData] = useState<ImportResult | undefined>(undefined);
+  const [zbomDropdownOpen, setZbomDropdownOpen] = useState(false);
   const zbomInputRef = useRef<HTMLInputElement>(null);
+  const zbomDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!zbomDropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (zbomDropdownRef.current && !zbomDropdownRef.current.contains(e.target as Node)) {
+        setZbomDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [zbomDropdownOpen]);
 
   const handleOpenZbom = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -235,14 +248,35 @@ function App() {
             isLoading={isLoading}
           />
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => zbomInputRef.current?.click()}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text"
-              title="Otevřít uložený ZBOM soubor"
-            >
-              <FolderOpen size={18} />
-              Otevřít ZBOM
-            </button>
+            <div ref={zbomDropdownRef} className="relative">
+              <button
+                onClick={() => setZbomDropdownOpen(o => !o)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text"
+              >
+                <FolderOpen size={18} />
+                Otevřít ZBOM
+                <svg className={`w-3 h-3 transition-transform ${zbomDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+              </button>
+              {zbomDropdownOpen && (
+                <div className="absolute left-0 top-full mt-1 z-30 bg-mantle border border-surface1 rounded-xl shadow-xl overflow-hidden min-w-[160px]">
+                  <button
+                    onClick={() => { setBomImportData(undefined); setShowBomImport(true); setZbomDropdownOpen(false); }}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-subtext1 hover:bg-surface0 hover:text-text transition-colors text-left"
+                  >
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    Nový
+                  </button>
+                  <div className="border-t border-surface1" />
+                  <button
+                    onClick={() => { zbomInputRef.current?.click(); setZbomDropdownOpen(false); }}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-subtext1 hover:bg-surface0 hover:text-text transition-colors text-left"
+                  >
+                    <FolderOpen size={16} className="flex-shrink-0" />
+                    Z exportu
+                  </button>
+                </div>
+              )}
+            </div>
             <input ref={zbomInputRef} type="file" accept=".txt" className="hidden" onChange={handleOpenZbom} />
             <ExcelImport articles={activeArticles} />
             {results.length > 0 && (
