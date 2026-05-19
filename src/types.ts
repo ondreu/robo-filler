@@ -37,6 +37,28 @@ export interface BulkQueryResult {
 
 export type AppMode = 'single' | 'bulk';
 
+export type BomRowType = 'L' | 'T';
+
+export interface BomRow {
+  id: string;
+  type: BomRowType;
+  artikl: string;
+  popis: string;
+  typoveOznaceni: string;
+  mnozstvi: number;
+  poznamka1: string;
+  poznamka2: string;
+}
+
+export interface BomHeader {
+  cisloVrcholu: string;
+  cisloZavodu: string;
+  platnostOd: string; // DDMMYYYY
+  popis: string; // max 40 chars
+  status: string;
+  vyrobniDispecer: string;
+}
+
 export const MANUFACTURER_PREFIXES = [
   'RIT.',
   'SE.',

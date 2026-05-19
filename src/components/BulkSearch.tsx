@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Loader2, Download } from 'lucide-react';
+import { Loader2, Download, ClipboardList } from 'lucide-react';
 import type { Article, SearchResult, BulkQueryResult } from '../types';
 import { search } from '../utils/searchEngine';
 import { exportBulkCSV } from '../utils/excelHandler';
 import { SelectableCard } from './SelectableCard';
+import { BomWizard } from './BomWizard';
 
 interface BulkSearchProps {
   articles: Article[];
@@ -26,6 +27,7 @@ export function BulkSearch({ articles }: BulkSearchProps) {
   const [perRowVisible, setPerRowVisible] = useState<Record<number, number>>({});
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showBomWizard, setShowBomWizard] = useState(false);
 
   const queries = parseLines(rawInput);
   const selectionCount = Object.values(selections).filter(v => v != null).length;
@@ -143,15 +145,26 @@ export function BulkSearch({ articles }: BulkSearchProps) {
                 ? `${selectionCount} z ${bulkResults.length} označeno`
                 : `${bulkResults.length} výsledků — klikněte na kartu pro označení`}
             </p>
-            <button
-              onClick={() => exportBulkCSV(bulkResults, selections)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all
-                bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text"
-              title="Exportovat do CSV"
-            >
-              <Download size={16} />
-              Export CSV
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => exportBulkCSV(bulkResults, selections)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all
+                  bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text"
+                title="Exportovat do CSV"
+              >
+                <Download size={16} />
+                Export CSV
+              </button>
+              <button
+                onClick={() => setShowBomWizard(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all
+                  bg-mauve/10 text-mauve hover:bg-mauve/20 border border-mauve/30"
+                title="Vytvořit kusovník ZBOM"
+              >
+                <ClipboardList size={16} />
+                Export ZBOM
+              </button>
+            </div>
           </div>
 
           {/* Row results */}
@@ -248,6 +261,13 @@ export function BulkSearch({ articles }: BulkSearchProps) {
             );
           })}
         </div>
+      )}
+      {showBomWizard && (
+        <BomWizard
+          bulkResults={bulkResults}
+          selections={selections}
+          onClose={() => setShowBomWizard(false)}
+        />
       )}
     </div>
   );
