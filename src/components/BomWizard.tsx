@@ -381,7 +381,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
     if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
       startEdit(sel.anchor.row, sel.anchor.col, e.key);
     }
-  }, [sel, rows, copySelection, startEdit]);
+  }, [sel, edit, rows, copySelection, startEdit]);
 
   // Paste event on container
   const handleContainerPaste = useCallback((e: React.ClipboardEvent) => {
