@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import type { BomRow, BomHeader } from '../types';
+import type { Article, BomRow, BomHeader, BomRowType } from '../types';
 
 export function orderLabel(i: number): string {
   return String((i + 1) * 10).padStart(4, '0');
@@ -23,6 +23,9 @@ function triggerDownload(blob: Blob, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
+let importIdCounter = 0;
+function genId(): string { return `imp${++importIdCounter}`; }
+
 export function exportZbomTxt(header: BomHeader, rows: BomRow[]): void {
   const lines = rows.map(row =>
     [
@@ -42,8 +45,7 @@ export function exportZbomTxt(header: BomHeader, rows: BomRow[]): void {
     ].join('\t')
   );
 
-  const content = lines.join('\r\n');
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/plain;charset=utf-8' });
   triggerDownload(blob, `${header.cisloVrcholu}.txt`);
 }
 
@@ -57,7 +59,7 @@ export function exportZbomExcel(header: BomHeader, rows: BomRow[]): void {
     orderLabel(i),
     row.type,
     row.type === 'T' ? '' : row.artikl,
-    row.popis,
+    row.type === 'T' ? row.poznamka1 : row.popis,
     row.typoveOznaceni,
     row.mnozstvi,
     row.poznamka1,
@@ -71,4 +73,56 @@ export function exportZbomExcel(header: BomHeader, rows: BomRow[]): void {
   const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
   const blob = new Blob([s2ab(wbout)], { type: 'application/octet-stream' });
   triggerDownload(blob, `${header.cisloVrcholu}.xlsx`);
+}
+
+export interface ImportResult {
+  header: BomHeader;
+  rows: BomRow[];
+}
+
+export function parseBomTxt(text: string, articles: Article[]): ImportResult | null {
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+  if (lines.length === 0) return null;
+
+  const first = lines[0].split('\t');
+  if (first.length < 11) return null;
+
+  const header: BomHeader = {
+    cisloVrcholu: first[0] ?? '',
+    cisloZavodu: first[1] ?? '6000',
+    platnostOd: first[3] ?? '',
+    popis: first[4] ?? '',
+    status: first[6] ?? '01',
+    vyrobniDispecer: first[7] ?? '',
+  };
+
+  const articleMap = new Map(articles.map(a => [a.artikl, a]));
+
+  const rows: BomRow[] = lines.map(line => {
+    const cols = line.split('\t');
+    const type: BomRowType = cols[10]?.trim() === 'T' ? 'T' : 'L';
+    const artikl = cols[8]?.trim() ?? '';
+    const mnozstvi = parseFloat(cols[9] ?? '1') || 1;
+    const poznamka1 = cols[11]?.trim() ?? '';
+    const poznamka2 = cols[12]?.trim() ?? '';
+
+    let popis = '';
+    let origPopis: string | null = null;
+    let typoveOznaceni = '';
+    let origTypoveOznaceni: string | null = null;
+
+    if (type === 'L' && artikl) {
+      const found = articleMap.get(artikl);
+      if (found) {
+        popis = found.nazev;
+        origPopis = found.nazev;
+        typoveOznaceni = found.typoveOznaceni;
+        origTypoveOznaceni = found.typoveOznaceni;
+      }
+    }
+
+    return { id: genId(), type, artikl, popis, origPopis, typoveOznaceni, origTypoveOznaceni, mnozstvi, poznamka1, poznamka2 };
+  });
+
+  return { header, rows };
 }

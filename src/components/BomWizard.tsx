@@ -1,12 +1,14 @@
 import { useState, useCallback, useRef } from 'react';
-import { X, Plus, Trash2, Download, FileSpreadsheet, ArrowLeft, GripVertical } from 'lucide-react';
-import type { BomRow, BomHeader, BulkQueryResult, SearchResult } from '../types';
-import { exportZbomTxt, exportZbomExcel, orderLabel } from '../utils/bomExport';
+import { X, Plus, Trash2, Download, FileSpreadsheet, ArrowLeft, GripVertical, RotateCcw } from 'lucide-react';
+import type { Article, BomRow, BomHeader, BulkQueryResult, SearchResult } from '../types';
+import { exportZbomTxt, exportZbomExcel, orderLabel, type ImportResult } from '../utils/bomExport';
 
 interface BomWizardProps {
   bulkResults: BulkQueryResult[];
   selections: Record<number, SearchResult | null>;
+  articles: Article[];
   onClose: () => void;
+  importData?: ImportResult;
 }
 
 const STATUS_OPTIONS = [
@@ -46,10 +48,10 @@ let idCounter = 0;
 function genId(): string { return `r${++idCounter}`; }
 
 function emptyLRow(): BomRow {
-  return { id: genId(), type: 'L', artikl: '', popis: '', typoveOznaceni: '', mnozstvi: 1, poznamka1: '', poznamka2: '' };
+  return { id: genId(), type: 'L', artikl: '', popis: '', origPopis: null, typoveOznaceni: '', origTypoveOznaceni: null, mnozstvi: 1, poznamka1: '', poznamka2: '' };
 }
 function emptyTRow(): BomRow {
-  return { id: genId(), type: 'T', artikl: '', popis: '', typoveOznaceni: '', mnozstvi: 1, poznamka1: '', poznamka2: '' };
+  return { id: genId(), type: 'T', artikl: '', popis: '', origPopis: null, typoveOznaceni: '', origTypoveOznaceni: null, mnozstvi: 1, poznamka1: '', poznamka2: '' };
 }
 
 const EDITABLE_COLS = ['artikl', 'popis', 'typoveOznaceni', 'mnozstvi', 'poznamka1', 'poznamka2'] as const;
@@ -57,7 +59,14 @@ type EditableCol = typeof EDITABLE_COLS[number];
 const MAX_ROWS = 2000;
 
 const inputClass = 'w-full px-3 py-2 bg-surface0 text-text rounded-xl border border-surface2 focus:border-mauve focus:outline-none text-sm transition-colors';
-const cellInput = 'w-full px-1.5 py-0.5 bg-transparent text-text rounded focus:bg-surface0 focus:outline-none focus:ring-1 focus:ring-mauve/50 transition-colors text-xs';
+const cellBase = 'w-full px-1.5 py-0.5 bg-transparent text-text rounded focus:bg-surface0 focus:outline-none transition-colors text-xs';
+
+const thClass = 'px-2 py-2 font-medium border-r border-surface1 last:border-r-0 whitespace-nowrap';
+const tdClass = 'px-1 py-0.5 border-r border-surface1 last:border-r-0';
+
+function isDirty(cur: string, orig: string | null): boolean {
+  return orig !== null && cur !== orig;
+}
 
 function Field({ label, hint, children }: { label: React.ReactNode; hint?: string; children: React.ReactNode }) {
   return (
@@ -69,31 +78,41 @@ function Field({ label, hint, children }: { label: React.ReactNode; hint?: strin
   );
 }
 
-// ── column separator helper ──────────────────────────────────────────────────
-const thClass = 'px-2 py-2 font-medium border-r border-surface1 last:border-r-0';
-const tdClass = 'px-1 py-0.5 border-r border-surface1 last:border-r-0';
+export function BomWizard({ bulkResults, selections, articles: _articles, onClose, importData }: BomWizardProps) {
+  const [step, setStep] = useState<1 | 2>(importData ? 2 : 1);
 
-export function BomWizard({ bulkResults, selections, onClose }: BomWizardProps) {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [header, setHeader] = useState<BomHeader>(
+    importData?.header ?? {
+      cisloVrcholu: '',
+      cisloZavodu: '6000',
+      platnostOd: getTodayDDMMYYYY(),
+      popis: '',
+      status: '01',
+      vyrobniDispecer: '',
+    }
+  );
 
-  const [header, setHeader] = useState<BomHeader>({
-    cisloVrcholu: '',
-    cisloZavodu: '6000',
-    platnostOd: getTodayDDMMYYYY(),
-    popis: '',
-    status: '01',
-    vyrobniDispecer: '',
-  });
-
-  const [rows, setRows] = useState<BomRow[]>(() =>
-    bulkResults.map((r, i) => {
+  const [rows, setRows] = useState<BomRow[]>(() => {
+    if (importData) return importData.rows;
+    return bulkResults.map((r, i) => {
       const sel = selections[i];
       if (sel) {
-        return { id: genId(), type: 'L' as const, artikl: sel.artikl, popis: sel.nazev, typoveOznaceni: sel.typoveOznaceni, mnozstvi: 1, poznamka1: '', poznamka2: '' };
+        return {
+          id: genId(), type: 'L' as const,
+          artikl: sel.artikl,
+          popis: sel.nazev, origPopis: sel.nazev,
+          typoveOznaceni: sel.typoveOznaceni, origTypoveOznaceni: sel.typoveOznaceni,
+          mnozstvi: 1, poznamka1: '', poznamka2: '',
+        };
       }
-      return { id: genId(), type: 'T' as const, artikl: '', popis: '', typoveOznaceni: '', mnozstvi: 1, poznamka1: r.query, poznamka2: '' };
-    })
-  );
+      return {
+        id: genId(), type: 'T' as const,
+        artikl: '', popis: '', origPopis: null,
+        typoveOznaceni: '', origTypoveOznaceni: null,
+        mnozstvi: 1, poznamka1: r.query, poznamka2: '',
+      };
+    });
+  });
 
   // drag state
   const dragIdx = useRef<number | null>(null);
@@ -141,6 +160,14 @@ export function BomWizard({ bulkResults, selections, onClose }: BomWizardProps) 
       return arr;
     }), []);
 
+  const revertCell = useCallback((idx: number, field: 'popis' | 'typoveOznaceni') =>
+    setRows(prev => {
+      const arr = [...prev];
+      const orig = field === 'popis' ? arr[idx].origPopis : arr[idx].origTypoveOznaceni;
+      if (orig !== null) arr[idx] = { ...arr[idx], [field]: orig };
+      return arr;
+    }), []);
+
   const handlePaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>, rowIdx: number, colName: EditableCol) => {
     const text = e.clipboardData.getData('text');
     const lines = text.split(/\r?\n/).filter(l => l.length > 0);
@@ -171,7 +198,7 @@ export function BomWizard({ bulkResults, selections, onClose }: BomWizardProps) 
     });
   }, []);
 
-  // ── Step 1: header form ──────────────────────────────────────────────────
+  // ── Step 1: header form ─────────────────────────────────────────────────
   if (step === 1) {
     const dateVal = zbomToDateInput(header.platnostOd) || getTodayInputValue();
     return (
@@ -193,31 +220,26 @@ export function BomWizard({ bulkResults, selections, onClose }: BomWizardProps) 
                 onChange={e => updateHeader('cisloVrcholu', e.target.value)}
                 placeholder="např. 1234-5678" className={inputClass} autoFocus />
             </Field>
-
             <Field label="Číslo závodu">
               <select value={header.cisloZavodu} onChange={e => updateHeader('cisloZavodu', e.target.value)} className={inputClass}>
                 {ZAVOD_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </Field>
-
             <Field label="Platnost od">
               <input type="date" value={dateVal}
                 onChange={e => updateHeader('platnostOd', dateInputToZbom(e.target.value))}
                 className={inputClass} />
             </Field>
-
             <Field label={<>Popis kusovníku <span className={`ml-1 text-xs ${header.popis.length > 36 ? 'text-yellow' : 'text-overlay1'}`}>{header.popis.length}/40</span></>}>
               <input type="text" value={header.popis}
                 onChange={e => updateHeader('popis', e.target.value.slice(0, 40))}
                 placeholder="max 40 znaků" className={inputClass} />
             </Field>
-
             <Field label="Status kusovníku">
               <select value={header.status} onChange={e => updateHeader('status', e.target.value)} className={inputClass}>
                 {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </Field>
-
             <Field label="Výrobní dispečer" hint="1 písmeno + 2 číslice, např. U98">
               <input type="text" value={header.vyrobniDispecer}
                 onChange={e => updateHeader('vyrobniDispecer', e.target.value.toUpperCase().slice(0, 3))}
@@ -243,7 +265,7 @@ export function BomWizard({ bulkResults, selections, onClose }: BomWizardProps) 
     );
   }
 
-  // ── Step 2: editable table ───────────────────────────────────────────────
+  // ── Step 2: editable table ──────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-base overflow-hidden">
       {/* Top bar */}
@@ -303,120 +325,157 @@ export function BomWizard({ bulkResults, selections, onClose }: BomWizardProps) 
               <th className={`${thClass} w-6`}></th>
               <th className={`${thClass} w-14 text-center`}>Pořadí</th>
               <th className={`${thClass} w-10 text-center`}>L/T</th>
-              <th className={`${thClass}`} style={{ minWidth: 110 }}>Artikl</th>
+              <th className={`${thClass}`} style={{ width: 96 }}>Artikl</th>
               <th className={`${thClass}`} style={{ minWidth: 170 }}>Popis artiklu</th>
               <th className={`${thClass}`} style={{ minWidth: 130 }}>Typové označení</th>
-              <th className={`${thClass} w-16 text-center`}>Mn.</th>
+              <th className={`${thClass}`} style={{ width: 72 }}>Mn.</th>
               <th className={`${thClass}`} style={{ minWidth: 150 }}>Poznámka 1</th>
               <th className={`${thClass}`} style={{ minWidth: 130 }}>Poznámka 2</th>
               <th className={`${thClass} w-8`}></th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
-              <tr
-                key={row.id}
-                draggable
-                onDragStart={() => handleDragStart(i)}
-                onDragOver={e => handleDragOver(e, i)}
-                onDrop={() => handleDrop(i)}
-                onDragEnd={handleDragEnd}
-                className={`border-t transition-colors ${
-                  dragOverIdx === i
-                    ? 'border-t-2 border-t-mauve bg-mauve/5'
-                    : row.type === 'T'
-                      ? 'border-surface0 bg-yellow/5'
-                      : i % 2 === 0
-                        ? 'border-surface0 bg-base'
-                        : 'border-surface0 bg-mantle/40'
-                } ${dragIdx.current === i ? 'opacity-40' : ''}`}
-              >
-                {/* drag handle */}
-                <td className={`${tdClass} text-center cursor-grab active:cursor-grabbing`}>
-                  <GripVertical size={12} className="text-overlay0 mx-auto" />
-                </td>
+            {rows.map((row, i) => {
+              const popisDirty = isDirty(row.popis, row.origPopis);
+              const typDirty = isDirty(row.typoveOznaceni, row.origTypoveOznaceni);
 
-                {/* order */}
-                <td className={`${tdClass} text-center font-mono text-overlay0`}>
-                  {orderLabel(i)}
-                </td>
+              return (
+                <tr
+                  key={row.id}
+                  draggable
+                  onDragStart={() => handleDragStart(i)}
+                  onDragOver={e => handleDragOver(e, i)}
+                  onDrop={() => handleDrop(i)}
+                  onDragEnd={handleDragEnd}
+                  className={`border-t transition-colors ${
+                    dragOverIdx === i
+                      ? 'border-t-2 border-t-mauve bg-mauve/5'
+                      : row.type === 'T'
+                        ? 'border-surface0 bg-yellow/5'
+                        : i % 2 === 0
+                          ? 'border-surface0 bg-base'
+                          : 'border-surface0 bg-mantle/40'
+                  } ${dragIdx.current === i ? 'opacity-40' : ''}`}
+                >
+                  {/* drag handle */}
+                  <td className={`${tdClass} text-center cursor-grab active:cursor-grabbing`}>
+                    <GripVertical size={12} className="text-overlay0 mx-auto" />
+                  </td>
 
-                {/* L/T toggle */}
-                <td className={`${tdClass} text-center`}>
-                  <button
-                    onClick={() => toggleType(i)}
-                    title={row.type === 'L' ? 'Materiál – kliknutím změnit na T' : 'Textové pole – kliknutím změnit na L'}
-                    className={`w-7 h-5 rounded text-xs font-bold font-mono transition-all ${
-                      row.type === 'L'
-                        ? 'bg-blue/15 text-blue hover:bg-blue/30'
-                        : 'bg-yellow/15 text-yellow hover:bg-yellow/30'
-                    }`}
-                  >
-                    {row.type}
-                  </button>
-                </td>
+                  {/* order */}
+                  <td className={`${tdClass} text-center font-mono text-overlay0`}>
+                    {orderLabel(i)}
+                  </td>
 
-                {/* artikl */}
-                <td className={tdClass}>
-                  <input type="text" value={row.artikl}
-                    onChange={e => updateCell(i, 'artikl', e.target.value)}
-                    onPaste={e => handlePaste(e, i, 'artikl')}
-                    disabled={row.type === 'T'}
-                    placeholder={row.type === 'T' ? '—' : ''}
-                    className={cellInput + (row.type === 'T' ? ' opacity-20 cursor-not-allowed' : '')} />
-                </td>
+                  {/* L/T toggle */}
+                  <td className={`${tdClass} text-center`}>
+                    <button
+                      onClick={() => toggleType(i)}
+                      title={row.type === 'L' ? 'Materiál – kliknutím změnit na T' : 'Textové pole – kliknutím změnit na L'}
+                      className={`w-7 h-5 rounded text-xs font-bold font-mono transition-all ${
+                        row.type === 'L'
+                          ? 'bg-blue/15 text-blue hover:bg-blue/30'
+                          : 'bg-yellow/15 text-yellow hover:bg-yellow/30'
+                      }`}
+                    >
+                      {row.type}
+                    </button>
+                  </td>
 
-                {/* popis */}
-                <td className={tdClass}>
-                  <input type="text" value={row.popis}
-                    onChange={e => updateCell(i, 'popis', e.target.value)}
-                    onPaste={e => handlePaste(e, i, 'popis')}
-                    className={cellInput} />
-                </td>
+                  {/* artikl */}
+                  <td className={tdClass}>
+                    <input type="text" value={row.artikl}
+                      onChange={e => updateCell(i, 'artikl', e.target.value)}
+                      onPaste={e => handlePaste(e, i, 'artikl')}
+                      disabled={row.type === 'T'}
+                      placeholder={row.type === 'T' ? '—' : ''}
+                      className={cellBase + (row.type === 'T' ? ' opacity-20 cursor-not-allowed' : ' focus:ring-1 focus:ring-mauve/50')} />
+                  </td>
 
-                {/* typové označení */}
-                <td className={tdClass}>
-                  <input type="text" value={row.typoveOznaceni}
-                    onChange={e => updateCell(i, 'typoveOznaceni', e.target.value)}
-                    onPaste={e => handlePaste(e, i, 'typoveOznaceni')}
-                    className={cellInput} />
-                </td>
+                  {/* popis artiklu */}
+                  <td className={tdClass}>
+                    {row.type === 'T' ? (
+                      <span className="px-1.5 py-0.5 text-overlay1 italic truncate block">
+                        {row.poznamka1 || '—'}
+                      </span>
+                    ) : (
+                      <div className="relative flex items-center gap-1">
+                        <input type="text" value={row.popis}
+                          onChange={e => updateCell(i, 'popis', e.target.value)}
+                          onPaste={e => handlePaste(e, i, 'popis')}
+                          className={cellBase + ' flex-1 ' + (popisDirty
+                            ? 'ring-1 ring-red/60 bg-red/5 rounded pr-5'
+                            : 'focus:ring-1 focus:ring-mauve/50')} />
+                        {popisDirty && (
+                          <button
+                            onClick={() => revertCell(i, 'popis')}
+                            title="Vrátit původní hodnotu"
+                            className="absolute right-1 text-red/70 hover:text-red transition-colors"
+                          >
+                            <RotateCcw size={10} />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </td>
 
-                {/* množství */}
-                <td className={tdClass}>
-                  <input type="number" value={row.mnozstvi}
-                    onChange={e => updateCell(i, 'mnozstvi', parseFloat(e.target.value) || 1)}
-                    onPaste={e => handlePaste(e, i, 'mnozstvi')}
-                    min={0} step={1}
-                    className={cellInput + ' text-center'} />
-                </td>
+                  {/* typové označení */}
+                  <td className={tdClass}>
+                    <div className="relative flex items-center gap-1">
+                      <input type="text" value={row.typoveOznaceni}
+                        onChange={e => updateCell(i, 'typoveOznaceni', e.target.value)}
+                        onPaste={e => handlePaste(e, i, 'typoveOznaceni')}
+                        className={cellBase + ' flex-1 ' + (typDirty
+                          ? 'ring-1 ring-red/60 bg-red/5 rounded pr-5'
+                          : 'focus:ring-1 focus:ring-mauve/50')} />
+                      {typDirty && (
+                        <button
+                          onClick={() => revertCell(i, 'typoveOznaceni')}
+                          title="Vrátit původní hodnotu"
+                          className="absolute right-1 text-red/70 hover:text-red transition-colors"
+                        >
+                          <RotateCcw size={10} />
+                        </button>
+                      )}
+                    </div>
+                  </td>
 
-                {/* poznámka 1 */}
-                <td className={tdClass}>
-                  <input type="text" value={row.poznamka1}
-                    onChange={e => updateCell(i, 'poznamka1', e.target.value)}
-                    onPaste={e => handlePaste(e, i, 'poznamka1')}
-                    className={cellInput} />
-                </td>
+                  {/* množství */}
+                  <td className={tdClass}>
+                    <input type="number" value={row.mnozstvi}
+                      onChange={e => updateCell(i, 'mnozstvi', parseFloat(e.target.value) || 1)}
+                      onPaste={e => handlePaste(e, i, 'mnozstvi')}
+                      min={0} step={1}
+                      className={cellBase + ' text-center focus:ring-1 focus:ring-mauve/50'} />
+                  </td>
 
-                {/* poznámka 2 */}
-                <td className={tdClass}>
-                  <input type="text" value={row.poznamka2}
-                    onChange={e => updateCell(i, 'poznamka2', e.target.value)}
-                    onPaste={e => handlePaste(e, i, 'poznamka2')}
-                    className={cellInput} />
-                </td>
+                  {/* poznámka 1 */}
+                  <td className={tdClass}>
+                    <input type="text" value={row.poznamka1}
+                      onChange={e => updateCell(i, 'poznamka1', e.target.value)}
+                      onPaste={e => handlePaste(e, i, 'poznamka1')}
+                      className={cellBase + ' focus:ring-1 focus:ring-mauve/50'} />
+                  </td>
 
-                {/* delete */}
-                <td className={`${tdClass} text-center`}>
-                  <button onClick={() => deleteRow(i)}
-                    className="p-0.5 text-overlay0 hover:text-red transition-all"
-                    title="Smazat řádek">
-                    <Trash2 size={12} />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  {/* poznámka 2 */}
+                  <td className={tdClass}>
+                    <input type="text" value={row.poznamka2}
+                      onChange={e => updateCell(i, 'poznamka2', e.target.value)}
+                      onPaste={e => handlePaste(e, i, 'poznamka2')}
+                      className={cellBase + ' focus:ring-1 focus:ring-mauve/50'} />
+                  </td>
+
+                  {/* delete */}
+                  <td className={`${tdClass} text-center`}>
+                    <button onClick={() => deleteRow(i)}
+                      className="p-0.5 text-overlay0 hover:text-red transition-all"
+                      title="Smazat řádek">
+                      <Trash2 size={12} />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
