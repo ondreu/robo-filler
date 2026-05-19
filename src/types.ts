@@ -44,9 +44,7 @@ export interface BomRow {
   type: BomRowType;
   artikl: string;
   popis: string;
-  origPopis: string | null;
   typoveOznaceni: string;
-  origTypoveOznaceni: string | null;
   mnozstvi: number;
   poznamka1: string;
   poznamka2: string;
