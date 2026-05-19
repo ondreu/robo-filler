@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { X, Plus, Trash2, Download, FileSpreadsheet, ArrowLeft, GripVertical, RotateCcw } from 'lucide-react';
 import type { Article, BomRow, BomHeader, BulkQueryResult, SearchResult } from '../types';
 import { exportZbomTxt, exportZbomExcel, orderLabel, type ImportResult } from '../utils/bomExport';
@@ -78,8 +78,14 @@ function Field({ label, hint, children }: { label: React.ReactNode; hint?: strin
   );
 }
 
-export function BomWizard({ bulkResults, selections, articles: _articles, onClose, importData }: BomWizardProps) {
+export function BomWizard({ bulkResults, selections, articles, onClose, importData }: BomWizardProps) {
   const [step, setStep] = useState<1 | 2>(importData ? 2 : 1);
+
+  // Lock body scroll while wizard is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
 
   const [header, setHeader] = useState<BomHeader>(
     importData?.header ?? {
@@ -113,6 +119,9 @@ export function BomWizard({ bulkResults, selections, articles: _articles, onClos
       };
     });
   });
+
+  // O(1) article lookup map
+  const articleMap = useMemo(() => new Map(articles.map(a => [a.artikl, a])), [articles]);
 
   // drag state
   const dragIdx = useRef<number | null>(null);
@@ -149,7 +158,21 @@ export function BomWizard({ bulkResults, selections, articles: _articles, onClos
   const toggleType = useCallback((idx: number) =>
     setRows(prev => {
       const arr = [...prev];
-      arr[idx] = { ...arr[idx], type: arr[idx].type === 'L' ? 'T' : 'L' };
+      const row = arr[idx];
+      if (row.type === 'L') {
+        // L → T: move artikl to poznamka1, clear artikl + typoveOznaceni
+        arr[idx] = {
+          ...row,
+          type: 'T',
+          poznamka1: row.artikl || row.poznamka1,
+          artikl: '',
+          typoveOznaceni: '',
+          origTypoveOznaceni: null,
+        };
+      } else {
+        // T → L: just switch type
+        arr[idx] = { ...row, type: 'L' };
+      }
       return arr;
     }), []);
 
@@ -167,6 +190,25 @@ export function BomWizard({ bulkResults, selections, articles: _articles, onClos
       if (orig !== null) arr[idx] = { ...arr[idx], [field]: orig };
       return arr;
     }), []);
+
+  // Auto-fill popis + typoveOznaceni from article DB on artikl blur
+  const handleArtiклBlur = useCallback((idx: number, value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    const found = articleMap.get(trimmed);
+    if (!found) return;
+    setRows(prev => {
+      const arr = [...prev];
+      arr[idx] = {
+        ...arr[idx],
+        popis: found.nazev,
+        origPopis: found.nazev,
+        typoveOznaceni: found.typoveOznaceni,
+        origTypoveOznaceni: found.typoveOznaceni,
+      };
+      return arr;
+    });
+  }, [articleMap]);
 
   const handlePaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>, rowIdx: number, colName: EditableCol) => {
     const text = e.clipboardData.getData('text');
@@ -328,7 +370,7 @@ export function BomWizard({ bulkResults, selections, articles: _articles, onClos
               <th className={`${thClass}`} style={{ width: 96 }}>Artikl</th>
               <th className={`${thClass}`} style={{ minWidth: 170 }}>Popis artiklu</th>
               <th className={`${thClass}`} style={{ minWidth: 130 }}>Typové označení</th>
-              <th className={`${thClass}`} style={{ width: 72 }}>Mn.</th>
+              <th className={`${thClass}`} style={{ width: 104 }}>Množství</th>
               <th className={`${thClass}`} style={{ minWidth: 150 }}>Poznámka 1</th>
               <th className={`${thClass}`} style={{ minWidth: 130 }}>Poznámka 2</th>
               <th className={`${thClass} w-8`}></th>
@@ -386,6 +428,7 @@ export function BomWizard({ bulkResults, selections, articles: _articles, onClos
                   <td className={tdClass}>
                     <input type="text" value={row.artikl}
                       onChange={e => updateCell(i, 'artikl', e.target.value)}
+                      onBlur={e => handleArtiклBlur(i, e.target.value)}
                       onPaste={e => handlePaste(e, i, 'artikl')}
                       disabled={row.type === 'T'}
                       placeholder={row.type === 'T' ? '—' : ''}
@@ -399,19 +442,17 @@ export function BomWizard({ bulkResults, selections, articles: _articles, onClos
                         {row.poznamka1 || '—'}
                       </span>
                     ) : (
-                      <div className="relative flex items-center gap-1">
+                      <div className="relative flex items-center">
                         <input type="text" value={row.popis}
                           onChange={e => updateCell(i, 'popis', e.target.value)}
                           onPaste={e => handlePaste(e, i, 'popis')}
                           className={cellBase + ' flex-1 ' + (popisDirty
-                            ? 'ring-1 ring-red/60 bg-red/5 rounded pr-5'
+                            ? 'ring-1 ring-red/60 bg-red/5 pr-5'
                             : 'focus:ring-1 focus:ring-mauve/50')} />
                         {popisDirty && (
-                          <button
-                            onClick={() => revertCell(i, 'popis')}
+                          <button onClick={() => revertCell(i, 'popis')}
                             title="Vrátit původní hodnotu"
-                            className="absolute right-1 text-red/70 hover:text-red transition-colors"
-                          >
+                            className="absolute right-1 text-red/70 hover:text-red transition-colors">
                             <RotateCcw size={10} />
                           </button>
                         )}
@@ -421,19 +462,17 @@ export function BomWizard({ bulkResults, selections, articles: _articles, onClos
 
                   {/* typové označení */}
                   <td className={tdClass}>
-                    <div className="relative flex items-center gap-1">
+                    <div className="relative flex items-center">
                       <input type="text" value={row.typoveOznaceni}
                         onChange={e => updateCell(i, 'typoveOznaceni', e.target.value)}
                         onPaste={e => handlePaste(e, i, 'typoveOznaceni')}
                         className={cellBase + ' flex-1 ' + (typDirty
-                          ? 'ring-1 ring-red/60 bg-red/5 rounded pr-5'
+                          ? 'ring-1 ring-red/60 bg-red/5 pr-5'
                           : 'focus:ring-1 focus:ring-mauve/50')} />
                       {typDirty && (
-                        <button
-                          onClick={() => revertCell(i, 'typoveOznaceni')}
+                        <button onClick={() => revertCell(i, 'typoveOznaceni')}
                           title="Vrátit původní hodnotu"
-                          className="absolute right-1 text-red/70 hover:text-red transition-colors"
-                        >
+                          className="absolute right-1 text-red/70 hover:text-red transition-colors">
                           <RotateCcw size={10} />
                         </button>
                       )}
