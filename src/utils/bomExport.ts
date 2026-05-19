@@ -1,6 +1,10 @@
 import * as XLSX from 'xlsx';
 import type { BomRow, BomHeader } from '../types';
 
+export function orderLabel(i: number): string {
+  return String((i + 1) * 10).padStart(4, '0');
+}
+
 function s2ab(s: string): ArrayBuffer {
   const buf = new ArrayBuffer(s.length);
   const view = new Uint8Array(buf);
@@ -40,25 +44,17 @@ export function exportZbomTxt(header: BomHeader, rows: BomRow[]): void {
 
   const content = lines.join('\r\n');
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-  const safe = header.cisloVrcholu.replace(/[^a-zA-Z0-9_-]/g, '_');
-  triggerDownload(blob, `ZBOM_${safe}_${header.platnostOd}.txt`);
+  triggerDownload(blob, `${header.cisloVrcholu}.txt`);
 }
 
 export function exportZbomExcel(header: BomHeader, rows: BomRow[]): void {
-  const headerRow = [
-    'Číslo vrcholu', 'Závod', 'Popis kusovníku', 'Status', 'Výrobní dispečer',
-    'Platnost od (DDMMYYYY)', 'Pořadí', 'L/T', 'Artikl', 'Popis artiklu',
-    'Typové označení', 'Množství', 'Poznámka 1', 'Poznámka 2',
+  const colHeaders = [
+    'Pořadí', 'L/T', 'Artikl', 'Popis artiklu', 'Typové označení',
+    'Množství', 'Poznámka 1', 'Poznámka 2',
   ];
 
   const dataRows = rows.map((row, i) => [
-    header.cisloVrcholu,
-    header.cisloZavodu,
-    header.popis,
-    header.status,
-    header.vyrobniDispecer,
-    header.platnostOd,
-    i + 1,
+    orderLabel(i),
     row.type,
     row.type === 'T' ? '' : row.artikl,
     row.popis,
@@ -69,11 +65,10 @@ export function exportZbomExcel(header: BomHeader, rows: BomRow[]): void {
   ]);
 
   const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet([headerRow, ...dataRows]);
+  const ws = XLSX.utils.aoa_to_sheet([colHeaders, ...dataRows]);
   XLSX.utils.book_append_sheet(wb, ws, 'ZBOM');
 
   const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
   const blob = new Blob([s2ab(wbout)], { type: 'application/octet-stream' });
-  const safe = header.cisloVrcholu.replace(/[^a-zA-Z0-9_-]/g, '_');
-  triggerDownload(blob, `ZBOM_${safe}_${header.platnostOd}.xlsx`);
+  triggerDownload(blob, `${header.cisloVrcholu}.xlsx`);
 }
