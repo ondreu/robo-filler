@@ -177,6 +177,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
   // ── row mutations ────────────────────────────────────────────────────────────
   const dragIdx = useRef<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const [dragRowIdx, setDragRowIdx] = useState<number | null>(null);
 
   const addLRow = () => setRows(p => p.length < MAX_ROWS ? [...p, emptyLRow()] : p);
   const addTRow = () => setRows(p => p.length < MAX_ROWS ? [...p, emptyTRow()] : p);
@@ -306,6 +307,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
 
   // ── keyboard handler on container ────────────────────────────────────────────
   const handleContainerKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (edit) return;
     if (!sel) return;
     const { r1, r2, c1, c2 } = norm(sel);
 
@@ -437,14 +439,14 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
   }, [startEdit]);
 
   // ── drag-row reorder ──────────────────────────────────────────────────────────
-  const handleRowDragStart = (idx: number) => { dragIdx.current = idx; };
+  const handleRowDragStart = (idx: number) => { dragIdx.current = idx; setDragRowIdx(idx); };
   const handleRowDragOver = (e: React.DragEvent, idx: number) => {
     e.preventDefault();
     if (dragIdx.current !== idx) setDragOverIdx(idx);
   };
   const handleRowDrop = (idx: number) => {
     const from = dragIdx.current;
-    if (from === null || from === idx) { setDragOverIdx(null); return; }
+    if (from === null || from === idx) { setDragOverIdx(null); setDragRowIdx(null); return; }
     setRows(prev => {
       const arr = [...prev];
       const [d] = arr.splice(from, 1);
@@ -454,8 +456,9 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
     setSel(null);
     dragIdx.current = null;
     setDragOverIdx(null);
+    setDragRowIdx(null);
   };
-  const handleRowDragEnd = () => { dragIdx.current = null; setDragOverIdx(null); };
+  const handleRowDragEnd = () => { dragIdx.current = null; setDragOverIdx(null); setDragRowIdx(null); };
 
   const updateHeader = (f: keyof BomHeader, v: string) => setHeader(h => ({ ...h, [f]: v }));
 
@@ -585,7 +588,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
                   : row.type === 'T' ? 'border-surface0 bg-yellow/5'
                   : ri % 2 === 0 ? 'border-surface0 bg-base'
                   : 'border-surface0 bg-mantle/40'
-                } ${dragIdx.current === ri ? 'opacity-40' : ''}`}
+                } ${dragRowIdx === ri ? 'opacity-40' : ''}`}
               >
                 {/* Drag handle */}
                 <td className="border-r border-surface1 text-center cursor-grab active:cursor-grabbing px-1 py-0.5">
