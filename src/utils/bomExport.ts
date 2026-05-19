@@ -26,7 +26,13 @@ function triggerDownload(blob: Blob, filename: string): void {
 let importIdCounter = 0;
 function genId(): string { return `imp${++importIdCounter}`; }
 
-export function exportZbomTxt(header: BomHeader, rows: BomRow[]): void {
+export type DecimalSep = '.' | ',';
+
+function fmtNum(value: number, sep: DecimalSep): string {
+  return sep === ',' ? String(value).replace('.', ',') : String(value);
+}
+
+export function exportZbomTxt(header: BomHeader, rows: BomRow[], sep: DecimalSep = '.'): void {
   const lines = rows.map(row =>
     [
       header.cisloVrcholu,
@@ -38,7 +44,7 @@ export function exportZbomTxt(header: BomHeader, rows: BomRow[]): void {
       header.status,
       header.vyrobniDispecer,
       row.type === 'T' ? '' : row.artikl,
-      String(row.mnozstvi),
+      fmtNum(row.mnozstvi, sep),
       row.type,
       row.poznamka1,
       row.poznamka2,
@@ -49,7 +55,7 @@ export function exportZbomTxt(header: BomHeader, rows: BomRow[]): void {
   triggerDownload(blob, `${header.cisloVrcholu}.txt`);
 }
 
-export function exportZbomExcel(header: BomHeader, rows: BomRow[]): void {
+export function exportZbomExcel(header: BomHeader, rows: BomRow[], sep: DecimalSep = '.'): void {
   const colHeaders = [
     'Pořadí', 'L/T', 'Artikl', 'Popis artiklu', 'Typové označení',
     'Množství', 'Poznámka 1', 'Poznámka 2',
@@ -61,7 +67,7 @@ export function exportZbomExcel(header: BomHeader, rows: BomRow[]): void {
     row.type === 'T' ? '' : row.artikl,
     row.type === 'T' ? row.poznamka1 : row.popis,
     row.typoveOznaceni,
-    row.mnozstvi,
+    sep === '.' ? row.mnozstvi : fmtNum(row.mnozstvi, sep),
     row.poznamka1,
     row.poznamka2,
   ]);

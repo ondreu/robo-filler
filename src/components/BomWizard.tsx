@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { X, Plus, Trash2, Download, FileSpreadsheet, ArrowLeft, GripVertical } from 'lucide-react';
 import type { Article, BomRow, BomHeader, BulkQueryResult, SearchResult } from '../types';
-import { exportZbomTxt, exportZbomExcel, orderLabel, type ImportResult } from '../utils/bomExport';
+import { exportZbomTxt, exportZbomExcel, orderLabel, type ImportResult, type DecimalSep } from '../utils/bomExport';
 
 interface BomWizardProps {
   bulkResults: BulkQueryResult[];
@@ -136,6 +136,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
   const articleMap = useMemo(() => new Map(articles.map(a => [a.artikl, a])), [articles]);
 
   // ── spreadsheet selection & edit state ──────────────────────────────────────
+  const [decimalSep, setDecimalSep] = useState<DecimalSep>('.');
   const [sel, setSel] = useState<Sel | null>(null);
   const [edit, setEdit] = useState<EditState | null>(null);
   const mouseDownRef = useRef(false);
@@ -531,10 +532,23 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => exportZbomExcel(header, rows)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text transition-all">
+          <div className="flex bg-surface0 rounded-lg p-0.5 gap-0.5" title="Desetinný oddělovač">
+            {(['.' , ','] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setDecimalSep(s)}
+                className={`px-2 py-0.5 rounded text-xs font-mono font-medium transition-all ${
+                  decimalSep === s ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
+                }`}
+              >
+                {s === '.' ? '1.5' : '1,5'}
+              </button>
+            ))}
+          </div>
+          <button onClick={() => exportZbomExcel(header, rows, decimalSep)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text transition-all">
             <FileSpreadsheet size={13} /> Excel
           </button>
-          <button onClick={() => exportZbomTxt(header, rows)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-mauve text-crust hover:bg-mauve/80 transition-all">
+          <button onClick={() => exportZbomTxt(header, rows, decimalSep)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-mauve text-crust hover:bg-mauve/80 transition-all">
             <Download size={13} /> Export ZBOM .txt
           </button>
           <button onClick={onClose} className="ml-1 text-overlay1 hover:text-text transition-colors"><X size={18} /></button>
