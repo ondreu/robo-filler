@@ -149,13 +149,15 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
     }
   }, [sel, edit, step]);
 
-  // Focus edit input when edit starts
+  // Focus + select only when switching to a different cell (not on every value change)
+  const editCellKey = edit ? `${edit.row}-${edit.col}` : '';
   useEffect(() => {
     if (edit) {
       editInputRef.current?.focus();
       editInputRef.current?.select();
     }
-  }, [edit]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editCellKey]);
 
   // Global mouseup to end drag
   useEffect(() => {
