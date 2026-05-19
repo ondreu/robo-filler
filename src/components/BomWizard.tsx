@@ -391,6 +391,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
 
   // ── edit input keyboard ───────────────────────────────────────────────────────
   const handleEditKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.stopPropagation();
     if (!edit) return;
     if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); return; }
     if (e.key === 'Enter') {
@@ -636,6 +637,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
                           value={edit.value}
                           onChange={e => setEdit(s => s ? { ...s, value: e.target.value } : null)}
                           onKeyDown={handleEditKeyDown}
+                          onPaste={e => e.stopPropagation()}
                           onBlur={commitEdit}
                           className="w-full px-1.5 py-0.5 bg-surface0 text-text rounded focus:outline-none focus:ring-1 focus:ring-mauve text-xs"
                           style={{ minWidth: 40 }}
