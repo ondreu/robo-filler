@@ -1,9 +1,8 @@
-import { useState, useRef } from 'react';
-import { Loader2, Download, ClipboardList, FolderOpen } from 'lucide-react';
+import { useState } from 'react';
+import { Loader2, Download, ClipboardList } from 'lucide-react';
 import type { Article, SearchResult, BulkQueryResult } from '../types';
 import { search } from '../utils/searchEngine';
 import { exportBulkCSV } from '../utils/excelHandler';
-import { parseBomTxt, type ImportResult } from '../utils/bomExport';
 import { SelectableCard } from './SelectableCard';
 import { BomWizard } from './BomWizard';
 
@@ -29,24 +28,6 @@ export function BulkSearch({ articles }: BulkSearchProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [showBomWizard, setShowBomWizard] = useState(false);
-  const [bomImportData, setBomImportData] = useState<ImportResult | undefined>(undefined);
-  const importInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImportTxt = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const text = ev.target?.result as string;
-      const result = parseBomTxt(text, articles);
-      if (result) {
-        setBomImportData(result);
-        setShowBomWizard(true);
-      }
-      if (importInputRef.current) importInputRef.current.value = '';
-    };
-    reader.readAsText(file, 'utf-8');
-  };
 
   const queries = parseLines(rawInput);
   const selectionCount = Object.values(selections).filter(v => v != null).length;
@@ -175,7 +156,7 @@ export function BulkSearch({ articles }: BulkSearchProps) {
                 Export CSV
               </button>
               <button
-                onClick={() => { setBomImportData(undefined); setShowBomWizard(true); }}
+                onClick={() => setShowBomWizard(true)}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all
                   bg-mauve/10 text-mauve hover:bg-mauve/20 border border-mauve/30"
                 title="Vytvořit kusovník ZBOM"
@@ -183,16 +164,6 @@ export function BulkSearch({ articles }: BulkSearchProps) {
                 <ClipboardList size={16} />
                 Export ZBOM
               </button>
-              <button
-                onClick={() => importInputRef.current?.click()}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all
-                  bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text"
-                title="Otevřít uložený ZBOM soubor"
-              >
-                <FolderOpen size={16} />
-                Otevřít ZBOM
-              </button>
-              <input ref={importInputRef} type="file" accept=".txt" className="hidden" onChange={handleImportTxt} />
             </div>
           </div>
 
@@ -296,8 +267,7 @@ export function BulkSearch({ articles }: BulkSearchProps) {
           bulkResults={bulkResults}
           selections={selections}
           articles={articles}
-          importData={bomImportData}
-          onClose={() => { setShowBomWizard(false); setBomImportData(undefined); }}
+          onClose={() => setShowBomWizard(false)}
         />
       )}
     </div>
