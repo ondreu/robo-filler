@@ -44,9 +44,19 @@ export function BulkSearch({ articles }: BulkSearchProps) {
     setTimeout(() => {
       // Fetch extra buffer so "+" can reveal more without re-searching
       const fetchCount = topN * 4;
+
+      // Search only unique queries (case-insensitive), then reuse results for duplicates
+      const cache = new Map<string, SearchResult[]>();
+      for (const query of queries) {
+        const key = query.toLowerCase();
+        if (!cache.has(key)) {
+          cache.set(key, search(articles, { mode: 'combined', field: 'all', query, maxResults: fetchCount }));
+        }
+      }
+
       const results: BulkQueryResult[] = queries.map(query => ({
         query,
-        results: search(articles, { mode: 'combined', field: 'all', query, maxResults: fetchCount }),
+        results: cache.get(query.toLowerCase()) ?? [],
       }));
       setBulkResults(results);
       setHasSearched(true);
@@ -131,7 +141,14 @@ export function BulkSearch({ articles }: BulkSearchProps) {
       {isSearching && (
         <div className="bg-mantle rounded-2xl p-8 flex flex-col items-center justify-center gap-4">
           <Loader2 className="text-mauve animate-spin" size={40} />
-          <p className="text-subtext1">Vyhledávám {queries.length} výrazů...</p>
+          <p className="text-subtext1">
+            {(() => {
+              const unique = new Set(queries.map(q => q.toLowerCase())).size;
+              return unique < queries.length
+                ? `Vyhledávám ${queries.length} výrazů (${unique} unikátních)...`
+                : `Vyhledávám ${queries.length} výrazů...`;
+            })()}
+          </p>
         </div>
       )}
 
