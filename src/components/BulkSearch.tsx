@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, Download, ClipboardList } from 'lucide-react';
+import { Loader2, Download, ClipboardList, Zap, Eye, EyeOff } from 'lucide-react';
 import type { Article, SearchResult, BulkQueryResult } from '../types';
 import { search } from '../utils/searchEngine';
 import { exportBulkCSV } from '../utils/excelHandler';
@@ -28,6 +28,7 @@ export function BulkSearch({ articles }: BulkSearchProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [showBomWizard, setShowBomWizard] = useState(false);
+  const [hideSelected, setHideSelected] = useState(false);
 
   const queries = parseLines(rawInput);
   const selectionCount = Object.values(selections).filter(v => v != null).length;
@@ -40,6 +41,7 @@ export function BulkSearch({ articles }: BulkSearchProps) {
     setSelections({});
     setPerRowVisible({});
     setHasSearched(false);
+    setHideSelected(false);
 
     setTimeout(() => {
       // Fetch extra buffer so "+" can reveal more without re-searching
@@ -66,6 +68,17 @@ export function BulkSearch({ articles }: BulkSearchProps) {
 
   const handleShowMore = (rowIndex: number) => {
     setPerRowVisible(prev => ({ ...prev, [rowIndex]: getVisible(rowIndex) + 3 }));
+  };
+
+  const handleAutoSelect = () => {
+    setSelections(prev => {
+      const next = { ...prev };
+      bulkResults.forEach((row, rowIndex) => {
+        const exact = row.results.filter(r => r.score === 100);
+        if (exact.length === 1) next[rowIndex] = exact[0];
+      });
+      return next;
+    });
   };
 
   const handleSelect = (rowIndex: number, result: SearchResult) => {
@@ -156,13 +169,36 @@ export function BulkSearch({ articles }: BulkSearchProps) {
       {hasSearched && !isSearching && (
         <div className="space-y-4">
           {/* Summary + export */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-subtext1 text-sm">
               {selectionCount > 0
-                ? `${selectionCount} z ${bulkResults.length} označeno`
+                ? `${selectionCount} z ${bulkResults.length} označeno${hideSelected ? ` · ${selectionCount} skryto` : ''}`
                 : `${bulkResults.length} výsledků — klikněte na kartu pro označení`}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={handleAutoSelect}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all
+                  bg-green/10 text-green hover:bg-green/20 border border-green/30"
+                title="Automaticky zaškrtne výrazy s přesně jednou 100% shodou"
+              >
+                <Zap size={16} />
+                Auto 100 %
+              </button>
+              <button
+                onClick={() => setHideSelected(h => !h)}
+                disabled={selectionCount === 0}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all
+                  disabled:opacity-40 disabled:cursor-not-allowed ${
+                  hideSelected
+                    ? 'bg-yellow/10 text-yellow hover:bg-yellow/20 border border-yellow/30'
+                    : 'bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text'
+                }`}
+                title={hideSelected ? 'Zobrazit zaškrtnuté řádky' : 'Skrýt zaškrtnuté řádky'}
+              >
+                {hideSelected ? <Eye size={16} /> : <EyeOff size={16} />}
+                {hideSelected ? 'Zobrazit vše' : 'Skrýt zaškrtnuté'}
+              </button>
               <button
                 onClick={() => exportBulkCSV(bulkResults, selections)}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all
@@ -185,7 +221,10 @@ export function BulkSearch({ articles }: BulkSearchProps) {
           </div>
 
           {/* Row results */}
-          {bulkResults.map((row, rowIndex) => {
+          {bulkResults
+            .map((row, rowIndex) => ({ row, rowIndex }))
+            .filter(({ rowIndex }) => !hideSelected || selections[rowIndex] == null)
+            .map(({ row, rowIndex }) => {
             const isRowSelected = selections[rowIndex] != null;
             const visible = row.results.slice(0, getVisible(rowIndex));
             const canShowMore = getVisible(rowIndex) < row.results.length;
