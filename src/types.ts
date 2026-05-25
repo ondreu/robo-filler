@@ -3,6 +3,7 @@ export interface Article {
   artikl: string;
   vyrobce: string;
   nazev: string;
+  cisloDiluVyrobce: string;
   vybehovyDil: string;
 }
 
@@ -18,6 +19,7 @@ export interface SearchResult extends Article {
     artikl?: string;
     vyrobce?: string;
     nazev?: string;
+    cisloDiluVyrobce?: string;
     vybehovyDil?: string;
   };
 }

@@ -167,6 +167,13 @@ export function ResultCard({ result }: ResultCardProps) {
           result.highlightedFields.typoveOznaceni,
           true
         )}
+
+        {result.cisloDiluVyrobce && renderField(
+          'Číslo dílu výrobce',
+          result.cisloDiluVyrobce,
+          result.highlightedFields.cisloDiluVyrobce,
+          true
+        )}
       </div>
     </div>
   );

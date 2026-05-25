@@ -133,6 +133,11 @@ export function SelectableCard({ result, selected, onSelect }: SelectableCardPro
           </div>
         )}
         {renderField('Typové označení', result.typoveOznaceni, result.highlightedFields.typoveOznaceni)}
+        {result.cisloDiluVyrobce && renderField(
+          'Číslo dílu výrobce',
+          result.cisloDiluVyrobce,
+          result.highlightedFields.cisloDiluVyrobce
+        )}
       </div>
     </div>
   );

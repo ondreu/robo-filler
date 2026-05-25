@@ -20,7 +20,8 @@ export function parseCSV(csvContent: string): Article[] {
         artikl: removeDiacritics(parts[1]?.trim() || ''),
         vyrobce: removeDiacritics(parts[2]?.trim() || ''),
         nazev: removeDiacritics(parts[3]?.trim() || ''),
-        vybehovyDil: removeDiacritics(parts[4]?.trim() || ''),
+        cisloDiluVyrobce: removeDiacritics(parts[4]?.trim() || ''),
+        vybehovyDil: removeDiacritics(parts[5]?.trim() || ''),
       });
     }
   }
