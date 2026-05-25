@@ -9,6 +9,7 @@ interface BomWizardProps {
   articles: Article[];
   onClose: () => void;
   importData?: ImportResult;
+  startAtTable?: boolean;
 }
 
 // ── column definitions ────────────────────────────────────────────────────────
@@ -112,8 +113,9 @@ function Field({ label, hint, children }: { label: React.ReactNode; hint?: strin
 }
 
 // ── main component ────────────────────────────────────────────────────────────
-export function BomWizard({ bulkResults, selections, articles, onClose, importData }: BomWizardProps) {
-  const [step, setStep] = useState<1 | 2>(importData ? 2 : 1);
+export function BomWizard({ bulkResults, selections, articles, onClose, importData, startAtTable }: BomWizardProps) {
+  const [step, setStep] = useState<1 | 2>(importData || startAtTable ? 2 : 1);
+  const [exportAfterHeader, setExportAfterHeader] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -469,15 +471,29 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
   // ── Step 1: header ────────────────────────────────────────────────────────────
   if (step === 1) {
     const dateVal = zbomToDateInput(header.platnostOd) || getTodayInput();
+    const handleConfirmHeader = () => {
+      if (exportAfterHeader) {
+        exportZbomTxt(header, rows, decimalSep);
+        setExportAfterHeader(false);
+      }
+      setStep(2);
+    };
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div className="bg-base rounded-2xl w-full max-w-lg shadow-2xl border border-surface1">
           <div className="flex items-center justify-between p-6 border-b border-surface1">
             <div>
-              <h2 className="text-text font-semibold text-lg">Export ZBOM</h2>
-              <p className="text-overlay1 text-xs mt-0.5">Krok 1 ze 2 – Záhlaví kusovníku</p>
+              <h2 className="text-text font-semibold text-lg">Záhlaví kusovníku</h2>
+              <p className="text-overlay1 text-xs mt-0.5">
+                {exportAfterHeader ? 'Vyplňte záhlaví pro export ZBOM .txt' : 'Záhlaví kusovníku'}
+              </p>
             </div>
-            <button onClick={onClose} className="text-overlay1 hover:text-text transition-colors"><X size={20} /></button>
+            <button
+              onClick={() => { setExportAfterHeader(false); startAtTable ? setStep(2) : onClose(); }}
+              className="text-overlay1 hover:text-text transition-colors"
+            >
+              <X size={20} />
+            </button>
           </div>
           <div className="p-6 space-y-4">
             <Field label="Číslo vrcholu *">
@@ -504,10 +520,15 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
             </Field>
           </div>
           <div className="flex items-center justify-end gap-3 p-6 border-t border-surface1">
-            <button onClick={onClose} className="px-4 py-2 rounded-xl text-subtext1 hover:text-text hover:bg-surface1 transition-all text-sm">Zrušit</button>
-            <button onClick={() => setStep(2)} disabled={!header.cisloVrcholu.trim()}
+            <button
+              onClick={() => { setExportAfterHeader(false); startAtTable ? setStep(2) : onClose(); }}
+              className="px-4 py-2 rounded-xl text-subtext1 hover:text-text hover:bg-surface1 transition-all text-sm"
+            >
+              {startAtTable ? 'Zpět' : 'Zrušit'}
+            </button>
+            <button onClick={handleConfirmHeader} disabled={!header.cisloVrcholu.trim()}
               className="px-6 py-2 rounded-xl font-medium bg-mauve text-crust hover:bg-mauve/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm">
-              Pokračovat →
+              {exportAfterHeader ? 'Stáhnout .txt' : 'Pokračovat →'}
             </button>
           </div>
         </div>
@@ -548,7 +569,17 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
           <button onClick={() => exportZbomExcel(header, rows, decimalSep)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text transition-all">
             <FileSpreadsheet size={13} /> Excel
           </button>
-          <button onClick={() => exportZbomTxt(header, rows, decimalSep)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-mauve text-crust hover:bg-mauve/80 transition-all">
+          <button
+            onClick={() => {
+              if (!header.cisloVrcholu.trim()) {
+                setExportAfterHeader(true);
+                setStep(1);
+              } else {
+                exportZbomTxt(header, rows, decimalSep);
+              }
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-mauve text-crust hover:bg-mauve/80 transition-all"
+          >
             <Download size={13} /> Export ZBOM .txt
           </button>
           <button onClick={onClose} className="ml-1 text-overlay1 hover:text-text transition-colors"><X size={18} /></button>

@@ -212,10 +212,10 @@ export function BulkSearch({ articles }: BulkSearchProps) {
                 onClick={() => setShowBomWizard(true)}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all
                   bg-mauve/10 text-mauve hover:bg-mauve/20 border border-mauve/30"
-                title="Vytvořit kusovník ZBOM"
+                title="Otevřít tabulkové zpracování kusovníku"
               >
                 <ClipboardList size={16} />
-                Export ZBOM
+                Tabulkové zpracování
               </button>
             </div>
           </div>
@@ -326,6 +326,7 @@ export function BulkSearch({ articles }: BulkSearchProps) {
           selections={selections}
           articles={articles}
           onClose={() => setShowBomWizard(false)}
+          startAtTable
         />
       )}
     </div>
