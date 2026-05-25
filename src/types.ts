@@ -4,6 +4,7 @@ export interface Article {
   vyrobce: string;
   nazev: string;
   cisloDiluVyrobce: string;
+  vybehovyDil: string;
 }
 
 export type SearchMode = 'fuzzy' | 'wildcard' | 'combined';
@@ -19,6 +20,7 @@ export interface SearchResult extends Article {
     vyrobce?: string;
     nazev?: string;
     cisloDiluVyrobce?: string;
+    vybehovyDil?: string;
   };
 }
 

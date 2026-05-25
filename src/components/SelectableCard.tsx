@@ -1,4 +1,4 @@
-import { CheckCircle, Copy } from 'lucide-react';
+import { CheckCircle, Copy, AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 import type { SearchResult } from '../types';
 
@@ -11,10 +11,12 @@ interface SelectableCardProps {
 export function SelectableCard({ result, selected, onSelect }: SelectableCardProps) {
   const [copied, setCopied] = useState(false);
 
+  const effectiveArtikl = result.vybehovyDil || result.artikl;
+
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(result.artikl);
+      await navigator.clipboard.writeText(effectiveArtikl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
@@ -85,28 +87,51 @@ export function SelectableCard({ result, selected, onSelect }: SelectableCardPro
       </div>
 
       <div className="space-y-1.5">
+        {result.vybehovyDil && (
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-peach/10 border border-peach/30 rounded-lg">
+            <AlertTriangle size={11} className="text-peach flex-shrink-0" />
+            <span className="text-peach text-xs font-medium">Výběhový díl</span>
+          </div>
+        )}
         {renderField('Název', result.nazev, result.highlightedFields.nazev)}
         <div className="flex items-start gap-2">
           <span className="text-subtext0 text-xs min-w-[120px]">Artikl:</span>
           <div className="flex-1 flex items-center gap-1.5">
             <span
-              className="text-text text-sm font-medium"
+              className={`text-sm font-medium ${result.vybehovyDil ? 'text-overlay1 line-through' : 'text-text'}`}
               dangerouslySetInnerHTML={{ __html: result.highlightedFields.artikl || result.artikl }}
             />
-            <button
-              onClick={handleCopy}
-              className="text-overlay1 hover:text-mauve transition-colors flex-shrink-0"
-              aria-label="Kopírovat artikl"
-              title="Kopírovat artikl"
-            >
-              {copied ? (
-                <CheckCircle size={13} className="text-green" />
-              ) : (
-                <Copy size={13} />
-              )}
-            </button>
+            {!result.vybehovyDil && (
+              <button
+                onClick={handleCopy}
+                className="text-overlay1 hover:text-mauve transition-colors flex-shrink-0"
+                aria-label="Kopírovat artikl"
+                title="Kopírovat artikl"
+              >
+                {copied ? <CheckCircle size={13} className="text-green" /> : <Copy size={13} />}
+              </button>
+            )}
           </div>
         </div>
+        {result.vybehovyDil && (
+          <div className="flex items-start gap-2">
+            <span className="text-peach text-xs font-semibold min-w-[120px]">Výběhový díl:</span>
+            <div className="flex-1 flex items-center gap-1.5">
+              <span
+                className="text-peach text-sm font-bold"
+                dangerouslySetInnerHTML={{ __html: result.highlightedFields.vybehovyDil || result.vybehovyDil }}
+              />
+              <button
+                onClick={handleCopy}
+                className="text-overlay1 hover:text-peach transition-colors flex-shrink-0"
+                aria-label="Kopírovat artikl náhrady"
+                title="Kopírovat artikl náhrady"
+              >
+                {copied ? <CheckCircle size={13} className="text-green" /> : <Copy size={13} />}
+              </button>
+            </div>
+          </div>
+        )}
         {renderField('Typové označení', result.typoveOznaceni, result.highlightedFields.typoveOznaceni)}
         {result.cisloDiluVyrobce && renderField(
           'Číslo dílu výrobce',

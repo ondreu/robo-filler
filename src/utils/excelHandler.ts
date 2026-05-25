@@ -119,7 +119,8 @@ export function exportBulkCSV(
   const header = 'Vstup;Artikl;Typové označení;Název';
   const rows = results.map((r, i) => {
     const sel = selections[i];
-    return [r.query, sel?.artikl ?? '', sel?.typoveOznaceni ?? '', sel?.nazev ?? '']
+    const effectiveArtikl = sel?.vybehovyDil || sel?.artikl || '';
+    return [r.query, effectiveArtikl, sel?.typoveOznaceni ?? '', sel?.nazev ?? '']
       .map(v => `"${String(v).replace(/"/g, '""')}"`)
       .join(';');
   });
