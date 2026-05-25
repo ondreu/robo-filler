@@ -3,7 +3,7 @@ export interface Article {
   artikl: string;
   vyrobce: string;
   nazev: string;
-  cisloDiluVyrobce: string;
+  vybehovyDil: string;
 }
 
 export type SearchMode = 'fuzzy' | 'wildcard' | 'combined';
@@ -18,7 +18,7 @@ export interface SearchResult extends Article {
     artikl?: string;
     vyrobce?: string;
     nazev?: string;
-    cisloDiluVyrobce?: string;
+    vybehovyDil?: string;
   };
 }
 

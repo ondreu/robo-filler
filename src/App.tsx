@@ -187,9 +187,9 @@ function App() {
   const handleExportCSV = () => {
     if (results.length === 0) return;
 
-    const header = 'Typové označení;Artikl;Výrobce;Název;Číslo dílu výrobce;Shoda %';
+    const header = 'Typové označení;Artikl;Výrobce;Název;Výběhový díl;Shoda %';
     const rows = results.map(r =>
-      [r.typoveOznaceni, r.artikl, r.vyrobce, r.nazev, r.cisloDiluVyrobce, r.score.toFixed(0)]
+      [r.typoveOznaceni, r.artikl, r.vyrobce, r.nazev, r.vybehovyDil, r.score.toFixed(0)]
         .map(v => `"${String(v).replace(/"/g, '""')}"`)
         .join(';')
     );

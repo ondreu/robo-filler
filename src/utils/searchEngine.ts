@@ -198,9 +198,9 @@ function fuzzySearch(articles: Article[], query: string, field: SearchField): Se
   const isMultiWord = queryWords.length > 1;
 
   const keys = field === 'all'
-    ? ['nazev', 'typoveOznaceni', 'vyrobce', 'artikl', 'cisloDiluVyrobce']
+    ? ['nazev', 'typoveOznaceni', 'vyrobce', 'artikl', 'vybehovyDil']
     : field === 'typoveOznaceni'
-    ? ['typoveOznaceni', 'cisloDiluVyrobce']
+    ? ['typoveOznaceni', 'vybehovyDil']
     : [field];
 
   if (isMultiWord) {
@@ -306,12 +306,12 @@ function getSearchableFields(article: Article, field: SearchField): Record<strin
       typoveOznaceni: article.typoveOznaceni,
       vyrobce: article.vyrobce,
       artikl: article.artikl,
-      cisloDiluVyrobce: article.cisloDiluVyrobce,
+      vybehovyDil: article.vybehovyDil,
     };
   } else if (field === 'typoveOznaceni') {
     return {
       typoveOznaceni: article.typoveOznaceni,
-      cisloDiluVyrobce: article.cisloDiluVyrobce,
+      vybehovyDil: article.vybehovyDil,
     };
   } else {
     return {

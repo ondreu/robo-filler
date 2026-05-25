@@ -256,12 +256,14 @@ export function BulkSearch({ articles }: BulkSearchProps) {
                   <span
                     className={`text-xs px-2 py-0.5 rounded-xl ${
                       isRowSelected
-                        ? 'bg-mauve/20 text-mauve'
+                        ? selections[rowIndex]!.vybehovyDil
+                          ? 'bg-peach/20 text-peach'
+                          : 'bg-mauve/20 text-mauve'
                         : 'bg-surface0 text-overlay1'
                     }`}
                   >
                     {isRowSelected
-                      ? `✓ ${selections[rowIndex]!.artikl}`
+                      ? `✓ ${selections[rowIndex]!.vybehovyDil || selections[rowIndex]!.artikl}`
                       : 'Nic nevybráno'}
                   </span>
                 </div>
