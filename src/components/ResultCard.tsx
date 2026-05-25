@@ -111,7 +111,7 @@ export function ResultCard({ result }: ResultCardProps) {
         {result.vybehovyDil && (
           <div className="flex items-center gap-2 px-3 py-1.5 bg-peach/10 border border-peach/30 rounded-xl">
             <AlertTriangle size={14} className="text-peach flex-shrink-0" />
-            <span className="text-peach text-xs font-medium">Výběhový díl — náhrada se použije automaticky</span>
+            <span className="text-peach text-xs font-medium">Výběhový díl</span>
           </div>
         )}
 
