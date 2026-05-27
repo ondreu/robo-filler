@@ -3,6 +3,7 @@ import { Loader2, AlertCircle, Download, FolderOpen } from 'lucide-react';
 import type { Article, SearchResult, SearchMode, SearchField, DataSource, AppMode } from './types';
 import { parseBomTxt, type ImportResult } from './utils/bomExport';
 import { BomWizard } from './components/BomWizard';
+import { Changelog } from './components/Changelog';
 import { loadCSV, loadCSVMeta } from './utils/csvParser';
 import { search, getUniqueManufacturers } from './utils/searchEngine';
 import { SearchBar } from './components/SearchBar';
@@ -455,8 +456,9 @@ function App() {
         )}
 
         {/* Footer */}
-        <footer className="text-center text-overlay0 text-sm pt-8">
+        <footer className="text-center text-overlay0 text-sm pt-8 space-y-1">
           <p>Article Search App • Robo Filler</p>
+          <Changelog />
         </footer>
       </div>
 
