@@ -9,7 +9,6 @@ import { SearchBar } from './components/SearchBar';
 import { ResultCard } from './components/ResultCard';
 import { FilterPanel } from './components/FilterPanel';
 import { DataSourceToggle } from './components/DataSourceToggle';
-import { ExcelImport } from './components/ExcelImport';
 import { AdvancedSettings } from './components/AdvancedSettings';
 import { BulkSearch } from './components/BulkSearch';
 
@@ -278,7 +277,6 @@ function App() {
               )}
             </div>
             <input ref={zbomInputRef} type="file" accept=".txt" className="hidden" onChange={handleOpenZbom} />
-            <ExcelImport articles={activeArticles} />
             {results.length > 0 && (
               <button
                 onClick={handleExportCSV}
