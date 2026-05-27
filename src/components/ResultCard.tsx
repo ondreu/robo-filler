@@ -108,6 +108,12 @@ export function ResultCard({ result }: ResultCardProps) {
 
       {/* Fields */}
       <div className="space-y-2">
+        {result.status === 'U' && (
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-red/10 border border-red/30 rounded-xl">
+            <AlertTriangle size={14} className="text-red flex-shrink-0" />
+            <span className="text-red text-xs font-medium">Materiál není aktivní!</span>
+          </div>
+        )}
         {result.vybehovyDil && (
           <div className="flex items-center gap-2 px-3 py-1.5 bg-peach/10 border border-peach/30 rounded-xl">
             <AlertTriangle size={14} className="text-peach flex-shrink-0" />
