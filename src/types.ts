@@ -5,6 +5,7 @@ export interface Article {
   nazev: string;
   cisloDiluVyrobce: string;
   vybehovyDil: string;
+  status: string;
 }
 
 export type SearchMode = 'fuzzy' | 'wildcard' | 'combined';

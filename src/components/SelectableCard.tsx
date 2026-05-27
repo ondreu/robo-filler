@@ -87,6 +87,12 @@ export function SelectableCard({ result, selected, onSelect }: SelectableCardPro
       </div>
 
       <div className="space-y-1.5">
+        {result.status === 'U' && (
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-red/10 border border-red/30 rounded-lg">
+            <AlertTriangle size={11} className="text-red flex-shrink-0" />
+            <span className="text-red text-xs font-medium">Materiál není aktivní!</span>
+          </div>
+        )}
         {result.vybehovyDil && (
           <div className="flex items-center gap-1.5 px-2 py-1 bg-peach/10 border border-peach/30 rounded-lg">
             <AlertTriangle size={11} className="text-peach flex-shrink-0" />

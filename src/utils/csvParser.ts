@@ -22,6 +22,7 @@ export function parseCSV(csvContent: string): Article[] {
         nazev: removeDiacritics(parts[3]?.trim() || ''),
         cisloDiluVyrobce: removeDiacritics(parts[4]?.trim() || ''),
         vybehovyDil: removeDiacritics(parts[5]?.trim() || ''),
+        status: parts[6]?.trim() || '',
       });
     }
   }
