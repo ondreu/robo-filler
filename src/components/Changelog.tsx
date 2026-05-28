@@ -9,6 +9,14 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V280526',
+    date: '28. 5. 2026',
+    changes: [
+      'Tabulkové zpracování: přidáno tlačítko "Zpět" (undo) s historií až 50 kroků, klávesová zkratka Ctrl+Z',
+      'Tabulkové zpracování: buňky dotčené editací, vložením nebo doplněním se krátce rozsvítí (halo efekt)',
+    ],
+  },
+  {
     version: 'V270526',
     date: '27. 5. 2026',
     changes: [
