@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { X, Plus, Trash2, Download, FileSpreadsheet, ArrowLeft, GripVertical } from 'lucide-react';
+import { X, Plus, Trash2, Download, FileSpreadsheet, ArrowLeft, GripVertical, Undo2 } from 'lucide-react';
 import type { Article, BomRow, BomHeader, BulkQueryResult, SearchResult } from '../types';
 import { exportZbomTxt, exportZbomExcel, orderLabel, type ImportResult, type DecimalSep } from '../utils/bomExport';
 
@@ -145,6 +145,38 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
   const containerRef = useRef<HTMLDivElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
 
+  // ── undo history ──────────────────────────────────────────────────────────────
+  const rowsRef = useRef<BomRow[]>(rows);
+  useEffect(() => { rowsRef.current = rows; }, [rows]);
+  const historyRef = useRef<BomRow[][]>([]);
+  const [canUndo, setCanUndo] = useState(false);
+
+  const pushHistory = useCallback(() => {
+    historyRef.current = [...historyRef.current.slice(-49), [...rowsRef.current]];
+    setCanUndo(true);
+  }, []);
+
+  const undo = useCallback(() => {
+    const h = historyRef.current;
+    if (h.length === 0) return;
+    historyRef.current = h.slice(0, -1);
+    setRows(h[h.length - 1]);
+    setSel(null);
+    setEdit(null);
+    setCanUndo(h.length > 1);
+  }, []);
+
+  // ── glow state ────────────────────────────────────────────────────────────────
+  const [glowCells, setGlowCells] = useState<Set<string>>(new Set());
+
+  const addGlow = useCallback((keys: string[]) => {
+    if (keys.length === 0) return;
+    setGlowCells(prev => { const n = new Set(prev); keys.forEach(k => n.add(k)); return n; });
+    setTimeout(() => {
+      setGlowCells(prev => { const n = new Set(prev); keys.forEach(k => n.delete(k)); return n; });
+    }, 900);
+  }, []);
+
   // Focus container when selection active (no edit)
   useEffect(() => {
     if (sel && !edit && step === 2) {
@@ -177,22 +209,35 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
       if (arr[rowIdx]) arr[rowIdx] = { ...arr[rowIdx], popis: found?.nazev ?? '', typoveOznaceni: found?.typoveOznaceni ?? '' };
       return arr;
     });
-  }, [articleMap]);
+    if (found) addGlow([`${rowIdx}-1`, `${rowIdx}-2`]);
+  }, [articleMap, addGlow]);
 
   // ── row mutations ────────────────────────────────────────────────────────────
   const dragIdx = useRef<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const [dragRowIdx, setDragRowIdx] = useState<number | null>(null);
 
-  const addLRow = () => setRows(p => p.length < MAX_ROWS ? [...p, emptyLRow()] : p);
-  const addTRow = () => setRows(p => p.length < MAX_ROWS ? [...p, emptyTRow()] : p);
+  const addLRow = () => {
+    pushHistory();
+    const ri = rowsRef.current.length;
+    setRows(p => p.length < MAX_ROWS ? [...p, emptyLRow()] : p);
+    if (rowsRef.current.length < MAX_ROWS) addGlow(COL_DEFS.map((_, ci) => `${ri}-${ci}`));
+  };
+  const addTRow = () => {
+    pushHistory();
+    const ri = rowsRef.current.length;
+    setRows(p => p.length < MAX_ROWS ? [...p, emptyTRow()] : p);
+    if (rowsRef.current.length < MAX_ROWS) addGlow(COL_DEFS.map((_, ci) => `${ri}-${ci}`));
+  };
 
   const deleteRow = useCallback((idx: number) => {
+    pushHistory();
     setRows(p => p.filter((_, i) => i !== idx));
     setSel(null);
-  }, []);
+  }, [pushHistory]);
 
-  const toggleType = useCallback((idx: number) =>
+  const toggleType = useCallback((idx: number) => {
+    pushHistory();
     setRows(prev => {
       const arr = [...prev];
       const row = arr[idx];
@@ -200,11 +245,17 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
         ? { ...row, type: 'T', poznamka1: row.artikl || row.poznamka1, artikl: '', popis: '', typoveOznaceni: '' }
         : { ...row, type: 'L' };
       return arr;
-    }), []);
+    });
+    addGlow(COL_DEFS.map((_, ci) => `${idx}-${ci}`));
+  }, [pushHistory, addGlow]);
 
   // ── cell value write ─────────────────────────────────────────────────────────
   const applyCellValue = useCallback((ri: number, ci: number, value: string) => {
     if (ci < 0 || ci >= NUM_DATA_COLS) return;
+    const currentRows = rowsRef.current;
+    if (ri >= currentRows.length || !cellEditable(currentRows[ri], ci)) return;
+    pushHistory();
+    addGlow([`${ri}-${ci}`]);
     setRows(prev => {
       if (ri >= prev.length) return prev;
       const arr = [...prev];
@@ -221,7 +272,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
       }
       return arr;
     });
-  }, [lookupAndFill]);
+  }, [lookupAndFill, pushHistory, addGlow]);
 
   // ── edit flow ────────────────────────────────────────────────────────────────
   const startEdit = useCallback((r: number, c: number, replaceWith?: string) => {
@@ -266,6 +317,22 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
     const grid = text.split(/\r?\n/).filter(l => l.length > 0).map(l => l.split('\t'));
     if (grid.length === 0) return;
 
+    pushHistory();
+
+    const currentRows = rowsRef.current;
+    const glowKeys: string[] = [];
+    for (let r = 0; r < grid.length; r++) {
+      const ri = startRow + r;
+      const rowSnap = ri < currentRows.length ? currentRows[ri] : null;
+      for (let c = 0; c < grid[r].length; c++) {
+        const ci = startCol + c;
+        if (ci >= NUM_DATA_COLS) break;
+        if (rowSnap && !cellEditable(rowSnap, ci)) continue;
+        glowKeys.push(`${ri}-${ci}`);
+      }
+    }
+    addGlow(glowKeys);
+
     setRows(prev => {
       const arr = [...prev];
       const lookupQueue: number[] = [];
@@ -308,13 +375,20 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
 
       return arr;
     });
-  }, [sel, articleMap]);
+  }, [sel, articleMap, pushHistory, addGlow]);
 
   // ── keyboard handler on container ────────────────────────────────────────────
   const handleContainerKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (edit) return;
     if (!sel) return;
     const { r1, r2, c1, c2 } = norm(sel);
+
+    // Undo
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+      e.preventDefault();
+      undo();
+      return;
+    }
 
     // Copy
     if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
@@ -333,6 +407,14 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
     // Delete / clear
     if ((e.key === 'Delete' || e.key === 'Backspace') && !e.ctrlKey) {
       e.preventDefault();
+      pushHistory();
+      const glowKeys: string[] = [];
+      for (let r = r1; r <= r2; r++) {
+        for (let c = c1; c <= c2; c++) {
+          if (r < rows.length && cellEditable(rows[r], c)) glowKeys.push(`${r}-${c}`);
+        }
+      }
+      addGlow(glowKeys);
       setRows(prev => {
         const arr = [...prev];
         for (let r = r1; r <= r2; r++) {
@@ -386,7 +468,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
     if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
       startEdit(sel.anchor.row, sel.anchor.col, e.key);
     }
-  }, [sel, edit, rows, copySelection, startEdit]);
+  }, [sel, edit, rows, copySelection, startEdit, pushHistory, undo, addGlow]);
 
   // Paste event on container
   const handleContainerPaste = useCallback((e: React.ClipboardEvent) => {
@@ -453,6 +535,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
   const handleRowDrop = (idx: number) => {
     const from = dragIdx.current;
     if (from === null || from === idx) { setDragOverIdx(null); setDragRowIdx(null); return; }
+    pushHistory();
     setRows(prev => {
       const arr = [...prev];
       const [d] = arr.splice(from, 1);
@@ -596,6 +679,15 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
           className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-yellow/10 text-yellow hover:bg-yellow/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
           <Plus size={12} /> Textové pole (T)
         </button>
+        <div className="w-px h-4 bg-surface1 mx-1" />
+        <button
+          onClick={undo}
+          disabled={!canUndo}
+          title="Zpět (Ctrl+Z)"
+          className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        >
+          <Undo2 size={12} /> Zpět
+        </button>
         <span className="text-overlay0 text-xs ml-auto">{rows.length} / {MAX_ROWS} pozic</span>
       </div>
 
@@ -672,7 +764,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
                   return (
                     <td
                       key={col.key}
-                      className={`${tdCls} ${isSelectedCell ? 'bg-mauve/20' : ''}`}
+                      className={`${tdCls} ${isSelectedCell ? 'bg-mauve/20' : ''} ${glowCells.has(`${ri}-${ci}`) ? 'cell-glow' : ''}`}
                       onMouseDown={e => handleCellMouseDown(e, ri, ci)}
                       onMouseEnter={() => handleCellMouseEnter(ri, ci)}
                       onDoubleClick={() => handleCellDblClick(ri, ci)}
