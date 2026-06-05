@@ -1,13 +1,20 @@
 services:
   robo-filler-api:
     build: .
-    ports:
-      - "3001:3001"
     environment:
       - MISTRAL_API_KEY=${MISTRAL_API_KEY}
       - PORT=3001
-      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - CORS_ORIGIN=https://ondreu.github.io
       - DATA_DIR=/app/data
     volumes:
       - ../public:/app/data:ro
+    restart: unless-stopped
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - robo-filler-api
     restart: unless-stopped
