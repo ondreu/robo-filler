@@ -30,8 +30,7 @@ ROZSAH: Odpovídáš POUZE na dotazy o průmyslových dílech, artiklech a techn
 DÉLKA: Buď maximálně stručný — 1 až 2 věty. Žádné zbytečné úvody ani závěry.
 FORMÁT: Odpovídej VŽDY jako JSON objekt: {"answer": "česky, markdown povolen", "selected": []}
 SELECTED: Pokud dostaneš seznam kandidátů artiklů, vyber do "selected" indexy (čísla) max 5 nejrelevantnějších pro dotaz. Ostatní zahoď. Pokud žádný kandidát nesedí nebo seznam není k dispozici, vrať "selected": [].
-WEB: Pokud máš výsledky z internetu, shrň je v 1 větě a uveď zdroje jako markdown odkazy.
-KOMBINACE: Pokud máš oboje (DB i web), nejprve shrň DB výsledky, pak doplň webový kontext.
+WEB: Shrň v 1-2 větách, zdroje jako markdown odkazy.
 NENALEZENO: Navrhni jedno konkrétní alternativní hledání, "selected": [].`;
 
 async function expandQuery(userMessage, history) {
@@ -86,18 +85,18 @@ async function webSearch(query) {
 async function synthesize(userMessage, articles, webResults, history, type) {
   let context = '';
 
-  if (articles.length > 0) {
-    context += `\n\nKandidáti z databáze (${articles.length}) — vyber indexy max 5 nejrelevantnějších:\n` + articles
-      .map((a, i) => `[${i}] ${a.artikl} | ${a.nazev} | ${a.vyrobce}`)
-      .join('\n');
-  } else if (type === 'search') {
-    context += '\n\nŽádné artikly v databázi nebyly nalezeny.';
-  }
-
-  if (webResults.length > 0) {
-    context += '\n\nVýsledky z internetu:\n' + webResults
-      .map((r, i) => `${i + 1}. [${r.title}](${r.url})\n   ${r.content}`)
-      .join('\n');
+  if (type === 'search') {
+    context = articles.length > 0
+      ? `\n\nKandidáti (${articles.length}) — vyber indexy max 5 nejrelevantnějších:\n` + articles
+          .map((a, i) => `[${i}] ${a.artikl} | ${a.nazev} | ${a.vyrobce}`)
+          .join('\n')
+      : '\n\nŽádné artikly v databázi nebyly nalezeny.';
+  } else if (type === 'web_search') {
+    context = webResults.length > 0
+      ? '\n\nVýsledky z internetu:\n' + webResults
+          .map((r, i) => `${i + 1}. [${r.title}](${r.url})\n   ${r.content}`)
+          .join('\n')
+      : '\n\nInternetové vyhledávání nevrátilo výsledky.';
   }
 
   const resp = await client.chat.complete({
@@ -130,14 +129,13 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   let articles = [];
   let webResults = [];
 
-  if (type === 'search' || (type === 'web_search' && !webSearchEnabled)) {
-    const effectiveType = 'search';
-    type = effectiveType;
+  if (type === 'web_search' && !webSearchEnabled) {
+    type = 'conversation';
+  }
+
+  if (type === 'search') {
     const preview = terms.slice(0, 3).join(', ') + (terms.length > 3 ? '...' : '');
-    const statusMsg = webSearchEnabled
-      ? `Hledám v databázi a na internetu: ${preview}`
-      : `Hledám v databázi: ${preview}`;
-    sendStatus('searching', statusMsg);
+    sendStatus('searching', `Hledám v databázi: ${preview}`);
 
     const seen = new Set();
     for (const term of terms) {
@@ -148,16 +146,12 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
         }
       }
     }
-
-    if (webSearchEnabled && process.env.TAVILY_API_KEY) {
-      webResults = await webSearch(userMessage);
-    }
   } else if (type === 'web_search') {
     if (process.env.TAVILY_API_KEY) {
       sendStatus('searching', `Hledám na internetu: ${query}`);
       webResults = await webSearch(query);
     } else {
-      sendStatus('searching', 'Internetové vyhledávání není nakonfigurováno...');
+      sendStatus('searching', 'Webové vyhledávání není nakonfigurováno (chybí TAVILY_API_KEY).');
     }
   }
 
