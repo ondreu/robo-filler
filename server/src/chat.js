@@ -1,5 +1,6 @@
 import { Mistral } from '@mistralai/mistralai';
 import { searchTerm, articleCount } from './search.js';
+import { ABBREVIATIONS_CONTEXT } from './abbreviations.js';
 
 const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
 const MODEL_EXPAND = 'mistral-small-latest';
@@ -10,12 +11,15 @@ Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
 
 1. Pokud jde o vyhledávání průmyslového dílu nebo artiklu (i follow-up jako "a pro M25?" nebo "zkus to s IP67"):
    Rozšiř hledaný výraz o synonyma a překlady (CS/DE/EN), zachovej rozměry a specifikace.
+   Používej zkratky a konvence z přiložených znalostí databáze.
    Vrať: {"type": "search", "terms": ["term1", "term2", ...]}
 
 2. Pokud jde o konverzační zprávu (pozdrav, poděkování, obecná otázka na schopnosti):
    Vrať: {"type": "conversation", "terms": []}
 
-Odpovídej POUZE jako JSON objekt, bez markdown.`;
+Odpovídej POUZE jako JSON objekt, bez markdown.
+
+${ABBREVIATIONS_CONTEXT}`;
 
 const SYNTH_SYSTEM = `Jsi Karel Bot, specializovaný asistent výhradně pro vyhledávání průmyslových artiklů v databázi Robo Filler.
 
