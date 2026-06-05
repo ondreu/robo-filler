@@ -14,7 +14,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.post('/api/chat', async (req, res) => {
-  const { message } = req.body ?? {};
+  const { message, history = [] } = req.body ?? {};
 
   if (!message || typeof message !== 'string' || !message.trim()) {
     return res.status(400).json({ error: 'Chybí parametr message.' });
@@ -24,13 +24,27 @@ app.post('/api/chat', async (req, res) => {
     return res.status(500).json({ error: 'MISTRAL_API_KEY není nastaven.' });
   }
 
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const send = (event, data) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
+
   try {
-    const result = await handleChat(message.trim());
-    res.json(result);
+    const result = await handleChat(
+      message.trim(),
+      history,
+      (step, label) => send('status', { step, label }),
+    );
+    send('result', result);
   } catch (err) {
     console.error('[chat]', err);
-    res.status(500).json({ error: 'Chyba při zpracování dotazu.' });
+    send('error', { error: 'Chyba při zpracování dotazu.' });
   }
+
+  res.end();
 });
 
 app.listen(PORT, () => {
