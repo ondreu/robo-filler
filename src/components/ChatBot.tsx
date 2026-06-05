@@ -13,7 +13,7 @@ interface ChatResponse {
   articles: Article[];
 }
 
-const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? '';
+const BACKEND_URL = ((import.meta.env.VITE_BACKEND_URL as string | undefined) ?? '').trim().replace(/\/$/, '');
 
 export function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
