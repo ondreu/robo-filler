@@ -105,6 +105,7 @@ export function ChatBot() {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [panelW, setPanelW] = useState(DEFAULT_W);
   const [panelH, setPanelH] = useState(DEFAULT_H);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -306,7 +307,28 @@ export function ChatBot() {
           </div>
 
           {/* Input */}
-          <div className="border-t border-surface1 bg-mantle p-3 flex gap-2 shrink-0">
+          <div className="border-t border-surface1 bg-mantle p-3 flex gap-2 shrink-0 relative">
+            {/* Settings popover */}
+            {settingsOpen && (
+              <div className="absolute bottom-full left-0 right-0 mb-1 mx-3 bg-mantle border border-surface1 rounded-xl shadow-lg p-3 z-10">
+                <p className="text-xs text-subtext0 font-medium mb-2">Nastavení</p>
+                <label className="flex items-center justify-between gap-3 cursor-pointer">
+                  <span className="text-sm text-text">Webové vyhledávání</span>
+                  <button
+                    role="switch"
+                    aria-checked={webSearchEnabled}
+                    onClick={() => setWebSearchEnabled(v => !v)}
+                    className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${
+                      webSearchEnabled ? 'bg-mauve' : 'bg-surface2'
+                    }`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-crust rounded-full shadow transition-transform ${
+                      webSearchEnabled ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </label>
+              </div>
+            )}
             <input
               ref={inputRef}
               type="text"
@@ -320,14 +342,14 @@ export function ChatBot() {
               disabled={isLoading}
             />
             <button
-              onClick={() => setWebSearchEnabled(v => !v)}
-              title={webSearchEnabled ? 'Webové vyhledávání: zapnuto' : 'Webové vyhledávání: vypnuto'}
+              onClick={() => setSettingsOpen(v => !v)}
+              title="Nastavení"
               className={`rounded-xl px-2 py-2 transition-colors ${
-                webSearchEnabled
+                settingsOpen || webSearchEnabled
                   ? 'text-mauve bg-surface1 hover:bg-surface2'
                   : 'text-overlay0 hover:text-subtext1 hover:bg-surface0'
               }`}
-              aria-label="Přepnout webové vyhledávání"
+              aria-label="Nastavení"
             >
               <Settings size={15} />
             </button>
