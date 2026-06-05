@@ -1,0 +1,13 @@
+services:
+  robo-filler-api:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - PORT=3001
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - DATA_DIR=/app/data
+    volumes:
+      - ../public:/app/data:ro
+    restart: unless-stopped

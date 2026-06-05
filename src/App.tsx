@@ -12,6 +12,7 @@ import { FilterPanel } from './components/FilterPanel';
 import { DataSourceToggle } from './components/DataSourceToggle';
 import { AdvancedSettings } from './components/AdvancedSettings';
 import { BulkSearch } from './components/BulkSearch';
+import { ChatBot } from './components/ChatBot';
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -29,6 +30,8 @@ function useDebounce<T>(value: T, delay: number): T {
 
   return debouncedValue;
 }
+
+const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? '';
 
 function App() {
   // Data state
@@ -461,6 +464,8 @@ function App() {
           <Changelog />
         </footer>
       </div>
+
+      {BACKEND_URL && <ChatBot />}
 
       {showBomImport && (
         <BomWizard
