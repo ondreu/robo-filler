@@ -6,6 +6,10 @@ function removeDiacritics(str: string): string {
   return str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function normalizeString(str: string): string {
   return removeDiacritics(str)
     .toLowerCase()
@@ -154,13 +158,16 @@ function wildcardSearch(articles: Article[], query: string, field: SearchField):
     if (!pattern.startsWith('*')) pattern = '*' + pattern;
     if (!pattern.endsWith('*')) pattern = pattern + '*';
     const regexPattern = removeDiacritics(pattern)
-      .replace(/\*/g, '.*')
-      .replace(/\?/g, '.');
+      .replace(/[.+^${}()|[\]\\*?]/g, (char) => {
+        if (char === '*') return '.*';
+        if (char === '?') return '.';
+        return '\\' + char;
+      });
     regexes = [new RegExp(regexPattern, 'i')];
   } else {
     // Each word becomes its own regex — ALL must match (AND logic)
     const words = query.trim().split(/\s+/).filter(Boolean);
-    regexes = words.map(w => new RegExp(removeDiacritics(w), 'i'));
+    regexes = words.map(w => new RegExp(escapeRegex(removeDiacritics(w)), 'i'));
   }
 
   const results: SearchResult[] = [];
