@@ -27,11 +27,11 @@ ${ABBREVIATIONS_CONTEXT}`;
 const SYNTH_SYSTEM = `Jsi Karel Bot, specializovaný asistent pro vyhledávání průmyslových artiklů v databázi Robo Filler.
 
 ROZSAH: Odpovídáš POUZE na dotazy o průmyslových dílech, artiklech a technických specifikacích. Vše ostatní zdvořile odmítni.
-DÉLKA: Buď maximálně stručný — 1 až 2 věty. Žádné zbytečné úvody, opakování ani závěry.
-FORMÁT: Čeština, markdown povolený (tučně pro klíčové hodnoty, odrážky jen pokud je výčet opravdu nutný).
-ARTIKLY: Jsou zobrazeny jako karty — pouze řekni kolik jich bylo nalezeno a jakého typu.
-WEB: Shrň výsledky v 1-2 větách, zdroje jako markdown odkazy.
-NENALEZENO: Navrhni jedno konkrétní alternativní hledání.`;
+DÉLKA: Buď maximálně stručný — 1 až 2 věty. Žádné zbytečné úvody ani závěry.
+FORMÁT: Odpovídej VŽDY jako JSON objekt: {"answer": "česky, markdown povolen", "selected": []}
+SELECTED: Pokud dostaneš seznam kandidátů artiklů, vyber do "selected" indexy (čísla) max 5 nejrelevantnějších pro dotaz. Ostatní zahoď. Pokud žádný kandidát nesedí nebo seznam není k dispozici, vrať "selected": [].
+WEB: Shrň v 1-2 větách, zdroje jako markdown odkazy.
+NENALEZENO: Navrhni jedno konkrétní alternativní hledání, "selected": [].`;
 
 async function expandQuery(userMessage, history) {
   const resp = await client.chat.complete({
@@ -87,8 +87,8 @@ async function synthesize(userMessage, articles, webResults, history, type) {
 
   if (type === 'search') {
     context = articles.length > 0
-      ? `\n\nNalezené artikly (${articles.length}):\n` + articles
-          .map((a, i) => `${i + 1}. ${a.artikl} | ${a.nazev} | ${a.vyrobce}`)
+      ? `\n\nKandidáti (${articles.length}) — vyber indexy max 5 nejrelevantnějších:\n` + articles
+          .map((a, i) => `[${i}] ${a.artikl} | ${a.nazev} | ${a.vyrobce}`)
           .join('\n')
       : '\n\nŽádné artikly v databázi nebyly nalezeny.';
   } else if (type === 'web_search') {
@@ -101,6 +101,7 @@ async function synthesize(userMessage, articles, webResults, history, type) {
 
   const resp = await client.chat.complete({
     model: MODEL_SYNTH,
+    responseFormat: { type: 'json_object' },
     messages: [
       { role: 'system', content: SYNTH_SYSTEM },
       ...history.slice(-6),
@@ -108,7 +109,15 @@ async function synthesize(userMessage, articles, webResults, history, type) {
     ],
   });
 
-  return resp.choices[0].message.content;
+  try {
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    return {
+      answer: typeof parsed.answer === 'string' ? parsed.answer : '',
+      selected: Array.isArray(parsed.selected) ? parsed.selected : null,
+    };
+  } catch {
+    return { answer: resp.choices[0].message.content, selected: null };
+  }
 }
 
 export async function handleChat(userMessage, history, sendStatus, webSearchEnabled = false) {
@@ -130,7 +139,7 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
 
     const seen = new Set();
     for (const term of terms) {
-      for (const article of searchTerm(term, 5)) {
+      for (const article of searchTerm(term, 8)) {
         if (!seen.has(article.artikl)) {
           seen.add(article.artikl);
           articles.push(article);
@@ -147,7 +156,18 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   }
 
   sendStatus('generating', 'Formuluji odpověď...');
-  const answer = await synthesize(userMessage, articles.slice(0, 15), webResults, history, type);
+  const candidates = articles.slice(0, 25);
+  const { answer, selected } = await synthesize(userMessage, candidates, webResults, history, type);
 
-  return { answer, articles: articles.slice(0, 15), expandedTerms: terms, type };
+  let pickedArticles;
+  if (type === 'search' && selected && selected.length > 0) {
+    pickedArticles = selected
+      .filter(i => typeof i === 'number' && i >= 0 && i < candidates.length)
+      .slice(0, 5)
+      .map(i => candidates[i]);
+  } else {
+    pickedArticles = candidates.slice(0, 5);
+  }
+
+  return { answer, articles: pickedArticles, expandedTerms: terms, type };
 }
