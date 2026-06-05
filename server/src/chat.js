@@ -139,7 +139,7 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
 
     const seen = new Set();
     for (const term of terms) {
-      for (const article of searchTerm(term, 8)) {
+      for (const article of searchTerm(term, 12)) {
         if (!seen.has(article.artikl)) {
           seen.add(article.artikl);
           articles.push(article);
@@ -156,7 +156,7 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   }
 
   sendStatus('generating', 'Formuluji odpověď...');
-  const candidates = articles.slice(0, 25);
+  const candidates = articles.slice(0, 40);
   const { answer, selected } = await synthesize(userMessage, candidates, webResults, history, type);
 
   let pickedArticles;
