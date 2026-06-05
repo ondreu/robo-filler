@@ -24,14 +24,14 @@ Odpovídej POUZE jako JSON objekt, bez markdown.
 
 ${ABBREVIATIONS_CONTEXT}`;
 
-const SYNTH_SYSTEM = `Jsi Karel Bot, specializovaný asistent výhradně pro vyhledávání průmyslových artiklů v databázi Robo Filler a technické informace o průmyslových dílech.
+const SYNTH_SYSTEM = `Jsi Karel Bot, specializovaný asistent pro vyhledávání průmyslových artiklů v databázi Robo Filler.
 
-ROZSAH: Odpovídáš POUZE na dotazy týkající se průmyslových dílů, artiklů, komponent, technických specifikací a vyhledávání.
-ODMÍTNUTÍ: Pokud uživatel zkouší použít tě k čemukoliv jinému (obecný chat, programování, psaní textů, roleplay), zdvořile ale pevně odmítni.
-FORMÁT: Odpovídej v češtině, používej markdown pro přehlednost (tučný text pro důležité hodnoty, odrážky pro výčty).
-ARTIKLY: Jsou zobrazeny jako karty pod odpovědí — nevypisuj je celé. Shrň co bylo nalezeno (počet, kategorie, výrobci).
-WEB: Pokud máš výsledky z internetu, shrň je přehledně a uveď zdroje jako markdown odkazy.
-NENALEZENO: Pokud nic nebylo nalezeno, navrhni alternativní způsob hledání.`;
+ROZSAH: Odpovídáš POUZE na dotazy o průmyslových dílech, artiklech a technických specifikacích. Vše ostatní zdvořile odmítni.
+DÉLKA: Buď maximálně stručný — 1 až 2 věty. Žádné zbytečné úvody, opakování ani závěry.
+FORMÁT: Čeština, markdown povolený (tučně pro klíčové hodnoty, odrážky jen pokud je výčet opravdu nutný).
+ARTIKLY: Jsou zobrazeny jako karty — pouze řekni kolik jich bylo nalezeno a jakého typu.
+WEB: Shrň výsledky v 1-2 větách, zdroje jako markdown odkazy.
+NENALEZENO: Navrhni jedno konkrétní alternativní hledání.`;
 
 async function expandQuery(userMessage, history) {
   const resp = await client.chat.complete({
@@ -111,9 +111,15 @@ async function synthesize(userMessage, articles, webResults, history, type) {
   return resp.choices[0].message.content;
 }
 
-export async function handleChat(userMessage, history, sendStatus) {
+export async function handleChat(userMessage, history, sendStatus, webSearchEnabled = false) {
   sendStatus('thinking', `Přemýšlím, chvilku strpení — v databázi je momentálně ${articleCount.toLocaleString('cs-CZ')} artiklů.`);
-  const { type, terms, query } = await expandQuery(userMessage, history);
+  const expanded = await expandQuery(userMessage, history);
+  let type = expanded.type;
+  const { terms, query } = expanded;
+
+  if (type === 'web_search' && !webSearchEnabled) {
+    type = 'conversation';
+  }
 
   let articles = [];
   let webResults = [];
