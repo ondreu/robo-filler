@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import type { Article } from '../types';
 
 interface Status {
@@ -185,7 +186,20 @@ export function ChatBot() {
                       ? 'bg-mauve text-crust rounded-br-sm'
                       : 'bg-surface0 text-text rounded-bl-sm'
                   }`}>
-                    {msg.content}
+                    {msg.role === 'user' ? msg.content : (
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
+                          strong: ({ children }) => <strong className="font-semibold text-mauve">{children}</strong>,
+                          ul: ({ children }) => <ul className="list-disc list-inside space-y-0.5 mt-1">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal list-inside space-y-0.5 mt-1">{children}</ol>,
+                          li: ({ children }) => <li className="text-sm">{children}</li>,
+                          code: ({ children }) => <code className="bg-surface1 rounded px-1 font-mono text-xs">{children}</code>,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    )}
                   </div>
 
                   {msg.articles && msg.articles.length > 0 && (
