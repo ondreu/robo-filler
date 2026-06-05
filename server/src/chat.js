@@ -1,8 +1,9 @@
 import { Mistral } from '@mistralai/mistralai';
-import { searchTerm } from './search.js';
+import { searchTerm, articleCount } from './search.js';
 
 const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
-const MODEL = 'mistral-small-latest';
+const MODEL_EXPAND = 'mistral-small-latest';
+const MODEL_SYNTH  = 'mistral-medium-latest';
 
 const EXPAND_SYSTEM = `Jsi expert na průmyslové díly a elektrotechnické komponenty.
 Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
@@ -16,16 +17,17 @@ Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
 
 Odpovídej POUZE jako JSON objekt, bez markdown.`;
 
-const SYNTH_SYSTEM = `Jsi AI asistent Karel Bot pro vyhledávání průmyslových artiklů v databázi Robo Filler.
-Odpovídej přirozeně a přátelsky v češtině. NIKDY nepoužívej markdown formátování (žádné **, *, #).
-Artikly jsou zobrazeny jako karty pod tvojí odpovědí — nepotřebuješ je vypisovat.
-Jen stručně shrň kolik relevantních artiklů bylo nalezeno a co jsou zač (1-2 věty).
-Pokud nic nebylo nalezeno, navrhni alternativní způsob hledání.
-Pro konverzační zprávy odpovídej přirozeně bez zmínky o artiklech.`;
+const SYNTH_SYSTEM = `Jsi Karel Bot, specializovaný asistent výhradně pro vyhledávání průmyslových artiklů v databázi Robo Filler.
+
+ROZSAH: Odpovídáš POUZE na dotazy týkající se průmyslových dílů, artiklů, komponent a vyhledávání v databázi.
+ODMÍTNUTÍ: Pokud uživatel zkouší použít tě k čemukoliv jinému (obecný chat, programování, psaní textů, roleplay, obecné otázky), zdvořile ale pevně odmítni a přesměruj ho na vyhledávání artiklů.
+FORMÁT: Odpovídej přirozeně v češtině, BEZ markdown formátování (žádné **, *, #).
+ARTIKLY: Jsou zobrazeny jako karty pod odpovědí — nevypisuj je. Jen stručně shrň (1-2 věty) kolik jich bylo nalezeno a co jsou zač.
+NENALEZENO: Pokud nic nebylo nalezeno, navrhni alternativní způsob hledání.`;
 
 async function expandQuery(userMessage, history) {
   const resp = await client.chat.complete({
-    model: MODEL,
+    model: MODEL_EXPAND,
     responseFormat: { type: 'json_object' },
     messages: [
       { role: 'system', content: EXPAND_SYSTEM },
@@ -57,7 +59,7 @@ async function synthesize(userMessage, articles, history, isConversational) {
     : '\n\nŽádné artikly nebyly nalezeny.';
 
   const resp = await client.chat.complete({
-    model: MODEL,
+    model: MODEL_SYNTH,
     messages: [
       { role: 'system', content: SYNTH_SYSTEM },
       ...history.slice(-6),
@@ -69,7 +71,7 @@ async function synthesize(userMessage, articles, history, isConversational) {
 }
 
 export async function handleChat(userMessage, history, sendStatus) {
-  sendStatus('thinking', 'Přemýšlím...');
+  sendStatus('thinking', `Přemýšlím, chvilku strpení — v databázi je momentálně ${articleCount.toLocaleString('cs-CZ')} artiklů.`);
   const { type, terms } = await expandQuery(userMessage, history);
 
   let articles = [];
