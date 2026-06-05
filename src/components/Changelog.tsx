@@ -9,6 +9,13 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V050626',
+    date: '5. 6. 2026',
+    changes: [
+      'Oprava: vyhledávání s výrazem obsahujícím závorky „(" nebo „)" již správně funguje (závorky se neinterpretovaly jako regex skupiny)',
+    ],
+  },
+  {
     version: 'V280526',
     date: '28. 5. 2026',
     changes: [
