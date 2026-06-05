@@ -62,7 +62,7 @@ function wildcardSearch(articles, query) {
 function fuzzySearch(articles, query) {
   const fuse = new Fuse(articles, {
     keys: ['nazev', 'typoveOznaceni', 'artikl', 'vyrobce', 'cisloDiluVyrobce'],
-    threshold: 0.4,
+    threshold: 0.3,
     includeScore: true,
     ignoreLocation: true,
     minMatchCharLength: 2,
