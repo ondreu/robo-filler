@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Copy, Check, ExternalLink } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import type { Article } from '../types';
 
 interface Status {
@@ -17,15 +18,40 @@ interface Message {
 const BACKEND_URL = ((import.meta.env.VITE_BACKEND_URL as string | undefined) ?? '').trim().replace(/\/$/, '');
 
 function ArticleCard({ article }: { article: Article }) {
+  const [copied, setCopied] = useState(false);
+
+  const copyArtkl = () => {
+    navigator.clipboard.writeText(article.artikl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  const googleSearch = () => {
+    const q = encodeURIComponent(article.typoveOznaceni || article.nazev);
+    window.open(`https://www.google.com/search?q=${q}`, '_blank', 'noopener');
+  };
+
   return (
-    <div className="bg-surface0 border border-surface2 rounded-xl p-3 space-y-1 text-xs hover:bg-surface1 transition-colors cursor-default">
-      <div className="flex items-start justify-between gap-2">
-        <span className="font-mono text-mauve font-semibold">{article.artikl}</span>
-        <span className="text-overlay1 shrink-0 text-right">{article.vyrobce}</span>
+    <div className="bg-surface0 border border-surface2 rounded-xl p-3 space-y-1 text-xs hover:bg-surface1 transition-colors">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+          <span className="font-mono text-mauve font-semibold">{article.artikl}</span>
+          <button onClick={copyArtkl} title="Kopírovat artikl"
+            className="text-overlay1 hover:text-mauve transition-colors">
+            {copied ? <Check size={11} /> : <Copy size={11} />}
+          </button>
+        </div>
+        <span className="text-overlay1 shrink-0">{article.vyrobce}</span>
       </div>
       <div className="text-text font-medium leading-snug">{article.nazev}</div>
       {article.typoveOznaceni && (
-        <div className="text-subtext0">{article.typoveOznaceni}</div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-subtext0">{article.typoveOznaceni}</span>
+          <button onClick={googleSearch} title="Hledat na Google"
+            className="text-overlay1 hover:text-mauve transition-colors shrink-0">
+            <ExternalLink size={11} />
+          </button>
+        </div>
       )}
     </div>
   );
@@ -185,7 +211,20 @@ export function ChatBot() {
                       ? 'bg-mauve text-crust rounded-br-sm'
                       : 'bg-surface0 text-text rounded-bl-sm'
                   }`}>
-                    {msg.content}
+                    {msg.role === 'user' ? msg.content : (
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
+                          strong: ({ children }) => <strong className="font-semibold text-mauve">{children}</strong>,
+                          ul: ({ children }) => <ul className="list-disc list-inside space-y-0.5 mt-1">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal list-inside space-y-0.5 mt-1">{children}</ol>,
+                          li: ({ children }) => <li className="text-sm">{children}</li>,
+                          code: ({ children }) => <code className="bg-surface1 rounded px-1 font-mono text-xs">{children}</code>,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    )}
                   </div>
 
                   {msg.articles && msg.articles.length > 0 && (
