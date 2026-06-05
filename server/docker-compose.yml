@@ -3,6 +3,7 @@ services:
     image: ghcr.io/ondreu/robo-filler-server:latest
     environment:
       - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
       - PORT=3001
       - CORS_ORIGIN=https://ondreu.github.io
       - DATA_DIR=/app/data
