@@ -20,11 +20,11 @@ BARVY (anglické zkratky):
 - zelená = GN, Green
 - žlutá = YE, Yellow
 - bílá = WH, White
-- šedá = GY, GR, Grey
+- šedá = GY, GR, Grey, LGY
 - oranžová = OG, OR, Orange
 - hnědá = BN, Brown
 - fialová = VT, VI, Violet
-- žlutozelená (ochranný vodič/zemnění) = GN/YE, GNYE
+- žlutozelená (ochranný vodič/zemnění) = GN/YE, GNYE, PE
 
 PRŮCHODKY A ROZMĚRY:
 - průměr = D= (např. "průměr 12 mm" → hledej "D=12")
