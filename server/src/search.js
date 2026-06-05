@@ -45,6 +45,8 @@ const allArticles = [
 
 console.log(`[search] Loaded ${allArticles.length} articles`);
 
+export const articleCount = allArticles.length;
+
 function wildcardSearch(articles, query) {
   const words = query.trim().split(/\s+/).filter(Boolean);
   const regexes = words.map(w => new RegExp(removeDiacritics(w), 'i'));
