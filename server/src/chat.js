@@ -126,12 +126,12 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   let type = expanded.type;
   const { terms, query } = expanded;
 
+  let articles = [];
+  let webResults = [];
+
   if (type === 'web_search' && !webSearchEnabled) {
     type = 'conversation';
   }
-
-  let articles = [];
-  let webResults = [];
 
   if (type === 'search') {
     const preview = terms.slice(0, 3).join(', ') + (terms.length > 3 ? '...' : '');
@@ -151,7 +151,7 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
       sendStatus('searching', `Hledám na internetu: ${query}`);
       webResults = await webSearch(query);
     } else {
-      sendStatus('searching', 'Internetové vyhledávání není nakonfigurováno...');
+      sendStatus('searching', 'Webové vyhledávání není nakonfigurováno (chybí TAVILY_API_KEY).');
     }
   }
 
