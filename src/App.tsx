@@ -83,7 +83,8 @@ function App() {
   const openNewZbomTab = useCallback((importData?: ImportResult) => {
     const id = `zbom-${++zbomTabCtrRef.current}`;
     setZbomTabs(prev => {
-      const name = `ZBOM ${prev.length + 1}`;
+      const derived = importData?.header?.cisloVrcholu?.trim() || importData?.header?.popis?.trim();
+      const name = derived || `ZBOM ${prev.length + 1}`;
       return [...prev, { id, name, importData }];
     });
     setActiveZbomTabId(id);
@@ -522,6 +523,7 @@ function App() {
             onTabSelect={setActiveZbomTabId}
             onAddTab={() => openNewZbomTab()}
             onCloseTab={closeZbomTab}
+            onNameChange={(name) => setZbomTabs(prev => prev.map(t => t.id === activeZbomTabId ? { ...t, name } : t))}
           />
         );
       })()}

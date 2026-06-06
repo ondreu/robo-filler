@@ -16,6 +16,7 @@ interface BomWizardProps {
   onTabSelect?: (id: string) => void;
   onAddTab?: () => void;
   onCloseTab?: (id: string) => void;
+  onNameChange?: (name: string) => void;
 }
 
 // ── column definitions ────────────────────────────────────────────────────────
@@ -119,8 +120,12 @@ function Field({ label, hint, children }: { label: React.ReactNode; hint?: strin
 }
 
 // ── main component ────────────────────────────────────────────────────────────
-export function BomWizard({ bulkResults, selections, articles, onClose, importData, startAtTable, draftKey, tabs, activeTabId, onTabSelect, onAddTab, onCloseTab }: BomWizardProps) {
-  const [step, setStep] = useState<1 | 2>(importData || startAtTable ? 2 : 1);
+export function BomWizard({ bulkResults, selections, articles, onClose, importData, startAtTable, draftKey, tabs, activeTabId, onTabSelect, onAddTab, onCloseTab, onNameChange }: BomWizardProps) {
+  const [step, setStep] = useState<1 | 2>(() => {
+    if (importData || startAtTable) return 2;
+    if (draftKey && localStorage.getItem(`robo-filler-zbom-${draftKey}`)) return 2;
+    return 1;
+  });
   const [exportAfterHeader, setExportAfterHeader] = useState(false);
 
   useEffect(() => {
@@ -129,18 +134,17 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
   }, []);
 
   const [header, setHeader] = useState<BomHeader>(() => {
-    if (importData) return importData.header;
     if (draftKey) {
       try {
         const draft = JSON.parse(localStorage.getItem(`robo-filler-zbom-${draftKey}`) ?? 'null');
         if (draft?.header) return draft.header;
       } catch {}
     }
+    if (importData) return importData.header;
     return { cisloVrcholu: '', cisloZavodu: '6000', platnostOd: getTodayDDMMYYYY(), popis: '', status: '01', vyrobniDispecer: '' };
   });
 
   const [rows, setRows] = useState<BomRow[]>(() => {
-    if (importData) return importData.rows;
     if (draftKey) {
       try {
         const draft = JSON.parse(localStorage.getItem(`robo-filler-zbom-${draftKey}`) ?? 'null');
@@ -149,6 +153,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
         }
       } catch {}
     }
+    if (importData) return importData.rows;
     return bulkResults.map((r, i) => {
       const sel = selections[i];
       if (sel) return { id: genId(), type: 'L' as const, artikl: sel.vybehovyDil || sel.artikl, popis: sel.nazev, typoveOznaceni: sel.typoveOznaceni, mnozstvi: 1, poznamka1: '', poznamka2: sel.status === 'U' ? 'Neaktivní materiál' : '' };
@@ -591,6 +596,8 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
         exportZbomTxt(header, rows, decimalSep);
         setExportAfterHeader(false);
       }
+      const name = header.cisloVrcholu.trim() || header.popis.trim();
+      if (name) onNameChange?.(name);
       setStep(2);
     };
     return (
