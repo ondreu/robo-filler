@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background: Catppuccin Crust -->
+  <rect width="512" height="512" rx="96" fill="#1e1e2e"/>
+
+  <!-- Antenna -->
+  <rect x="244" y="92" width="24" height="72" rx="12" fill="#cba6f7"/>
+  <circle cx="256" cy="80" r="26" fill="#cba6f7"/>
+
+  <!-- Robot head: Surface0 -->
+  <rect x="120" y="152" width="272" height="208" rx="32" fill="#313244"/>
+
+  <!-- Eyes: Mauve -->
+  <rect x="156" y="192" width="80" height="64" rx="16" fill="#cba6f7"/>
+  <rect x="276" y="192" width="80" height="64" rx="16" fill="#cba6f7"/>
+  <!-- Eye pupils -->
+  <circle cx="196" cy="224" r="18" fill="#1e1e2e"/>
+  <circle cx="316" cy="224" r="18" fill="#1e1e2e"/>
+  <!-- Eye shine -->
+  <circle cx="203" cy="217" r="7" fill="#cba6f7" opacity="0.55"/>
+  <circle cx="323" cy="217" r="7" fill="#cba6f7" opacity="0.55"/>
+
+  <!-- Mouth: Teal -->
+  <rect x="176" y="284" width="160" height="30" rx="15" fill="#94e2d5"/>
+
+  <!-- Neck -->
+  <rect x="228" y="360" width="56" height="30" rx="10" fill="#45475a"/>
+
+  <!-- Body: Surface0 -->
+  <rect x="144" y="390" width="224" height="92" rx="28" fill="#313244"/>
+
+  <!-- Body buttons -->
+  <circle cx="208" cy="436" r="16" fill="#a6e3a1"/>
+  <circle cx="256" cy="436" r="16" fill="#f38ba8"/>
+  <circle cx="304" cy="436" r="16" fill="#fab387"/>
+</svg>
