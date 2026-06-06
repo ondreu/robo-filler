@@ -279,7 +279,7 @@ export function AiChat() {
   return (
     <div
       className="bg-mantle rounded-2xl flex flex-col overflow-hidden border border-surface1"
-      style={{ height: 'calc(100vh - 260px)', minHeight: '520px' }}
+      style={{ height: 'calc(100vh - 190px)', minHeight: '560px' }}
     >
       {/* Header */}
       <div className="bg-mantle border-b border-surface1 px-5 py-3 flex items-center gap-2.5 shrink-0">
@@ -306,7 +306,7 @@ export function AiChat() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4 min-h-0">
         {messages.length === 0 && (
-          <div className="max-w-2xl mx-auto space-y-5 mt-2">
+          <div className="max-w-5xl mx-auto space-y-5 mt-2">
             <div className="flex justify-start">
               <div className="bg-surface0 text-text rounded-2xl rounded-bl-sm px-4 py-3 leading-relaxed max-w-xl">
                 {greeting}
@@ -340,7 +340,7 @@ export function AiChat() {
           </div>
         )}
 
-        <div className="max-w-3xl mx-auto space-y-4">
+        <div className="space-y-4">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.role === 'user' ? (
@@ -368,24 +368,22 @@ export function AiChat() {
                   )}
 
                   {/* Expandable all candidates */}
-                  {msg.allCandidates && msg.allCandidates.length > (msg.articles?.length ?? 0) && (
+                  {msg.allCandidates && msg.allCandidates.length > 0 && (
                     <div>
                       <button
                         onClick={() => toggleExpanded(i)}
-                        className="flex items-center gap-1.5 text-xs text-subtext1 hover:text-mauve transition-colors py-1"
+                        className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg bg-surface0 hover:bg-surface1 text-subtext1 hover:text-text transition-colors"
                       >
-                        {expandedMsgs.has(i) ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                        {expandedMsgs.has(i) ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         {expandedMsgs.has(i)
                           ? 'Skrýt všechny nalezené'
                           : `Zobrazit všechny nalezené (${msg.allCandidates.length})`}
                       </button>
                       {expandedMsgs.has(i) && (
-                        <div className="mt-2 space-y-2">
-                          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                            {msg.allCandidates.map(a => (
-                              <AiArticleCard key={a.artikl} article={a} dim />
-                            ))}
-                          </div>
+                        <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                          {msg.allCandidates.map(a => (
+                            <AiArticleCard key={a.artikl} article={a} dim />
+                          ))}
                         </div>
                       )}
                     </div>
@@ -410,7 +408,7 @@ export function AiChat() {
 
       {/* Input */}
       <div className="border-t border-surface1 bg-mantle p-3 shrink-0">
-        <div className="max-w-3xl mx-auto flex gap-2 relative">
+        <div className="flex gap-2 relative">
           {/* Settings panel */}
           {settingsOpen && (
             <div ref={settingsRef}
