@@ -207,48 +207,64 @@ Sestavení výstupního kusovníku pro export do výrobního systému. Funguje j
 
 ---
 
-## Karel Bot (AI asistent)
+## Karel Bot (AI asistent) — plovoucí chat
+
+Karel Bot je plovoucí chat dostupný z libovolné záložky aplikace.
 
 ### Jak otevřít
-- Fialové tlačítko s bublinkou v pravém dolním rohu — klikni pro otevření chatu.
-- Chat je přístupný na všech záložkách aplikace, i při otevřeném tabulkovém zpracování.
-- Okno chatu lze přesunout přetažením a změnit velikost tažením za levý horní roh (min. 300×300 px, max. cca 900×850 px).
+- Fialové tlačítko s bublinkou v pravém dolním rohu — klikni pro otevření.
+- Okno lze přesunout přetažením za záhlaví a změnit velikost tažením za levý horní roh (min. 300×300 px).
 
 ### Jak hledat
-- Piš přirozenou češtinou: "hledám nerezovou záslepku M20", "potřebuju ABB pojistku 16A charakteristika B".
+- Piš přirozenou češtinou: "nerezová záslepka M20", "ABB pojistka 16A char. B".
 - AI rozumí zkratkám: nerez = A2/A4, MS = mosaz, BK = černá, NO = spínací kontakt, atd.
-- AI rozumí výrobcům — "ABB pojistka" automaticky filtruje jen ABB artikly před hledáním.
+- AI rozumí výrobcům — "ABB pojistka" automaticky filtruje jen ABB artikly.
 - Výsledky se zobrazí jako karty pod odpovědí — max 5 nejrelevantnějších.
 
 ### Pomoc s aplikací
-- Karel Bot umí odpovídat i na otázky o fungování aplikace Robo Filler: jak hledat, jak funguje kusovník, jak exportovat, proč nic nenašlo, atd.
-- Stačí se zeptat přirozeně: "jak přidám nový řádek do kusovníku?" nebo "co je hromadné vyhledávání?".
+- Zeptej se na cokoliv k aplikaci: "jak přidám řádek do kusovníku?", "co je hromadné vyhledávání?", "jak exportovat ZBOM?".
 
-### Kdy použít Karel Bot místo klasického vyhledávání
-- Nevíš přesný název dílu — popíšeš co potřebuješ a AI najde synonyma.
-- Kombinovaný dotaz s více parametry: výrobce + typ + rozměr + charakteristika.
-- Chceš komentář — AI řekne který výsledek vypadá nejrelevantnější a proč.
-- Hledáš podobné alternativy k existujícímu artiklu: "najdi podobné k 2204-1401".
+### Teleport do AI módu
+- Tlačítko **ozubené kolečko** → **"Teleportovat do AI módu"** přenese celou konverzaci do záložky AI mód (viz níže).
+- Použij pro delší konverzace nebo když chceš větší pracovní plochu.
 
 ### Nový chat
-- Tlačítko tužky (✏) v pravém rohu záhlaví chatu smaže aktuální konverzaci a začne novou.
-- Tlačítko je aktivní pouze pokud jsou v chatu nějaké zprávy.
+- Tlačítko tužky (✏) v záhlaví smaže konverzaci a začne novou.
 
-### Obnovení posledního chatu
-- Konverzace se průběžně ukládá do prohlížeče (localStorage).
-- Po zavření prohlížeče nebo obnovení stránky je chat prázdný — ale poslední konverzaci lze obnovit.
-- Jak obnovit: klikni na **ozubené kolečko** vedle pole pro zprávu → zobrazí se tlačítko **"↩ Obnovit poslední chat"** (pokud existuje uložená konverzace).
+### Nastavení (ozubené kolečko)
+- **Webové vyhledávání** — zapni pro dotazy "kde koupit", "datasheet", "cena". Výchozí: vypnuto.
+- **Model** — přepínač Mistral Small 4 (výchozí, rychlý) / Mistral Medium 3.5 (přesnější, ~10× dražší). Volba vyprší po 24 h a resetuje se na Small.
+- **↩ Obnovit poslední chat** — obnoví předchozí konverzaci po obnovení stránky.
 
-### Webové vyhledávání
-- Klikni na **ozubené kolečko** vedle pole pro zprávu → přepínač "Webové vyhledávání".
-- Výchozí: vypnuto. Zapni pro dotazy jako "kde koupit", "datasheet", "cena", "technická dokumentace".
-- Webové vyhledávání je pouze pro informace z internetu — nelze kombinovat s hledáním v interní databázi.
-- Pokud webové vyhledávání není zapnuté a AI vyhodnotí dotaz jako internetový, jasně to oznámí.
+---
 
-### Limitace Karel Bota
-- AI vybírá max 5 karet z 40 kandidátů — pro přesné hledání konkrétního artiklu číslem použij raději klasické vyhledávání.
-- AI může občas chybně pochopit dotaz — pokud odpověď nedává smysl, přeformuluj dotaz nebo použij klasické vyhledávání.
-- Konverzační kontext: AI si pamatuje posledních 8 zpráv v konverzaci.
+## AI mód (plnohodnotný AI chat)
+
+Záložka **AI mód** (třetí záložka nahoře vedle "Jednotlivé" a "Hromadné") je rozšířená verze Karel Bota pro pohodlnější práci.
+
+### Rozdíl oproti plovoucímu chatu
+- Zabírá celou šířku obrazovky — vhodné pro delší konverzace.
+- Zprávy jsou plně rozložené, kandidátské artikly jsou přehledněji zobrazeny.
+- Má stejné funkce jako plovoucí chat (vyhledávání, pomoc s aplikací, webové vyhledávání, výběr modelu).
+
+### Zobrazení kandidátů
+- Pod každou odpovědí je tlačítko **"Zobrazit výsledky (N)"** — klikni pro rozbalení všech nalezených kandidátů.
+- Zobrazí se kompaktní karty artiklů se jménem, výrobcem, typovým označením a možností kopírování.
+
+### Export z AI módu (ozubené kolečko)
+- **Konverzace (.md)** — stáhne celou konverzaci jako Markdown soubor.
+- **Nalezené artikly (.csv)** — stáhne všechny kandidátské artikly z posledního hledání jako CSV.
+
+### Jak sem přejít
+- Klikni na záložku **"AI mód"** nahoře — nebo použij Teleport z plovoucího chatu.
+- Konverzace z teleportu se okamžitě zobrazí v AI módu.
+
+### Konverzační kontext
+- AI si pamatuje posledních 6 zpráv (3 výměny otázka–odpověď). Starší kontext se ztratí.
+
+### Limitace
+- AI vybírá max 5 karet z až 60 kandidátů — pro přesné hledání číslem artiklu použij klasické vyhledávání.
+- AI může občas chybně pochopit dotaz — přeformuluj nebo upřesni.
 
 ---
 
