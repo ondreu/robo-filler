@@ -10,6 +10,12 @@ import type { Article } from '../types';
 const BACKEND_URL = ((import.meta.env.VITE_BACKEND_URL as string | undefined) ?? '').trim().replace(/\/$/, '');
 const AI_CHAT_KEY = 'robo-filler-ai-chat';
 const AI_CHAT_LAST_KEY = 'robo-filler-ai-chat-last';
+const SYNTH_MODEL_KEY = 'karel_bot_synth_model';
+
+const SYNTH_MODELS = [
+  { value: 'mistral-small-latest', label: 'Mistral Small 4' },
+  { value: 'mistral-medium-latest', label: 'Mistral Medium 3.5' },
+];
 
 interface AiMessage {
   role: 'user' | 'assistant';
@@ -105,6 +111,9 @@ export function AiChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [synthModel, setSynthModelState] = useState<string>(
+    () => localStorage.getItem(SYNTH_MODEL_KEY) ?? 'mistral-small-latest'
+  );
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [expandedMsgs, setExpandedMsgs] = useState<Set<number>>(new Set());
   const [lastAllCandidates, setLastAllCandidates] = useState<Article[]>([]);
@@ -221,7 +230,7 @@ export function AiChat() {
       const response = await fetch(`${BACKEND_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history, webSearchEnabled }),
+        body: JSON.stringify({ message: text, history, webSearchEnabled, synthModel }),
       });
 
       if (!response.ok || !response.body) throw new Error('Server error');
@@ -427,6 +436,22 @@ export function AiChat() {
                   <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-crust rounded-full shadow transition-transform ${webSearchEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
                 </button>
               </label>
+
+              {/* SYNTH model picker */}
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-text">Model</span>
+                <div className="flex rounded-lg overflow-hidden bg-surface1">
+                  {SYNTH_MODELS.map(m => (
+                    <button
+                      key={m.value}
+                      onClick={() => { setSynthModelState(m.value); localStorage.setItem(SYNTH_MODEL_KEY, m.value); }}
+                      className={`px-3 py-1 text-xs transition-colors ${synthModel === m.value ? 'bg-mauve text-crust font-semibold' : 'text-subtext1 hover:text-text'}`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div className="border-t border-surface1 pt-3 space-y-2">
                 <p className="text-xs text-subtext0 font-semibold uppercase tracking-wide">Export</p>
