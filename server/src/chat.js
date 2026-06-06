@@ -4,7 +4,7 @@ import { ABBREVIATIONS_CONTEXT } from './abbreviations.js';
 import { resolveManufacturerKey, detectDominantManufacturer, MANUFACTURER_DOCS } from './manufacturers.js';
 
 const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
-const MODEL_EXPAND = 'mistral-medium-latest';
+const MODEL_EXPAND = 'mistral-small-latest';
 const MODEL_SYNTH  = 'mistral-medium-latest';
 
 const EXPAND_SYSTEM = `Jsi expert na průmyslové díly, elektrotechnické komponenty a aplikaci Robo Filler.
@@ -17,7 +17,7 @@ Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
    VÝROBCE: Pokud je výrobce zmíněn v aktuálním dotazu, extrahuj ho do "manufacturer". Pokud aktuální dotaz je follow-up (navazuje na předchozí konverzaci) a v historii byl konkrétní výrobce zmíněn, zachovej ho — uživatel stále hledá u stejného výrobce. Jinak "manufacturer": null.
    Z termínů pro vyhledávání vynech jméno výrobce — hledej jen podle typu/názvu dílu.
    PŘEKLADY PRO DATABÁZI:
-   - "DIN lišta" jako KOMPONENT (hledám lištu samotnou) = "lista", "lišta", "NS 35", "TS 35", "Tragschiene", "Hutschiene". Přidej materiál pokud zmíněn: nerez/A2/A4 = "nerez", "Edelstahl", "stainless".
+   - "DIN lišta" jako KOMPONENT (hledám lištu samotnou) = "lišta", "lista", "NS 35", "TS 35", "UB 7,5", "Tragschiene", "Hutschiene". Přidej materiál pokud zmíněn: nerez/A2/A4 = "nerez", "Edelstahl", "stainless".
    - "na DIN lištu" / "pro DIN lištu" / "rail mount" (hledám zařízení montované na lištu) = "řadová" nebo "Durchgang" nebo "Klemme".
    - "TOPJOB S" = řadová svorka WAGO. "inline" / "instalační" = "Verbindungsklemme" nebo "spojovací".
    Vrať: {"type": "search", "terms": ["term1", "term2", ...], "manufacturer": "WAGO", "query": ""}
