@@ -17,12 +17,12 @@ function parseCSV(content) {
     const parts = line.trim().split(';');
     if (parts.length >= 5) {
       articles.push({
-        typoveOznaceni:   removeDiacritics(parts[0]?.trim() ?? ''),
-        artikl:           removeDiacritics(parts[1]?.trim() ?? ''),
-        vyrobce:          removeDiacritics(parts[2]?.trim() ?? ''),
-        nazev:            removeDiacritics(parts[3]?.trim() ?? ''),
-        cisloDiluVyrobce: removeDiacritics(parts[4]?.trim() ?? ''),
-        vybehovyDil:      removeDiacritics(parts[5]?.trim() ?? ''),
+        typoveOznaceni:   parts[0]?.trim() ?? '',
+        artikl:           parts[1]?.trim() ?? '',
+        vyrobce:          parts[2]?.trim() ?? '',
+        nazev:            parts[3]?.trim() ?? '',
+        cisloDiluVyrobce: parts[4]?.trim() ?? '',
+        vybehovyDil:      parts[5]?.trim() ?? '',
         status:           parts[6]?.trim() ?? '',
       });
     }
