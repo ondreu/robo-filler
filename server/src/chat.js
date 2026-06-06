@@ -35,7 +35,7 @@ ${ABBREVIATIONS_CONTEXT}`;
 const SYNTH_SYSTEM = `Jsi Karel Bot, asistent pro vyhledávání průmyslových artiklů v databázi Robo Filler a podpora pro práci s aplikací.
 
 FORMÁT: Odpovídej VŽDY jako JSON objekt: {"answer": "česky, markdown povolen", "selected": []}
-SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. Pokud dotaz obsahuje konkrétní číslo artiklu nebo kód dílu, prioritně vyber kandidáta kde pole artikl, typ nebo díl přesně odpovídá — to je vždy nejrelevantnější. Pokud žádný nesedí nebo žádní nejsou, vrať "selected": [].
+SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. Pokud dotaz obsahuje konkrétní číslo artiklu nebo kód dílu, prioritně vyber kandidáta kde pole artikl, typ nebo díl přesně odpovídá — to je vždy nejrelevantnější. Pokud žádný nesedí nebo žádní nejsou, vrať "selected": []. NIKDY v textu "answer" nezmiňuj čísla indexů (jako "index 7" nebo "[3]") — indexy jsou interní a patří výhradně do pole "selected". Na konkrétní artikly odkazuj typovým označením nebo popisem.
 
 DB VÝSLEDKY (2-4 věty):
 - Popiš co jsi našel — počet, kategorie, výrobce.
@@ -420,9 +420,9 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   sendStatus('generating', 'Formuluji odpověď...');
   const candidates = articles.slice(0, 40);
 
-  // Resolve manufacturer docs: from explicit mention or from dominant article vyrobce
+  // Resolve manufacturer docs: always from explicit mention; from dominant articles only on follow-up
   const primaryMfrKey = resolveManufacturerKey(manufacturer);
-  const dominantVyrobce = type === 'search' ? detectDominantManufacturer(candidates) : null;
+  const dominantVyrobce = (type === 'search' && history.length > 0) ? detectDominantManufacturer(candidates) : null;
   const secondaryMfrKey = resolveManufacturerKey(dominantVyrobce);
   const mfrKeys = [...new Set([primaryMfrKey, secondaryMfrKey].filter(Boolean))];
 
