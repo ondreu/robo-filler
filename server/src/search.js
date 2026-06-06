@@ -105,14 +105,15 @@ function bm25Search(query, topN, manufacturerFilter) {
   const queryTokens = tokenizeBM25(query);
   if (!queryTokens.length) return [];
 
-  // score accumulator: articleIdx → score
-  const scores = new Map();
+  const scores     = new Map(); // articleIdx → accumulated BM25 score
+  const tokenHits  = new Map(); // articleIdx → count of distinct query tokens matched
 
   for (const qt of queryTokens) {
-    // Prefix match for morphological flexibility (min 3 chars → prefix, shorter → exact)
     const usePrefix = qt.length >= 3;
     const start = lowerBound(sortedTokens, qt);
-    const end = usePrefix ? lowerBound(sortedTokens, qt + '￿') : start + 1;
+    const end   = usePrefix ? lowerBound(sortedTokens, qt + '￿') : start + 1;
+
+    const hitThisToken = new Set();
 
     for (let ti = start; ti < end; ti++) {
       const t = sortedTokens[ti];
@@ -125,17 +126,24 @@ function bm25Search(query, topN, manufacturerFilter) {
       const idf = Math.log((N - df + 0.5) / (df + 0.5) + 1);
 
       for (const { idx, tf } of postings) {
-        const dl   = docLengths[idx];
+        const dl    = docLengths[idx];
         const denom = tf + BM25_K1 * (1 - BM25_B + BM25_B * dl / avgDL);
-        const bm25  = idf * (tf * (BM25_K1 + 1)) / denom;
-        scores.set(idx, (scores.get(idx) ?? 0) + bm25);
+        scores.set(idx, (scores.get(idx) ?? 0) + idf * (tf * (BM25_K1 + 1)) / denom);
+        hitThisToken.add(idx);
       }
+    }
+
+    for (const idx of hitThisToken) {
+      tokenHits.set(idx, (tokenHits.get(idx) ?? 0) + 1);
     }
   }
 
   if (!scores.size) return [];
 
-  let entries = [...scores.entries()];
+  // AND semantics: document must match ALL query tokens
+  const required = queryTokens.length;
+  let entries = [...scores.entries()]
+    .filter(([idx]) => (tokenHits.get(idx) ?? 0) >= required);
 
   if (manufacturerFilter) {
     const mfr = removeDiacritics(manufacturerFilter).toLowerCase();
@@ -208,16 +216,19 @@ export function searchTerm(query, topN = 5, manufacturerFilter = null) {
 
   const wildcard = wildcardSearch(corpus, query);
   const fuzzy    = fuzzySearch(corpus, query);
-  const bm25     = bm25Search(query, topN * 3, manufacturerFilter);
+  const bm25     = bm25Search(query, topN * 2, manufacturerFilter);
 
-  // Merge: for each artikl keep highest score across all methods
-  const byArtikl = new Map();
+  // Priority order: wildcard > fuzzy > bm25; first-seen wins (wildcard always takes precedence)
+  const seen    = new Set();
+  const results = [];
+
   for (const a of [...wildcard, ...fuzzy, ...bm25]) {
-    const existing = byArtikl.get(a.artikl);
-    if (!existing || a._score > existing._score) byArtikl.set(a.artikl, a);
+    if (!seen.has(a.artikl)) {
+      seen.add(a.artikl);
+      results.push(a);
+      if (results.length >= topN) break;
+    }
   }
 
-  return [...byArtikl.values()]
-    .sort((a, b) => b._score - a._score)
-    .slice(0, topN);
+  return results;
 }
