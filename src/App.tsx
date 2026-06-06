@@ -5,6 +5,7 @@ import { parseBomTxt, type ImportResult } from './utils/bomExport';
 import { BomWizard } from './components/BomWizard';
 import { Changelog } from './components/Changelog';
 import { HowItWorks } from './components/HowItWorks';
+import { InstallPrompt } from './components/InstallPrompt';
 import { loadCSV, loadCSVMeta } from './utils/csvParser';
 import { search, getUniqueManufacturers, searchSuggestions } from './utils/searchEngine';
 import { SearchBar } from './components/SearchBar';
@@ -578,6 +579,7 @@ function App() {
           <div className="flex items-center justify-center gap-2">
             <Changelog />
             <HowItWorks />
+            <InstallPrompt />
           </div>
         </footer>
       </div>
