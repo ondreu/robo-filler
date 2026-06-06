@@ -154,7 +154,7 @@ function App() {
   };
 
   // Debounced query for search
-  const debouncedQuery = useDebounce(query, 300);
+  const debouncedQuery = useDebounce(query, 1500);
 
   // Active articles (custom or default)
   const activeArticles = customArticles || articles;
