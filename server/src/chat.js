@@ -1,6 +1,7 @@
 import { Mistral } from '@mistralai/mistralai';
 import { searchTerm, articleCount } from './search.js';
 import { ABBREVIATIONS_CONTEXT } from './abbreviations.js';
+import { resolveManufacturerKey, detectDominantManufacturer, MANUFACTURER_DOCS } from './manufacturers.js';
 
 const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
 const MODEL_EXPAND = 'mistral-small-latest';
@@ -324,7 +325,7 @@ async function webSearch(query) {
   }
 }
 
-async function synthesize(userMessage, articles, webResults, history, type, webSearchBlocked = false) {
+async function synthesize(userMessage, articles, webResults, history, type, webSearchBlocked = false, mfrKeys = []) {
   let context = '';
   if (webSearchBlocked) {
     context = '\n\n[Poznámka: Uživatel žádal webové vyhledávání, ale není zapnuto. Řekni mu to a nevymýšlej odpověď.]';
@@ -333,7 +334,11 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
   if (type === 'support') {
     context = `\n\nDokumentace aplikace Robo Filler:\n${APP_DOCS}`;
   } else if (type === 'search') {
-    context = articles.length > 0
+    const mfrDocs = mfrKeys.map(k => MANUFACTURER_DOCS[k]).filter(Boolean);
+    if (mfrDocs.length > 0) {
+      context += '\n\n' + mfrDocs.join('\n\n---\n\n');
+    }
+    context += articles.length > 0
       ? `\n\nKandidáti (${articles.length}) — vyber indexy max 5 nejrelevantnějších:\n` + articles
           .map((a, i) => {
             const parts = [a.artikl, a.nazev, a.vyrobce];
@@ -414,7 +419,14 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
 
   sendStatus('generating', 'Formuluji odpověď...');
   const candidates = articles.slice(0, 40);
-  const { answer, selected } = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked);
+
+  // Resolve manufacturer docs: from explicit mention or from dominant article vyrobce
+  const primaryMfrKey = resolveManufacturerKey(manufacturer);
+  const dominantVyrobce = type === 'search' ? detectDominantManufacturer(candidates) : null;
+  const secondaryMfrKey = resolveManufacturerKey(dominantVyrobce);
+  const mfrKeys = [...new Set([primaryMfrKey, secondaryMfrKey].filter(Boolean))];
+
+  const { answer, selected } = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys);
 
   let pickedArticles;
   if (type === 'search' && selected && selected.length > 0) {
