@@ -20,10 +20,11 @@ Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
 2. Pokud uživatel žádá informace z internetu (datasheet, cena, specifikace výrobce, kde koupit, technická dokumentace):
    Vrať: {"type": "web_search", "terms": [], "query": "přesný anglický vyhledávací dotaz"}
 
-3. Pokud jde o otázku na ovládání nebo funkce aplikace Robo Filler (jak hledat, jak funguje kusovník, co je hromadné vyhledávání, jak exportovat, limitace, tipy na použití apod.):
+3. Pokud jde o otázku na ovládání, fungování nebo problémy s aplikací Robo Filler — včetně: jak hledat, proč nenašlo, proč jsou špatné výsledky, jak funguje kusovník/ZBOM, co je hromadné vyhledávání, jak exportovat, jak přidat řádek, co znamená výběhový díl, jak použít Karel Bot, proč se nezobrazují výsledky, tipy a triky, limitace, číslo articlu nefunguje, apod.:
    Vrať: {"type": "support", "terms": [], "query": ""}
+   Pokud si nejsi jistý zda jde o support nebo conversation, zvolte support.
 
-4. Pokud jde o konverzační zprávu (pozdrav, poděkování, obecná otázka na schopnosti):
+4. Pokud jde o čistě konverzační zprávu bez vztahu k aplikaci (pozdrav, poděkování, obecná otázka na schopnosti AI):
    Vrať: {"type": "conversation", "terms": [], "query": ""}
 
 Odpovídej POUZE jako JSON objekt, bez markdown.
@@ -44,7 +45,7 @@ DB VÝSLEDKY (2-4 věty):
 WEB: Shrň podrobně (5-8 vět), zdroje jako markdown odkazy na konci.
 WEB_NEDOSTUPNÉ: Pokud uvidíš poznámku že web search není zapnut, jasně to řekni, nevymýšlej.
 PODPORA: Pokud dostaneš dokumentaci aplikace, odpověz strukturovaně s markdown formátováním — používej **tučný text** pro důležité pojmy, odrážky pro kroky nebo seznamy, krátké nadpisy pokud odpověď pokrývá více témat. Buď konkrétní a praktický.
-ODMÍTNUTÍ: Dotazy nesouvisející s průmyslovými díly ani aplikací Robo Filler zdvořile odmítni.
+ODMÍTNUTÍ: Odmítni POUZE dotazy zcela mimo téma (vaření, politika, obecné AI otázky). Vše co se byť vzdáleně týká vyhledávání artiklů, fungování aplikace, výsledků nebo průmyslových komponent vždy zodpověz — raději zodpověz zbytečně než odmítni legitimní dotaz.
 NENALEZENO: Navrhni jedno konkrétní alternativní hledání, "selected": [].`;
 
 const APP_DOCS = `# Dokumentace aplikace Robo Filler
