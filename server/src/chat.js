@@ -15,6 +15,7 @@ Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
    Rozšiř hledaný výraz o synonyma a překlady (CS/DE/EN), zachovej rozměry a specifikace.
    Používej zkratky a konvence z přiložených znalostí databáze.
    Pokud dotaz obsahuje číslo artiklu nebo kód dílu (formáty jako 2204-1401, 5SY4116, XB4BA31, M20x1.5 apod.), VŽDY ho zahrň do terms přesně jak je — nesmíš ho vynechat ani nahradit popisem.
+   TYPOVÁ OZNAČENÍ Z VLASTNÍCH ZNALOSTÍ: Pokud znáš konvenci číslování daného výrobce a dokážeš z parametrů dotazu odhadnout konkrétní typové označení nebo alespoň jeho prefix, přidej ho jako další termín do terms — vedle klíčových slov. I částečný kód zlepší výsledky (wildcard hledání ho najde). Příklady: "WAGO svorka 2,5mm² šedá" → přidej "2002-12"; "WAGO svorka 2,5mm² modrá 4 vodiče" → přidej "2002-24"; "Phoenix Contact průchozí svorka 2,5mm²" → přidej "UT 2,5" nebo "UTTB 2,5"; "Weidmüller svorka 4mm²" → přidej "ZDU 4". Přidávej jen pokud si kódem jsi rozumně jistý — netvoř kódy na základě dohadu bez znalosti.
    VÝROBCE: Pokud je výrobce zmíněn v aktuálním dotazu, extrahuj ho do "manufacturer". Pokud aktuální dotaz je follow-up (navazuje na předchozí konverzaci) a v historii byl konkrétní výrobce zmíněn, zachovej ho — uživatel stále hledá u stejného výrobce. Jinak "manufacturer": null.
    Z termínů pro vyhledávání vynech jméno výrobce — hledej jen podle typu/názvu dílu.
    PŘEKLADY PRO DATABÁZI:
