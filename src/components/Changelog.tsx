@@ -135,7 +135,10 @@ export function Changelog() {
     <>
       <div className="relative inline-flex">
         {!seen && (
-          <span className="absolute inset-0 rounded-lg bg-mauve/30 blur-md animate-pulse pointer-events-none" />
+          <>
+            <span className="absolute -inset-1 rounded-xl bg-teal/50 blur-lg animate-pulse pointer-events-none" />
+            <span className="absolute -inset-2 rounded-xl bg-teal/20 blur-xl animate-pulse pointer-events-none" />
+          </>
         )}
         <button
           onClick={handleOpen}
