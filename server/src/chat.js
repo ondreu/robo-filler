@@ -4,8 +4,9 @@ import { ABBREVIATIONS_CONTEXT } from './abbreviations.js';
 import { resolveManufacturerKey, detectDominantManufacturer, MANUFACTURER_DOCS } from './manufacturers.js';
 
 const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
-const MODEL_EXPAND = 'mistral-small-latest';
-const MODEL_SYNTH  = 'mistral-medium-latest';
+const MODEL_EXPAND       = 'mistral-small-latest';
+const MODEL_SYNTH        = 'mistral-small-latest';
+const MODEL_SYNTH_MEDIUM = 'mistral-medium-latest';
 
 const EXPAND_SYSTEM = `Jsi expert na průmyslové díly, elektrotechnické komponenty a aplikaci Robo Filler.
 Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
@@ -334,7 +335,7 @@ async function webSearch(query) {
   }
 }
 
-async function synthesize(userMessage, articles, webResults, history, type, webSearchBlocked = false, mfrKeys = []) {
+async function synthesize(userMessage, articles, webResults, history, type, webSearchBlocked = false, mfrKeys = [], model = MODEL_SYNTH) {
   let context = '';
   if (webSearchBlocked) {
     context = '\n\n[Poznámka: Uživatel žádal webové vyhledávání, ale není zapnuto. Řekni mu to a nevymýšlej odpověď.]';
@@ -367,7 +368,8 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
   }
 
   const resp = await client.chat.complete({
-    model: MODEL_SYNTH,
+    model,
+    ...(model === MODEL_SYNTH ? { reasoningEffort: 'high' } : {}),
     responseFormat: { type: 'json_object' },
     messages: [
       { role: 'system', content: SYNTH_SYSTEM },
@@ -393,7 +395,7 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
   }
 }
 
-export async function handleChat(userMessage, history, sendStatus, webSearchEnabled = false) {
+export async function handleChat(userMessage, history, sendStatus, webSearchEnabled = false, synthModel = MODEL_SYNTH) {
   sendStatus('thinking', `Přemýšlím, chvilku strpení — v databázi je momentálně ${articleCount.toLocaleString('cs-CZ')} artiklů.`);
   const expanded = await expandQuery(userMessage, history);
   let type = expanded.type;
@@ -442,7 +444,7 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   const secondaryMfrKey = resolveManufacturerKey(dominantVyrobce);
   const mfrKeys = [...new Set([primaryMfrKey, secondaryMfrKey].filter(Boolean))];
 
-  let { answer, selected, refinement } = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys);
+  let { answer, selected, refinement } = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys, synthModel);
 
   // Two-pass: if SYNTH requests refinement, do a second search and re-synthesize
   if (type === 'search' && refinement?.terms?.length > 0) {
@@ -461,7 +463,7 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
     candidates = articles.slice(0, 60);
 
     sendStatus('generating', 'Formuluji výslednou odpověď…');
-    const second = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys);
+    const second = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys, synthModel);
     answer   = second.answer;
     selected = second.selected;
     // refinement from second pass is intentionally ignored
