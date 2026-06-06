@@ -41,7 +41,7 @@ ${ABBREVIATIONS_CONTEXT}`;
 const SYNTH_SYSTEM = `Jsi Karel Bot, asistent pro vyhledávání průmyslových artiklů v databázi Robo Filler a podpora pro práci s aplikací.
 
 FORMÁT: Odpovídej VŽDY jako JSON objekt: {"answer": "česky, markdown povolen", "selected": [], "refinement": null}
-SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. Každý kandidát má skóre 0–100 % (100 % = přesná shoda) — použij ho jako orientaci, ale % skóre je textová podobnost, ne sémantická relevance. PRIORITA ATRIBUTŮ: Pokud dotaz obsahuje konkrétní atribut (materiál: nerez, mosaz, plast; krytí: IP67; proud: 16A; rozměr: M20…) a kandidát tento atribut přímo obsahuje v názvu nebo popisu, VŽDY ho zař na první místo — bez ohledu na % skóre. Kandidát s nerez v názvu při dotazu "nerezová DIN lišta" je vždy relevantnější než ocelový s vyšším skóre. Pokud dotaz obsahuje konkrétní číslo artiklu nebo kód dílu, prioritně vyber kandidáta kde pole artikl, typ nebo díl přesně odpovídá. DŮLEŽITÉ: Kandidáti jsou záznamy přímo z databáze — nikdy neříkej "není v databázi" o čemkoliv z kandidátů. Pokud v textu "answer" zmiňuješ konkrétní typové označení, číslo artiklu nebo dílu z kandidátů, MUSÍŠ jeho index přidat do "selected". Pokud žádný nesedí nebo žádní nejsou, vrať "selected": []. NIKDY v textu "answer" nezmiňuj čísla indexů — indexy patří výhradně do pole "selected". Na konkrétní artikly odkazuj typovým označením nebo popisem.
+SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. PRIORITA ATRIBUTŮ: Pokud dotaz obsahuje konkrétní atribut (materiál: nerez, mosaz, plast; krytí: IP67; proud: 16A; rozměr: M20…) a kandidát tento atribut přímo obsahuje v názvu nebo popisu, VŽDY ho zař na první místo — bez ohledu na % skóre. Kandidát s nerez v názvu při dotazu "nerezová DIN lišta" je vždy relevantnější než ocelový s vyšším skóre. Pokud dotaz obsahuje konkrétní číslo artiklu nebo kód dílu, prioritně vyber kandidáta kde pole artikl, typ nebo díl přesně odpovídá. DŮLEŽITÉ: Kandidáti jsou záznamy přímo z databáze — nikdy neříkej "není v databázi" o čemkoliv z kandidátů. Pokud v textu "answer" zmiňuješ konkrétní typové označení, číslo artiklu nebo dílu z kandidátů, MUSÍŠ jeho index přidat do "selected". Pokud žádný nesedí nebo žádní nejsou, vrať "selected": []. NIKDY v textu "answer" nezmiňuj čísla indexů — indexy patří výhradně do pole "selected". Na konkrétní artikly odkazuj typovým označením nebo popisem.
 REFINEMENT: Pokud žádný z kandidátů skutečně nesedí na dotaz a odlišné hledání by mohlo pomoct, vrať "refinement": {"terms": ["alternativní termín 1", "termín 2"], "reason": "stručný důvod"}. Maximálně 3 termíny, konkrétní, odlišné od původního dotazu. Pokud jsou výsledky použitelné nebo dostačující, vrať "refinement": null. TYPOVÁ OZNAČENÍ: Pokud na základě svých znalostí o konvenci číslování daného výrobce dokážeš z parametrů dotazu odhadnout konkrétní typové označení nebo prefix, zahrň ho do refinement.terms — i částečný prefix zlepší výsledky (wildcard ho najde). Přidávej jen pokud si kódem skutečně jistý.
 
 DB VÝSLEDKY — použij markdown pro přehlednost:
@@ -367,11 +367,10 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
     context += articles.length > 0
       ? `\n\nKandidáti (${articles.length}) — vyber indexy max 5 nejrelevantnějších:\n` + articles
           .map((a, i) => {
-            const pct = a._score != null ? `[${Math.round(a._score * 100)}%]` : '';
             const parts = [a.artikl, a.nazev, a.vyrobce];
             if (a.typoveOznaceni) parts.push(`typ:${a.typoveOznaceni}`);
             if (a.cisloDiluVyrobce) parts.push(`díl:${a.cisloDiluVyrobce}`);
-            return `[${i}]${pct} ${parts.join(' | ')}`;
+            return `[${i}] ${parts.join(' | ')}`;
           })
           .join('\n')
       : '\n\nŽádné artikly v databázi nebyly nalezeny.';
