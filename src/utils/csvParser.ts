@@ -1,9 +1,5 @@
 import type { Article } from '../types';
 
-function removeDiacritics(str: string): string {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\ufffd/g, '');
-}
-
 export function parseCSV(csvContent: string): Article[] {
   const lines = csvContent.trim().split('\n');
   const articles: Article[] = [];
