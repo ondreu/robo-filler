@@ -420,9 +420,9 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   sendStatus('generating', 'Formuluji odpověď...');
   const candidates = articles.slice(0, 40);
 
-  // Resolve manufacturer docs: from explicit mention or from dominant article vyrobce
+  // Resolve manufacturer docs: always from explicit mention; from dominant articles only on follow-up
   const primaryMfrKey = resolveManufacturerKey(manufacturer);
-  const dominantVyrobce = type === 'search' ? detectDominantManufacturer(candidates) : null;
+  const dominantVyrobce = (type === 'search' && history.length > 0) ? detectDominantManufacturer(candidates) : null;
   const secondaryMfrKey = resolveManufacturerKey(dominantVyrobce);
   const mfrKeys = [...new Set([primaryMfrKey, secondaryMfrKey].filter(Boolean))];
 
