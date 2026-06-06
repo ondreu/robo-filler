@@ -165,6 +165,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
 
   // ── spreadsheet selection & edit state ──────────────────────────────────────
   const [decimalSep, setDecimalSep] = useState<DecimalSep>('.');
+  const [confirmCloseTabId, setConfirmCloseTabId] = useState<string | null>(null);
   const [sel, setSel] = useState<Sel | null>(null);
   const [edit, setEdit] = useState<EditState | null>(null);
   const mouseDownRef = useRef(false);
@@ -673,11 +674,25 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
                   : 'text-overlay1 hover:text-text hover:bg-surface0/60 cursor-pointer'
               }`}
             >
-              <button onClick={() => onTabSelect?.(tab.id)} className="leading-none">{tab.name}</button>
-              {tabs.length > 1 && (
+              <button onClick={() => { onTabSelect?.(tab.id); setConfirmCloseTabId(null); }} className="leading-none">{tab.name}</button>
+              {confirmCloseTabId === tab.id ? (
+                <span className="flex items-center gap-0.5 ml-1">
+                  <span className="text-overlay0 text-[10px]">Zavřít?</span>
+                  <button
+                    onClick={() => { onCloseTab?.(tab.id); setConfirmCloseTabId(null); }}
+                    className="text-green hover:text-green/80 transition-colors ml-0.5"
+                    title="Potvrdit zavření"
+                  >✓</button>
+                  <button
+                    onClick={() => setConfirmCloseTabId(null)}
+                    className="text-overlay0 hover:text-text transition-colors"
+                    title="Zrušit"
+                  >✗</button>
+                </span>
+              ) : (
                 <button
-                  onClick={() => onCloseTab?.(tab.id)}
-                  className="text-overlay0 hover:text-red transition-colors leading-none"
+                  onClick={() => setConfirmCloseTabId(tab.id)}
+                  className="text-overlay0 hover:text-red transition-colors leading-none ml-0.5"
                   aria-label="Zavřít záložku"
                 >
                   <X size={10} />
@@ -740,9 +755,9 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
             <Download size={13} /> Export ZBOM .txt
           </button>
           <button
-            onClick={() => { if (onCloseTab && activeTabId) onCloseTab(activeTabId); else onClose(); }}
+            onClick={onClose}
             className="ml-1 text-overlay1 hover:text-text transition-colors"
-            title="Zavřít kusovník"
+            title="Skrýt editor"
           ><X size={18} /></button>
         </div>
       </div>
