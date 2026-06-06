@@ -279,7 +279,7 @@ export function AiChat() {
   return (
     <div
       className="bg-mantle rounded-2xl flex flex-col overflow-hidden border border-surface1"
-      style={{ height: 'calc(100vh - 190px)', minHeight: '560px' }}
+      style={{ height: 'calc(100vh - 190px)', minHeight: '560px', boxShadow: '0 0 32px 4px rgba(203,166,247,0.08), 0 0 8px 0px rgba(203,166,247,0.06)' }}
     >
       {/* Header */}
       <div className="bg-mantle border-b border-surface1 px-5 py-3 flex items-center gap-2.5 shrink-0">
