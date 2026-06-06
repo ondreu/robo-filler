@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Loader2, AlertCircle, Download, FolderOpen } from 'lucide-react';
 import type { Article, SearchResult, SearchMode, SearchField, DataSource, AppMode } from './types';
 import { parseBomTxt, type ImportResult } from './utils/bomExport';
@@ -6,7 +6,7 @@ import { BomWizard } from './components/BomWizard';
 import { Changelog } from './components/Changelog';
 import { HowItWorks } from './components/HowItWorks';
 import { loadCSV, loadCSVMeta } from './utils/csvParser';
-import { search, getUniqueManufacturers } from './utils/searchEngine';
+import { search, getUniqueManufacturers, searchSuggestions } from './utils/searchEngine';
 import { SearchBar } from './components/SearchBar';
 import { ResultCard } from './components/ResultCard';
 import { FilterPanel } from './components/FilterPanel';
@@ -60,9 +60,11 @@ function App() {
   // App mode (single / bulk)
   const [appMode, setAppMode] = useState<AppMode>('single');
 
-  // ZBOM import/new
-  const [showBomImport, setShowBomImport] = useState(false);
-  const [bomImportData, setBomImportData] = useState<ImportResult | undefined>(undefined);
+  // ZBOM tabs
+  type ZbomTab = { id: string; name: string; importData?: ImportResult };
+  const [zbomTabs, setZbomTabs] = useState<ZbomTab[]>([]);
+  const [activeZbomTabId, setActiveZbomTabId] = useState<string | null>(null);
+  const zbomTabCtrRef = useRef(0);
   const [zbomDropdownOpen, setZbomDropdownOpen] = useState(false);
   const zbomInputRef = useRef<HTMLInputElement>(null);
   const zbomDropdownRef = useRef<HTMLDivElement>(null);
@@ -78,6 +80,25 @@ function App() {
     return () => document.removeEventListener('mousedown', handler);
   }, [zbomDropdownOpen]);
 
+  const openNewZbomTab = useCallback((importData?: ImportResult) => {
+    const id = `zbom-${++zbomTabCtrRef.current}`;
+    setZbomTabs(prev => {
+      const name = `ZBOM ${prev.length + 1}`;
+      return [...prev, { id, name, importData }];
+    });
+    setActiveZbomTabId(id);
+  }, []);
+
+  const closeZbomTab = useCallback((id: string) => {
+    localStorage.removeItem(`robo-filler-zbom-${id}`);
+    setZbomTabs(prev => prev.filter(t => t.id !== id));
+    setActiveZbomTabId(cur => {
+      if (cur !== id) return cur;
+      const remaining = zbomTabs.filter(t => t.id !== id);
+      return remaining.length > 0 ? remaining[remaining.length - 1].id : null;
+    });
+  }, [zbomTabs]);
+
   const handleOpenZbom = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -85,7 +106,7 @@ function App() {
     const reader = new FileReader();
     reader.onload = ev => {
       const result = parseBomTxt(ev.target?.result as string, db);
-      if (result) { setBomImportData(result); setShowBomImport(true); }
+      if (result) openNewZbomTab(result);
       if (zbomInputRef.current) zbomInputRef.current.value = '';
     };
     reader.readAsText(file, 'utf-8');
@@ -178,6 +199,11 @@ function App() {
     return () => clearTimeout(timer);
   }, [debouncedQuery, mode, field, maxResults, selectedManufacturers, activeArticles]);
 
+  const suggestions = useMemo(() => {
+    if (results.length > 0 || !debouncedQuery.trim() || isSearching) return [];
+    return searchSuggestions(activeArticles, debouncedQuery, field);
+  }, [results, debouncedQuery, isSearching, activeArticles, field]);
+
   const handleCustomDataLoad = (data: Article[]) => {
     setCustomArticles(data);
     setSelectedManufacturers([]);
@@ -264,7 +290,7 @@ function App() {
               {zbomDropdownOpen && (
                 <div className="absolute left-0 top-full mt-1 z-30 bg-mantle border border-surface1 rounded-xl shadow-xl overflow-hidden min-w-[160px]">
                   <button
-                    onClick={() => { setBomImportData(undefined); setShowBomImport(true); setZbomDropdownOpen(false); }}
+                    onClick={() => { openNewZbomTab(); setZbomDropdownOpen(false); }}
                     className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-subtext1 hover:bg-surface0 hover:text-text transition-colors text-left"
                   >
                     <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
@@ -392,6 +418,14 @@ function App() {
                         <p className="text-overlay0 text-sm mt-2">
                           Zkuste změnit režim vyhledávání nebo použít jiný výraz
                         </p>
+                        {suggestions.length > 0 && (
+                          <div className="mt-6 text-left space-y-2">
+                            <p className="text-subtext0 text-sm font-medium">Mysleli jste...?</p>
+                            {suggestions.map((s, idx) => (
+                              <ResultCard key={`${s.artikl}-${idx}`} result={s} />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ) : (() => {
                       const visible = results.slice(0, displayedCount);
@@ -471,15 +505,26 @@ function App() {
 
       {BACKEND_URL && <ChatBot />}
 
-      {showBomImport && (
-        <BomWizard
-          bulkResults={[]}
-          selections={{}}
-          articles={activeArticles}
-          importData={bomImportData}
-          onClose={() => { setShowBomImport(false); setBomImportData(undefined); }}
-        />
-      )}
+      {zbomTabs.length > 0 && activeZbomTabId && (() => {
+        const activeTab = zbomTabs.find(t => t.id === activeZbomTabId);
+        if (!activeTab) return null;
+        return (
+          <BomWizard
+            key={activeZbomTabId}
+            draftKey={activeZbomTabId}
+            bulkResults={[]}
+            selections={{}}
+            articles={activeArticles}
+            importData={activeTab.importData}
+            onClose={() => closeZbomTab(activeZbomTabId)}
+            tabs={zbomTabs.map(t => ({ id: t.id, name: t.name }))}
+            activeTabId={activeZbomTabId}
+            onTabSelect={setActiveZbomTabId}
+            onAddTab={() => openNewZbomTab()}
+            onCloseTab={closeZbomTab}
+          />
+        );
+      })()}
     </div>
   );
 }

@@ -10,6 +10,12 @@ interface BomWizardProps {
   onClose: () => void;
   importData?: ImportResult;
   startAtTable?: boolean;
+  draftKey?: string;
+  tabs?: { id: string; name: string }[];
+  activeTabId?: string;
+  onTabSelect?: (id: string) => void;
+  onAddTab?: () => void;
+  onCloseTab?: (id: string) => void;
 }
 
 // ── column definitions ────────────────────────────────────────────────────────
@@ -113,7 +119,7 @@ function Field({ label, hint, children }: { label: React.ReactNode; hint?: strin
 }
 
 // ── main component ────────────────────────────────────────────────────────────
-export function BomWizard({ bulkResults, selections, articles, onClose, importData, startAtTable }: BomWizardProps) {
+export function BomWizard({ bulkResults, selections, articles, onClose, importData, startAtTable, draftKey, tabs, activeTabId, onTabSelect, onAddTab, onCloseTab }: BomWizardProps) {
   const [step, setStep] = useState<1 | 2>(importData || startAtTable ? 2 : 1);
   const [exportAfterHeader, setExportAfterHeader] = useState(false);
 
@@ -122,12 +128,27 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
     return () => { document.body.style.overflow = ''; };
   }, []);
 
-  const [header, setHeader] = useState<BomHeader>(importData?.header ?? {
-    cisloVrcholu: '', cisloZavodu: '6000', platnostOd: getTodayDDMMYYYY(), popis: '', status: '01', vyrobniDispecer: '',
+  const [header, setHeader] = useState<BomHeader>(() => {
+    if (importData) return importData.header;
+    if (draftKey) {
+      try {
+        const draft = JSON.parse(localStorage.getItem(`robo-filler-zbom-${draftKey}`) ?? 'null');
+        if (draft?.header) return draft.header;
+      } catch {}
+    }
+    return { cisloVrcholu: '', cisloZavodu: '6000', platnostOd: getTodayDDMMYYYY(), popis: '', status: '01', vyrobniDispecer: '' };
   });
 
   const [rows, setRows] = useState<BomRow[]>(() => {
     if (importData) return importData.rows;
+    if (draftKey) {
+      try {
+        const draft = JSON.parse(localStorage.getItem(`robo-filler-zbom-${draftKey}`) ?? 'null');
+        if (draft?.rows && Array.isArray(draft.rows) && draft.rows.length > 0) {
+          return draft.rows.map((r: BomRow) => ({ ...r, id: genId() }));
+        }
+      } catch {}
+    }
     return bulkResults.map((r, i) => {
       const sel = selections[i];
       if (sel) return { id: genId(), type: 'L' as const, artikl: sel.vybehovyDil || sel.artikl, popis: sel.nazev, typoveOznaceni: sel.typoveOznaceni, mnozstvi: 1, poznamka1: '', poznamka2: sel.status === 'U' ? 'Neaktivní materiál' : '' };
@@ -165,6 +186,17 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
     setEdit(null);
     setCanUndo(h.length > 1);
   }, []);
+
+  // ── auto-save draft ───────────────────────────────────────────────────────────
+  const saveDraftTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => {
+    if (!draftKey) return;
+    clearTimeout(saveDraftTimerRef.current);
+    saveDraftTimerRef.current = setTimeout(() => {
+      localStorage.setItem(`robo-filler-zbom-${draftKey}`, JSON.stringify({ rows, header }));
+    }, 500);
+    return () => clearTimeout(saveDraftTimerRef.current);
+  }, [rows, header, draftKey]);
 
   // ── glow state ────────────────────────────────────────────────────────────────
   const [glowCells, setGlowCells] = useState<Set<string>>(new Set());
@@ -622,6 +654,41 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
   // ── Step 2: table ─────────────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-base overflow-hidden">
+      {/* Tab bar */}
+      {tabs && tabs.length > 0 && (
+        <div className="flex items-center gap-0 bg-crust border-b border-surface0 px-2 pt-1.5 overflow-x-auto shrink-0">
+          {tabs.map(tab => (
+            <div
+              key={tab.id}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-t-lg text-xs font-medium transition-all shrink-0 ${
+                activeTabId === tab.id
+                  ? 'bg-base text-text border border-b-0 border-surface1'
+                  : 'text-overlay1 hover:text-text hover:bg-surface0/60 cursor-pointer'
+              }`}
+            >
+              <button onClick={() => onTabSelect?.(tab.id)} className="leading-none">{tab.name}</button>
+              {tabs.length > 1 && (
+                <button
+                  onClick={() => onCloseTab?.(tab.id)}
+                  className="text-overlay0 hover:text-red transition-colors leading-none"
+                  aria-label="Zavřít záložku"
+                >
+                  <X size={10} />
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            onClick={onAddTab}
+            title="Nový kusovník"
+            className="ml-1 px-2 py-1 text-overlay1 hover:text-mauve transition-colors"
+            aria-label="Nový kusovník"
+          >
+            <Plus size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Top bar */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-surface1 bg-mantle flex-shrink-0">
         <div className="flex items-center gap-3">
@@ -665,7 +732,11 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
           >
             <Download size={13} /> Export ZBOM .txt
           </button>
-          <button onClick={onClose} className="ml-1 text-overlay1 hover:text-text transition-colors"><X size={18} /></button>
+          <button
+            onClick={() => { if (onCloseTab && activeTabId) onCloseTab(activeTabId); else onClose(); }}
+            className="ml-1 text-overlay1 hover:text-text transition-colors"
+            title="Zavřít kusovník"
+          ><X size={18} /></button>
         </div>
       </div>
 

@@ -470,6 +470,37 @@ export function search(
   return results.slice(0, options.maxResults);
 }
 
+export function searchSuggestions(articles: Article[], query: string, field: SearchField = 'all'): SearchResult[] {
+  if (!query.trim()) return [];
+
+  const keys = field === 'all'
+    ? ['nazev', 'typoveOznaceni', 'vyrobce', 'artikl', 'cisloDiluVyrobce']
+    : field === 'typoveOznaceni'
+    ? ['typoveOznaceni', 'cisloDiluVyrobce']
+    : [field];
+
+  const fuse = new Fuse(articles, {
+    keys,
+    threshold: 0.5,
+    includeScore: true,
+    ignoreLocation: true,
+    minMatchCharLength: 2,
+    getFn: (obj: Article, path: string | string[]) => {
+      const pathStr = Array.isArray(path) ? path[0] : path;
+      const value = (obj as unknown as Record<string, unknown>)[pathStr];
+      if (typeof value === 'string') return removeDiacritics(value);
+      return (value ?? '') as string;
+    },
+  });
+
+  return fuse.search(removeDiacritics(query)).slice(0, 3).map(r => ({
+    ...r.item,
+    score: Math.round((1 - (r.score ?? 0.5)) * 100),
+    matchType: 'large' as const,
+    highlightedFields: {},
+  }));
+}
+
 export function getUniqueManufacturers(articles: Article[]): string[] {
   const manufacturers = new Set<string>();
   for (const article of articles) {

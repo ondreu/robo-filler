@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Copy, Check, ExternalLink, Settings } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Copy, Check, ExternalLink, Settings, PenLine } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import type { Article } from '../types';
@@ -17,6 +17,7 @@ interface Message {
 }
 
 const BACKEND_URL = ((import.meta.env.VITE_BACKEND_URL as string | undefined) ?? '').trim().replace(/\/$/, '');
+const CHAT_SESSION_KEY = 'robo-filler-chat-session';
 
 function ArticleCard({ article }: { article: Article }) {
   const [copied, setCopied] = useState(false);
@@ -100,7 +101,10 @@ const DEFAULT_H = 544;
 
 export function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try { return JSON.parse(sessionStorage.getItem(CHAT_SESSION_KEY) ?? '[]'); }
+    catch { return []; }
+  });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
@@ -113,12 +117,21 @@ export function ChatBot() {
   const resizeRef = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
 
   useEffect(() => {
+    sessionStorage.setItem(CHAT_SESSION_KEY, JSON.stringify(messages));
+  }, [messages]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, status]);
 
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
+
+  const clearChat = () => {
+    setMessages([]);
+    sessionStorage.removeItem(CHAT_SESSION_KEY);
+  };
 
   const startResize = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -256,6 +269,17 @@ export function ChatBot() {
             <MessageCircle size={16} className="text-mauve" />
             <span className="font-semibold text-sm text-text">Karel Bot</span>
             <span className="text-overlay0 text-xs ml-1">AI asistent vyhledávání artiklů</span>
+            <div className="ml-auto">
+              <button
+                onClick={clearChat}
+                title="Nový chat"
+                disabled={messages.length === 0}
+                className="text-overlay1 hover:text-mauve transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Nový chat"
+              >
+                <PenLine size={14} />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
