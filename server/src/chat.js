@@ -12,7 +12,9 @@ Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
 1. Pokud jde o vyhledávání průmyslového dílu nebo artiklu v databázi (i follow-up jako "a pro M25?" nebo "zkus to s IP67"):
    Rozšiř hledaný výraz o synonyma a překlady (CS/DE/EN), zachovej rozměry a specifikace.
    Používej zkratky a konvence z přiložených znalostí databáze.
-   Vrať: {"type": "search", "terms": ["term1", "term2", ...], "query": ""}
+   Pokud je v dotazu zmíněn výrobce (např. ABB, Siemens, Schneider, Phoenix Contact, Wago, Eaton, Legrand, OBO, Roxtec, Rittal, Moeller, Hager, Gewiss, Hensel aj.), extrahuj ho do pole "manufacturer" — přesně jak je napsán. Jinak "manufacturer": null.
+   Z termínů pro vyhledávání vynech jméno výrobce — hledej jen podle typu/názvu dílu.
+   Vrať: {"type": "search", "terms": ["term1", "term2", ...], "manufacturer": "ABB", "query": ""}
 
 2. Pokud uživatel žádá informace z internetu (datasheet, cena, specifikace výrobce, kde koupit, technická dokumentace):
    Vrať: {"type": "web_search", "terms": [], "query": "přesný anglický vyhledávací dotaz"}
@@ -53,10 +55,11 @@ async function expandQuery(userMessage, history) {
     return {
       type,
       terms: Array.isArray(parsed.terms) && parsed.terms.length > 0 ? parsed.terms : [userMessage],
+      manufacturer: typeof parsed.manufacturer === 'string' && parsed.manufacturer.trim() ? parsed.manufacturer.trim() : null,
       query: parsed.query ?? userMessage,
     };
   } catch {
-    return { type: 'search', terms: [userMessage], query: userMessage };
+    return { type: 'search', terms: [userMessage], manufacturer: null, query: userMessage };
   }
 }
 
@@ -128,7 +131,7 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   sendStatus('thinking', `Přemýšlím, chvilku strpení — v databázi je momentálně ${articleCount.toLocaleString('cs-CZ')} artiklů.`);
   const expanded = await expandQuery(userMessage, history);
   let type = expanded.type;
-  const { terms, query } = expanded;
+  const { terms, manufacturer, query } = expanded;
 
   let articles = [];
   let webResults = [];
@@ -141,11 +144,12 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
 
   if (type === 'search') {
     const preview = terms.slice(0, 3).join(', ') + (terms.length > 3 ? '...' : '');
-    sendStatus('searching', `Hledám v databázi: ${preview}`);
+    const mfrLabel = manufacturer ? ` [výrobce: ${manufacturer}]` : '';
+    sendStatus('searching', `Hledám v databázi: ${preview}${mfrLabel}`);
 
     const seen = new Set();
     for (const term of terms) {
-      for (const article of searchTerm(term, 12)) {
+      for (const article of searchTerm(term, 12, manufacturer)) {
         if (!seen.has(article.artikl)) {
           seen.add(article.artikl);
           articles.push(article);
