@@ -127,9 +127,13 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
-  const [synthModel, setSynthModelState] = useState<string>(
-    () => localStorage.getItem(SYNTH_MODEL_KEY) ?? 'mistral-small-latest'
-  );
+  const [synthModel, setSynthModelState] = useState<string>(() => {
+    try {
+      const { model, ts } = JSON.parse(localStorage.getItem(SYNTH_MODEL_KEY) ?? '{}');
+      if (model && Date.now() - ts < 24 * 60 * 60 * 1000) return model;
+    } catch {}
+    return 'mistral-small-latest';
+  });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [panelW, setPanelW] = useState(DEFAULT_W);
   const [panelH, setPanelH] = useState(DEFAULT_H);
@@ -428,7 +432,7 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
                     {SYNTH_MODELS.map(m => (
                       <button
                         key={m.value}
-                        onClick={() => { setSynthModelState(m.value); localStorage.setItem(SYNTH_MODEL_KEY, m.value); }}
+                        onClick={() => { setSynthModelState(m.value); localStorage.setItem(SYNTH_MODEL_KEY, JSON.stringify({ model: m.value, ts: Date.now() })); }}
                         className={`px-3 py-1 text-xs transition-colors ${synthModel === m.value ? 'bg-mauve text-crust font-semibold' : 'text-subtext1 hover:text-text'}`}
                       >
                         {m.label}
