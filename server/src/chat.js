@@ -48,50 +48,175 @@ NENALEZENO: Navrhni jedno konkrétní alternativní hledání, "selected": [].`;
 
 const APP_DOCS = `# Dokumentace aplikace Robo Filler
 
-## Klasické vyhledávání
-- Zadej libovolný výraz do vyhledávacího pole (název, artikl, typové označení, výrobce).
-- Kombinovaný engine: Wildcard (každé slovo musí být přítomno, AND logika) + Fuzzy (Fuse.js, toleruje překlepy, threshold 0.3).
-- Filtr výrobců: klikni na výrobce v levém panelu pro zúžení výsledků.
-- Přepínač databází: Ústí / Effretikon / Obě — vpravo nahoře.
-- Tip: kratší výrazy fungují lépe než celé věty.
+## Co aplikace dělá
+Robo Filler je vyhledávač průmyslových artiklů (materiálů, komponent, dílů) ze dvou interních databází — Ústí nad Labem a Effretikon. Databáze obsahuje přes 90 000 položek. Aplikace slouží k rychlému vyhledání správného artiklu a sestavení kusovníku (ZBOM) pro export.
+
+---
+
+## Klasické vyhledávání (hlavní obrazovka)
+
+### Jak zadat dotaz
+- Vyhledávací pole je uprostřed nahoře. Napiš cokoliv — název dílu, číslo artiklu, typové označení nebo výrobce.
+- Příklady fungujících dotazů: "záslepka M20", "24V DC relé", "IP68 průchodka", "5SY4116".
+- Stiskni Enter nebo klikni na lupu. Výsledky se zobrazí okamžitě.
+
+### Proč nic nenašlo
+- Zkus kratší výraz. "Pojistný šroub M12 nerez DIN 933" nenajde nic — zkus jen "šroub M12 nerez" nebo "M12 A2".
+- Aplikace hledá KAŽDÉ slovo (AND logika) — pokud jedno slovo není v databázi, výsledek je prázdný.
+- Překlepy toleruje jen do určité míry. "poistka" najde "pojistka", ale "pojistka" vs "jistič" jsou jiná slova — zkus obě.
+- Zkontroluj přepínač databáze (Ústí / Effretikon / Obě) — artikl může být jen v jedné.
+
+### Filtr výrobců (levý panel)
+- Po vyhledání se vlevo zobrazí seznam výrobců a počty výsledků.
+- Klikni na výrobce pro zúžení na jeho artikly. Klikni znovu pro odfiltrování.
+- Lze vybrat více výrobců najednou.
+
+### Karta výsledku
+- Zobrazuje: typové označení, číslo artiklu, výrobce, název, číslo dílu výrobce.
+- Ikona kopírování vedle artiklu — zkopíruje číslo do schránky jedním klikem.
+- Tlačítko Google (šipka ven) — otevře Google vyhledávání pro daný artikl.
+- Červené varování = výběhový díl (viz níže).
+
+### Přepínač databází
+- Vpravo nahoře: "Ústí" / "Effretikon" / "Obě".
+- Výchozí je "Obě" — prohledá obě databáze najednou. Pokud hledáš pro konkrétní závod, přepni.
+
+---
 
 ## Hromadné vyhledávání
-- Záložka "Hromadné vyhledávání" — zadej seznam výrazů, každý na nový řádek.
-- Aplikace prohledá databázi pro každý výraz zvlášť, duplicity se zpracují jednou.
-- Tlačítko "Auto 100 %" zaškrtne výrazy s přesně jednou 100% shodou.
-- Tlačítko "Skrýt zaškrtnuté" skryje zpracované řádky.
-- Výsledky lze exportovat do CSV nebo přenést do Tabulkového zpracování.
-- Lze nastavit počet zobrazených shod na výraz: 3 / 6 / 9.
+
+### K čemu slouží
+- Máš seznam artiklů nebo popisů a potřebuješ najít shody najednou — místo hledání jednoho po druhém.
+- Typické použití: dostaneš kusovník od zákazníka, zkopíruješ seznam položek a aplikace je prohledá hromadně.
+
+### Jak na to
+1. Klikni na záložku "Hromadné vyhledávání" (nahoře vedle "Vyhledávání").
+2. Do textového pole vlož seznam — každý výraz na nový řádek. Lze vložit přímo z Excelu (sloupec hodnot).
+3. Klikni "Hledat". Aplikace zpracuje každý řádek zvlášť.
+4. U každého výrazu se zobrazí nalezené shody s procentuálním skóre shody.
+
+### Práce s výsledky
+- Skóre 100 % = přesná shoda textu. Nižší = fuzzy shoda (podobný text).
+- Zaškrtávátko u každého výrazu = označení jako "zpracováno".
+- "Auto 100 %" — jedním klikem zaškrtne všechny výrazy, které mají PŘESNĚ jednu 100% shodu. Šetří čas při velkých seznamech.
+- "Skrýt zaškrtnuté" — skryje zpracované řádky, zobrazí jen nevyřešené.
+- Tlačítko "+" u výrazu — zobrazí více shod bez nového hledání (pokud jich bylo víc než zobrazený limit).
+- Počet zobrazených shod: přepínač 3 / 6 / 9 shod na výraz.
+
+### Export a přenos do kusovníku
+- Tlačítko "Export CSV" — stáhne výsledky jako tabulku.
+- Tlačítko "Tabulkové zpracování" — přenese zaškrtnuté výsledky přímo do ZBOM kusovníku.
+
+---
 
 ## Tabulkové zpracování (ZBOM kusovník)
-- Otevři přes tlačítko "Tabulkové zpracování" nebo z Hromadného vyhledávání.
-- Excel-like editace: klikni na buňku pro editaci, Tab/Enter pro pohyb.
-- Multi-cell výběr: klikni a táhni nebo Shift+klik.
-- Kopírování/vkládání: Ctrl+C / Ctrl+V (kompatibilní s Excelem).
-- Drag & drop řádků: táhni za ikonku vlevo pro přeřazení.
-- Undo: Ctrl+Z, až 50 kroků zpět.
-- Zadej artikl → aplikace automaticky doplní popis a typové označení z databáze.
-- Přepínač desetinného oddělovače (tečka / čárka) pro export.
-- Import z existujícího TXT exportu: tlačítko "Import".
-- Výběhový díl (status U): aplikace zobrazí varování a automaticky doplní poznámku 2.
 
-## Karel Bot (AI asistent)
-- Plovoucí tlačítko v pravém dolním rohu.
-- Hledej přirozenou češtinou: "nerezová záslepka M20", "ABB pojistka 16A", "průchodka IP68".
-- AI rozumí výrobcům — "ABB pojistka" filtruje výsledky jen na ABB.
-- Ozubené kolečko: zapne/vypne webové vyhledávání (Tavily) — výchozí: vypnuto.
-- Webové vyhledávání je vhodné pro: datasheet, cena, kde koupit, technická dokumentace.
-- Chat okno lze přetáhnout za levý horní roh pro změnu velikosti.
-- Limitace: AI vybírá max 5 karet z 40 kandidátů — ne vždy najde vše co v DB je.
+### K čemu slouží
+- Sestavení výstupního kusovníku pro export do výrobního systému.
+- Funguje jako jednoduchý Excel přímo v prohlížeči.
+
+### Jak otevřít
+- Tlačítko "Tabulkové zpracování" na hlavní obrazovce (rozbalovací menu).
+- Nebo z Hromadného vyhledávání po výběru výsledků.
+- "Nový kusovník" = prázdná tabulka. "Import z exportu" = načti existující TXT soubor.
+
+### Editace buněk
+- Klikni na buňku → aktivuje se editace. Napiš hodnotu, potvrď Enter nebo Tab.
+- Tab přesune na další buňku vpravo, Enter dolů.
+- Dvojklik = editace existující hodnoty (nezmaže obsah).
+
+### Automatické doplnění z databáze
+- Do sloupce "Artikl" napiš číslo artiklu a stiskni Enter nebo Tab.
+- Aplikace automaticky doplní "Popis" a "Typové označení" z databáze.
+- Pokud artikl nenajde, buňky zůstanou prázdné — zkontroluj číslo artiklu.
+
+### Výběr a kopírování více buněk
+- Klikni a táhni myší pro výběr více buněk.
+- Shift+klik = výběr rozsahu.
+- Ctrl+C zkopíruje vybrané buňky (kompatibilní s Excelem).
+- Ctrl+V vloží z Excelu nebo z jiné části tabulky.
+
+### Přeřazení řádků
+- Vlevo u každého řádku je ikona pro drag & drop.
+- Chop ji myší a přetáhni řádek na nové místo.
+
+### Undo (vrácení změn)
+- Ctrl+Z vrátí poslední akci. Funguje až 50 kroků zpět.
+- Vrací: editace buněk, vložení, přeřazení řádků, mazání.
+
+### Desetinný oddělovač
+- Přepínač "." nebo "," pro export. Nastav podle toho, co očekává cílový systém.
+- Česky obvykle čárka, mezinárodně tečka.
+
+### Export
+- Tlačítko "Export" stáhne TXT soubor ve formátu kompatibilním s importem.
+- Stejný soubor lze znovu načíst přes "Import z exportu".
+
+### Výběhové díly v kusovníku
+- Pokud zadáš artikl se statusem "U" (výběhový díl), aplikace zobrazí varování.
+- Automaticky se doplní "Neaktivní materiál" do poznámky 2.
+
+---
+
+## Karel Bot (AI asistent vyhledávání)
+
+### Jak otevřít
+- Fialové tlačítko s bublinkou v pravém dolním rohu obrazovky. Funguje na všech záložkách.
+- Klikni pro otevření chatu. Klikni znovu (nebo na X) pro zavření.
+
+### Jak hledat
+- Piš přirozenou češtinou jako kolegovi: "hledám nerezovou záslepku M20", "potřebuju ABB pojistku 16A charakteristika B".
+- AI rozumí zkratkám: nerez = A2/A4, MS = mosaz, BK = černá, NO = spínací kontakt atd.
+- AI rozumí výrobcům — "ABB pojistka" automaticky filtruje jen ABB artikly.
+- Výsledky se zobrazí jako karty pod odpovědí.
+
+### Kdy použít Karel Bot místo klasického vyhledávání
+- Nevíš přesný název dílu — popíšeš co potřebuješ a AI vyhledá synonyma.
+- Kombinovaný dotaz s více parametry: výrobce + typ + rozměr.
+- Chceš komentář k výsledkům — AI řekne který výsledek vypadá nejrelevantnější.
+
+### Webové vyhledávání
+- Klikni na ozubené kolečko vedle pole pro zprávu → zobrazí se přepínač "Webové vyhledávání".
+- Výchozí: vypnuto. Zapni pro dotazy jako "kde koupit", "datasheet", "technická dokumentace".
+- Webové vyhledávání nejde použít pro hledání v interní databázi — je to čistě pro informace z internetu.
+
+### Změna velikosti okna
+- Chyť levý horní roh chat okna a přetáhni pro změnu velikosti. Minimum 300×300 px, maximum cca 900×850 px.
+
+### Limitace Karel Bota
+- AI vybírá max 5 karet z 40 kandidátů — pro přesné hledání konkrétního artiklu použij raději klasické vyhledávání.
+- AI může občas chybně pochopit dotaz nebo vybrat méně relevantní výsledky — ověř si karty.
+- AI neví co je v databázi — pokud něco nenajde, zkus jiná synonyma nebo klasické vyhledávání.
+- Historie chatu se resetuje při zavření okna nebo obnovení stránky.
+
+---
 
 ## Výběhové díly a neaktivní materiály
-- Artikl se statusem "U" = výběhový díl, zobrazí se varování na kartě výsledku.
-- Při použití v ZBOM se automaticky doplní poznámka 2: "Neaktivní materiál".
+- Artikl se statusem "U" = výběhový díl = materiál se přestává vyrábět nebo je nahrazen.
+- Na kartě výsledku se zobrazí červené varování "Materiál není aktivní!".
+- V kusovníku ZBOM se automaticky doplní poznámka "Neaktivní materiál" do sloupce Poznámka 2.
+- Pokud vidíš toto varování, doporučujeme ověřit náhradní artikl u výrobce nebo v katalogu.
 
-## Export
-- Klasické vyhledávání: tlačítko "Export CSV" v záhlaví výsledků.
-- Hromadné vyhledávání: export zaškrtnutých výsledků do CSV.
-- ZBOM: export do TXT (formát kompatibilní s importem).`;
+---
+
+## Časté chyby a řešení
+
+### "Nic se nenašlo"
+1. Zkrať dotaz — hledej jen 1-2 klíčová slova.
+2. Zkus anglický nebo německý ekvivalent (M20 Verschlussstopfen místo M20 záslepka).
+3. Přepni databázi na "Obě".
+4. Zkus Karel Bot — umí synonyma a překlady automaticky.
+
+### "Výsledky jsou úplně jiné než čekám"
+- Některé slovo v dotazu matí vyhledávač — odeber slova jedno po druhém a hledej znovu.
+- Použij filtr výrobce vlevo pro zúžení.
+
+### "Artikl se nenašel v kusovníku"
+- Ověř že máš správné číslo artiklu (bez mezer, bez pomlček navíc).
+- Zkontroluj přepínač databáze — artikl může být jen v Ústí nebo jen v Effretikonu.
+
+### "Export nefunguje"
+- Prohlížeč musí povolovat stahování. Zkontroluj nastavení prohlížeče nebo blokátor stahování.`;
 
 async function expandQuery(userMessage, history) {
   const resp = await client.chat.complete({
