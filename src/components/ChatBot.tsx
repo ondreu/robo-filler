@@ -19,6 +19,8 @@ interface Message {
 const BACKEND_URL = ((import.meta.env.VITE_BACKEND_URL as string | undefined) ?? '').trim().replace(/\/$/, '');
 const CHAT_SESSION_KEY = 'robo-filler-chat-session';
 const CHAT_LAST_KEY = 'robo-filler-chat-last';
+const AI_CHAT_KEY = 'robo-filler-ai-chat';
+const AI_CHAT_LAST_KEY = 'robo-filler-ai-chat-last';
 
 const GREETINGS = [
   'Ahoj! Hledáš konkrétní artikl, nebo potřebuješ poradit s aplikací?',
@@ -108,7 +110,7 @@ const MAX_H = 850;
 const DEFAULT_W = 384;
 const DEFAULT_H = 544;
 
-export function ChatBot() {
+export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [greeting] = useState(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -154,6 +156,14 @@ export function ChatBot() {
         setSettingsOpen(false);
       }
     } catch {}
+  };
+
+  const teleportToAi = () => {
+    sessionStorage.setItem(AI_CHAT_KEY, JSON.stringify(messages));
+    localStorage.setItem(AI_CHAT_LAST_KEY, JSON.stringify(messages));
+    setIsOpen(false);
+    setSettingsOpen(false);
+    onTeleportToAi?.();
   };
 
   const startResize = (e: React.MouseEvent) => {
@@ -402,12 +412,24 @@ export function ChatBot() {
                     }`} />
                   </button>
                 </label>
+                {onTeleportToAi && messages.length > 0 && (
+                  <button
+                    onClick={teleportToAi}
+                    className="mt-3 w-full text-left text-xs text-subtext1 hover:text-mauve transition-colors py-1 flex items-center gap-1.5"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+                      <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+                    </svg>
+                    Teleportovat do AI módu
+                  </button>
+                )}
                 {(() => {
                   const hasLast = !!localStorage.getItem(CHAT_LAST_KEY);
                   return hasLast ? (
                     <button
                       onClick={restoreLastChat}
-                      className="mt-3 w-full text-left text-xs text-subtext1 hover:text-mauve transition-colors py-1"
+                      className="mt-2 w-full text-left text-xs text-subtext1 hover:text-mauve transition-colors py-1"
                     >
                       ↩ Obnovit poslední chat
                     </button>

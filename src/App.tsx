@@ -14,6 +14,7 @@ import { DataSourceToggle } from './components/DataSourceToggle';
 import { AdvancedSettings } from './components/AdvancedSettings';
 import { BulkSearch } from './components/BulkSearch';
 import { ChatBot } from './components/ChatBot';
+import { AiChat } from './components/AiChat';
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -309,6 +310,18 @@ function App() {
           >
             Hromadné
           </button>
+          {BACKEND_URL && (
+            <button
+              onClick={() => setAppMode('ai')}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${
+                appMode === 'ai'
+                  ? 'bg-mauve text-crust shadow-lg'
+                  : 'text-subtext1 hover:text-text'
+              }`}
+            >
+              AI mód
+            </button>
+          )}
         </div>
 
         {/* Data source toggle and advanced settings */}
@@ -407,6 +420,10 @@ function App() {
         {/* Main content */}
         {!isLoading && !error && activeArticles.length > 0 && (
           <>
+            {appMode === 'ai' && (
+              <AiChat />
+            )}
+
             {appMode === 'bulk' && (
               <BulkSearch articles={activeArticles} />
             )}
@@ -565,7 +582,7 @@ function App() {
         </footer>
       </div>
 
-      {BACKEND_URL && <ChatBot />}
+      {BACKEND_URL && <ChatBot onTeleportToAi={() => setAppMode('ai')} />}
 
       {zbomEditorOpen && zbomTabs.length > 0 && activeZbomTabId && (() => {
         const activeTab = zbomTabs.find(t => t.id === activeZbomTabId);
