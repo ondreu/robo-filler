@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Copy, Check, ExternalLink, Settings } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Copy, Check, ExternalLink, Settings, PenLine } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import type { Article } from '../types';
@@ -17,6 +17,16 @@ interface Message {
 }
 
 const BACKEND_URL = ((import.meta.env.VITE_BACKEND_URL as string | undefined) ?? '').trim().replace(/\/$/, '');
+const CHAT_SESSION_KEY = 'robo-filler-chat-session';
+const CHAT_LAST_KEY = 'robo-filler-chat-last';
+
+const GREETINGS = [
+  'Ahoj! Hledáš konkrétní artikl, nebo potřebuješ poradit s aplikací?',
+  'Dobrý den! Napiš název, artikl nebo výrobce — najdu co potřebuješ.',
+  'Zdravím! Jsem Karel Bot. Pomohu ti najít průmyslový artikl nebo odpovím na otázky k aplikaci.',
+  'Ahoj! S čím mohu dnes pomoci? Stačí napsat co hledáš.',
+  'Dobrý den! Zadej co hledáš — artikl, komponent nebo dotaz na aplikaci — a já se postarám.',
+];
 
 function ArticleCard({ article }: { article: Article }) {
   const [copied, setCopied] = useState(false);
@@ -100,7 +110,11 @@ const DEFAULT_H = 544;
 
 export function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [greeting] = useState(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try { return JSON.parse(sessionStorage.getItem(CHAT_SESSION_KEY) ?? '[]'); }
+    catch { return []; }
+  });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
@@ -113,12 +127,34 @@ export function ChatBot() {
   const resizeRef = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
 
   useEffect(() => {
+    sessionStorage.setItem(CHAT_SESSION_KEY, JSON.stringify(messages));
+    if (messages.length > 0) {
+      localStorage.setItem(CHAT_LAST_KEY, JSON.stringify(messages));
+    }
+  }, [messages]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, status]);
 
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
+
+  const clearChat = () => {
+    setMessages([]);
+    sessionStorage.removeItem(CHAT_SESSION_KEY);
+  };
+
+  const restoreLastChat = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CHAT_LAST_KEY) ?? '[]');
+      if (saved.length > 0) {
+        setMessages(saved);
+        setSettingsOpen(false);
+      }
+    } catch {}
+  };
 
   const startResize = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -256,39 +292,60 @@ export function ChatBot() {
             <MessageCircle size={16} className="text-mauve" />
             <span className="font-semibold text-sm text-text">Karel Bot</span>
             <span className="text-overlay0 text-xs ml-1">AI asistent vyhledávání artiklů</span>
+            <div className="ml-auto">
+              <button
+                onClick={clearChat}
+                title="Nový chat"
+                disabled={messages.length === 0}
+                className="text-overlay1 hover:text-mauve transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Nový chat"
+              >
+                <PenLine size={14} />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
             {messages.length === 0 && (
-              <div className="mt-6 space-y-4">
-                <div className="space-y-2">
-                  <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Hledání artiklů</p>
-                  {['záslepka M20', 'ABB pojistka 16A', 'kabelová průchodka IP68'].map(ex => (
-                    <button
-                      key={ex}
-                      onClick={() => { setInput(ex); inputRef.current?.focus(); }}
-                      className="block w-full text-left px-3 py-2 rounded-xl bg-surface0 hover:bg-surface1 text-subtext1 text-sm transition-colors"
-                    >
-                      <em>{ex}</em>
-                    </button>
-                  ))}
+              <div className="mt-2 space-y-4">
+                {/* Greeting bubble */}
+                <div className="flex justify-start">
+                  <div className="bg-surface0 text-text rounded-2xl rounded-bl-sm px-3 py-2 text-sm leading-relaxed max-w-[88%]">
+                    {greeting}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Pomoc s aplikací</p>
-                  {[
-                    'jak funguje hromadné vyhledávání?',
-                    'jak exportovat kusovník?',
-                    'proč mi nic nenašlo?',
-                  ].map(ex => (
-                    <button
-                      key={ex}
-                      onClick={() => { setInput(ex); inputRef.current?.focus(); }}
-                      className="block w-full text-left px-3 py-2 rounded-xl bg-surface0 hover:bg-surface1 text-subtext1 text-sm transition-colors"
-                    >
-                      {ex}
-                    </button>
-                  ))}
+
+                {/* Suggestions */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Hledání artiklů</p>
+                    {['záslepka M20', 'ABB pojistka 16A', 'kabelová průchodka IP68'].map(ex => (
+                      <button
+                        key={ex}
+                        onClick={() => { setInput(ex); inputRef.current?.focus(); }}
+                        className="block w-full text-left px-3 py-2 rounded-xl bg-surface0 hover:bg-surface1 text-subtext1 text-sm transition-colors"
+                      >
+                        <em>{ex}</em>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Pomoc s aplikací</p>
+                    {[
+                      'jak funguje hromadné vyhledávání?',
+                      'jak exportovat kusovník?',
+                      'proč mi nic nenašlo?',
+                    ].map(ex => (
+                      <button
+                        key={ex}
+                        onClick={() => { setInput(ex); inputRef.current?.focus(); }}
+                        className="block w-full text-left px-3 py-2 rounded-xl bg-surface0 hover:bg-surface1 text-subtext1 text-sm transition-colors"
+                      >
+                        {ex}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -345,6 +402,17 @@ export function ChatBot() {
                     }`} />
                   </button>
                 </label>
+                {(() => {
+                  const hasLast = !!localStorage.getItem(CHAT_LAST_KEY);
+                  return hasLast ? (
+                    <button
+                      onClick={restoreLastChat}
+                      className="mt-3 w-full text-left text-xs text-subtext1 hover:text-mauve transition-colors py-1"
+                    >
+                      ↩ Obnovit poslední chat
+                    </button>
+                  ) : null;
+                })()}
               </div>
             )}
             <input

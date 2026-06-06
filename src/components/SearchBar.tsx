@@ -1,6 +1,10 @@
-import { Search } from 'lucide-react';
+import { useState } from 'react';
+import { Search, X } from 'lucide-react';
 import type { SearchMode, SearchField } from '../types';
 import { Tooltip } from './Tooltip';
+
+const HISTORY_KEY = 'robo-filler-search-history';
+const MAX_HISTORY = 15;
 
 interface SearchBarProps {
   query: string;
@@ -23,6 +27,29 @@ export function SearchBar({
   maxResults,
   onMaxResultsChange,
 }: SearchBarProps) {
+  const [history, setHistory] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) ?? '[]'); }
+    catch { return []; }
+  });
+
+  const saveToHistory = (q: string) => {
+    const trimmed = q.trim();
+    if (!trimmed || trimmed.length < 2) return;
+    setHistory(prev => {
+      const next = [trimmed, ...prev.filter(h => h !== trimmed)].slice(0, MAX_HISTORY);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const removeFromHistory = (item: string) => {
+    setHistory(prev => {
+      const next = prev.filter(h => h !== item);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-4">
       {/* Search input */}
@@ -32,11 +59,36 @@ export function SearchBar({
           type="text"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter' && query.trim()) saveToHistory(query); }}
           placeholder="Zadejte hledaný výraz..."
           className="w-full pl-12 pr-4 py-3 bg-surface0 text-text rounded-2xl border-2 border-surface2
             focus:border-mauve focus:outline-none transition-colors placeholder:text-overlay1"
         />
       </div>
+
+      {/* Search history chips */}
+      {history.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-overlay0 text-xs">Nedávné:</span>
+          {history.map(item => (
+            <span key={item} className="flex items-center gap-1 bg-surface0 rounded-lg pl-2.5 pr-1 py-1 text-xs group">
+              <button
+                onClick={() => onQueryChange(item)}
+                className="text-subtext1 hover:text-text transition-colors"
+              >
+                {item}
+              </button>
+              <button
+                onClick={() => removeFromHistory(item)}
+                className="text-overlay0 hover:text-red transition-colors opacity-0 group-hover:opacity-100"
+                aria-label="Odstranit"
+              >
+                <X size={10} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Search mode */}
       <div className="flex items-center gap-2 flex-wrap">
