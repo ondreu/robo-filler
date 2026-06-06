@@ -11,6 +11,24 @@ function removeDiacritics(str) {
   return str.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/�/g, '');
 }
 
+// Returns string with diacritic-bearing characters removed entirely (e.g. "lišta" → "lita")
+function stripDiacriticChars(str) {
+  const nfd = str.normalize('NFD');
+  let result = '';
+  let i = 0;
+  while (i < nfd.length) {
+    const nextCode = i + 1 < nfd.length ? nfd.charCodeAt(i + 1) : 0;
+    if (nextCode >= 0x0300 && nextCode <= 0x036F) {
+      i++;
+      while (i < nfd.length && nfd.charCodeAt(i) >= 0x0300 && nfd.charCodeAt(i) <= 0x036F) i++;
+    } else {
+      result += nfd[i++];
+    }
+  }
+  return result;
+}
+
+
 function parseCSV(content) {
   const articles = [];
   for (const line of content.trim().split('\n')) {
@@ -166,7 +184,12 @@ function bm25Search(query, topN, manufacturerFilter) {
 
 function wildcardSearch(articles, query) {
   const words   = query.trim().split(/\s+/).filter(Boolean);
-  const regexes = words.map(w => new RegExp(removeDiacritics(w), 'i'));
+  const regexes = words.map(w => {
+    const stripped = removeDiacritics(w);     // "lišta" → "lista"
+    const charless = stripDiacriticChars(w);  // "lišta" → "lita"
+    if (stripped === charless) return new RegExp(stripped, 'i');
+    return new RegExp(`(?:${stripped}|${charless})`, 'i');
+  });
 
   return articles
     .filter(a => {

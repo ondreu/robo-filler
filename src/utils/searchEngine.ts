@@ -6,6 +6,23 @@ function removeDiacritics(str: string): string {
   return str.normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
+function stripDiacriticChars(str: string): string {
+  const nfd = str.normalize('NFD');
+  let result = '';
+  let i = 0;
+  while (i < nfd.length) {
+    const nextCode = i + 1 < nfd.length ? nfd.charCodeAt(i + 1) : 0;
+    if (nextCode >= 0x0300 && nextCode <= 0x036F) {
+      i++;
+      while (i < nfd.length && nfd.charCodeAt(i) >= 0x0300 && nfd.charCodeAt(i) <= 0x036F) i++;
+    } else {
+      result += nfd[i++];
+    }
+  }
+  return result;
+}
+
+
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -125,7 +142,7 @@ function scoreQuery(query: string, target: string): {
 
   let matchedCount = 0;
   for (const word of words) {
-    if (targetNorm.includes(word)) matchedCount++;
+    if (targetNorm.includes(word) || targetNorm.includes(stripDiacriticChars(word))) matchedCount++;
   }
 
   if (matchedCount === 0) {
@@ -167,7 +184,12 @@ function wildcardSearch(articles: Article[], query: string, field: SearchField):
   } else {
     // Each word becomes its own regex — ALL must match (AND logic)
     const words = query.trim().split(/\s+/).filter(Boolean);
-    regexes = words.map(w => new RegExp(escapeRegex(removeDiacritics(w)), 'i'));
+    regexes = words.map(w => {
+      const stripped = removeDiacritics(w);
+      const charless = stripDiacriticChars(w);
+      if (stripped === charless) return new RegExp(escapeRegex(stripped), 'i');
+      return new RegExp(`(?:${escapeRegex(stripped)}|${escapeRegex(charless)})`, 'i');
+    });
   }
 
   const results: SearchResult[] = [];
@@ -220,7 +242,7 @@ function fuzzySearch(articles: Article[], query: string, field: SearchField): Se
 
       for (const [fieldName, value] of Object.entries(fields)) {
         const valueNorm = removeDiacritics(value).toLowerCase();
-        const matchedCount = queryWords.filter(w => valueNorm.includes(w)).length;
+        const matchedCount = queryWords.filter(w => valueNorm.includes(w) || valueNorm.includes(stripDiacriticChars(w))).length;
 
         if (matchedCount === 0) continue;
 
