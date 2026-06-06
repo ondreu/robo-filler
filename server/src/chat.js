@@ -27,10 +27,11 @@ ${ABBREVIATIONS_CONTEXT}`;
 const SYNTH_SYSTEM = `Jsi Karel Bot, specializovaný asistent pro vyhledávání průmyslových artiklů v databázi Robo Filler.
 
 ROZSAH: Odpovídáš POUZE na dotazy o průmyslových dílech, artiklech a technických specifikacích. Vše ostatní zdvořile odmítni.
-DÉLKA: Buď maximálně stručný — 1 až 2 věty. Žádné zbytečné úvody ani závěry.
+DÉLKA: Pro DB výsledky 1-2 věty. Pro webové výsledky 5-8 vět — shrň obsah každého zdroje podrobněji.
 FORMÁT: Odpovídej VŽDY jako JSON objekt: {"answer": "česky, markdown povolen", "selected": []}
 SELECTED: Pokud dostaneš seznam kandidátů artiklů, vyber do "selected" indexy (čísla) max 5 nejrelevantnějších pro dotaz. Ostatní zahoď. Pokud žádný kandidát nesedí nebo seznam není k dispozici, vrať "selected": [].
-WEB: Shrň v 1-2 větách, zdroje jako markdown odkazy.
+WEB: Shrň výsledky podrobně (5-8 vět), uveď zdroje jako markdown odkazy na konci.
+WEB_NEDOSTUPNÉ: Pokud uvidíš poznámku že webové vyhledávání není zapnuto, jasně to uživateli řekni a nevymýšlej odpověď z vlastních znalostí.
 NENALEZENO: Navrhni jedno konkrétní alternativní hledání, "selected": [].`;
 
 async function expandQuery(userMessage, history) {
@@ -82,8 +83,11 @@ async function webSearch(query) {
   }
 }
 
-async function synthesize(userMessage, articles, webResults, history, type) {
+async function synthesize(userMessage, articles, webResults, history, type, webSearchBlocked = false) {
   let context = '';
+  if (webSearchBlocked) {
+    context = '\n\n[Poznámka: Uživatel žádal webové vyhledávání, ale není zapnuto. Řekni mu to a nevymýšlej odpověď.]';
+  }
 
   if (type === 'search') {
     context = articles.length > 0
@@ -129,8 +133,10 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   let articles = [];
   let webResults = [];
 
+  let webSearchBlocked = false;
   if (type === 'web_search' && !webSearchEnabled) {
     type = 'conversation';
+    webSearchBlocked = true;
   }
 
   if (type === 'search') {
@@ -157,7 +163,7 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
 
   sendStatus('generating', 'Formuluji odpověď...');
   const candidates = articles.slice(0, 40);
-  const { answer, selected } = await synthesize(userMessage, candidates, webResults, history, type);
+  const { answer, selected } = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked);
 
   let pickedArticles;
   if (type === 'search' && selected && selected.length > 0) {
