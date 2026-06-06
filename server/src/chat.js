@@ -440,5 +440,5 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
     pickedArticles = candidates.slice(0, 5);
   }
 
-  return { answer, articles: pickedArticles, expandedTerms: terms, type };
+  return { answer, articles: pickedArticles, allCandidates: type === 'search' ? candidates : [], expandedTerms: terms, type };
 }

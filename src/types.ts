@@ -38,7 +38,7 @@ export interface BulkQueryResult {
   results: SearchResult[];
 }
 
-export type AppMode = 'single' | 'bulk';
+export type AppMode = 'single' | 'bulk' | 'ai';
 
 export type BomRowType = 'L' | 'T';
 
