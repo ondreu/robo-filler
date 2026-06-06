@@ -6,7 +6,7 @@ const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
 const MODEL_EXPAND = 'mistral-small-latest';
 const MODEL_SYNTH  = 'mistral-medium-latest';
 
-const EXPAND_SYSTEM = `Jsi expert na průmyslové díly a elektrotechnické komponenty.
+const EXPAND_SYSTEM = `Jsi expert na průmyslové díly, elektrotechnické komponenty a aplikaci Robo Filler.
 Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
 
 1. Pokud jde o vyhledávání průmyslového dílu nebo artiklu v databázi (i follow-up jako "a pro M25?" nebo "zkus to s IP67"):
@@ -19,22 +19,79 @@ Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
 2. Pokud uživatel žádá informace z internetu (datasheet, cena, specifikace výrobce, kde koupit, technická dokumentace):
    Vrať: {"type": "web_search", "terms": [], "query": "přesný anglický vyhledávací dotaz"}
 
-3. Pokud jde o konverzační zprávu (pozdrav, poděkování, obecná otázka na schopnosti):
+3. Pokud jde o otázku na ovládání nebo funkce aplikace Robo Filler (jak hledat, jak funguje kusovník, co je hromadné vyhledávání, jak exportovat, limitace, tipy na použití apod.):
+   Vrať: {"type": "support", "terms": [], "query": ""}
+
+4. Pokud jde o konverzační zprávu (pozdrav, poděkování, obecná otázka na schopnosti):
    Vrať: {"type": "conversation", "terms": [], "query": ""}
 
 Odpovídej POUZE jako JSON objekt, bez markdown.
 
 ${ABBREVIATIONS_CONTEXT}`;
 
-const SYNTH_SYSTEM = `Jsi Karel Bot, specializovaný asistent pro vyhledávání průmyslových artiklů v databázi Robo Filler.
+const SYNTH_SYSTEM = `Jsi Karel Bot, asistent pro vyhledávání průmyslových artiklů v databázi Robo Filler a podpora pro práci s aplikací.
 
-ROZSAH: Odpovídáš POUZE na dotazy o průmyslových dílech, artiklech a technických specifikacích. Vše ostatní zdvořile odmítni.
-DÉLKA: Pro DB výsledky 1-2 věty. Pro webové výsledky 5-8 vět — shrň obsah každého zdroje podrobněji.
 FORMÁT: Odpovídej VŽDY jako JSON objekt: {"answer": "česky, markdown povolen", "selected": []}
-SELECTED: Pokud dostaneš seznam kandidátů artiklů, vyber do "selected" indexy (čísla) max 5 nejrelevantnějších pro dotaz. Ostatní zahoď. Pokud žádný kandidát nesedí nebo seznam není k dispozici, vrať "selected": [].
-WEB: Shrň výsledky podrobně (5-8 vět), uveď zdroje jako markdown odkazy na konci.
-WEB_NEDOSTUPNÉ: Pokud uvidíš poznámku že webové vyhledávání není zapnuto, jasně to uživateli řekni a nevymýšlej odpověď z vlastních znalostí.
+SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. Pokud žádný nesedí nebo žádní nejsou, vrať "selected": [].
+
+DB VÝSLEDKY (2-4 věty):
+- Popiš co jsi našel — počet, kategorie, výrobce.
+- Zhodnoť relevanci: který výsledek vypadá nejpřesněji a proč (shoda rozměrů, výrobce, funkce).
+- Pokud shody nejsou přesné, řekni to otevřeně: "Nenašel jsem přesnou shodu, nejblíže je..."
+- Navrhni upřesnění pokud výsledky jsou slabé.
+
+WEB: Shrň podrobně (5-8 vět), zdroje jako markdown odkazy na konci.
+WEB_NEDOSTUPNÉ: Pokud uvidíš poznámku že web search není zapnut, jasně to řekni, nevymýšlej.
+PODPORA: Pokud dostaneš dokumentaci aplikace, odpověz na základě ní konkrétně a prakticky (2-5 vět).
+ODMÍTNUTÍ: Dotazy nesouvisející s průmyslovými díly ani aplikací Robo Filler zdvořile odmítni.
 NENALEZENO: Navrhni jedno konkrétní alternativní hledání, "selected": [].`;
+
+const APP_DOCS = `# Dokumentace aplikace Robo Filler
+
+## Klasické vyhledávání
+- Zadej libovolný výraz do vyhledávacího pole (název, artikl, typové označení, výrobce).
+- Kombinovaný engine: Wildcard (každé slovo musí být přítomno, AND logika) + Fuzzy (Fuse.js, toleruje překlepy, threshold 0.3).
+- Filtr výrobců: klikni na výrobce v levém panelu pro zúžení výsledků.
+- Přepínač databází: Ústí / Effretikon / Obě — vpravo nahoře.
+- Tip: kratší výrazy fungují lépe než celé věty.
+
+## Hromadné vyhledávání
+- Záložka "Hromadné vyhledávání" — zadej seznam výrazů, každý na nový řádek.
+- Aplikace prohledá databázi pro každý výraz zvlášť, duplicity se zpracují jednou.
+- Tlačítko "Auto 100 %" zaškrtne výrazy s přesně jednou 100% shodou.
+- Tlačítko "Skrýt zaškrtnuté" skryje zpracované řádky.
+- Výsledky lze exportovat do CSV nebo přenést do Tabulkového zpracování.
+- Lze nastavit počet zobrazených shod na výraz: 3 / 6 / 9.
+
+## Tabulkové zpracování (ZBOM kusovník)
+- Otevři přes tlačítko "Tabulkové zpracování" nebo z Hromadného vyhledávání.
+- Excel-like editace: klikni na buňku pro editaci, Tab/Enter pro pohyb.
+- Multi-cell výběr: klikni a táhni nebo Shift+klik.
+- Kopírování/vkládání: Ctrl+C / Ctrl+V (kompatibilní s Excelem).
+- Drag & drop řádků: táhni za ikonku vlevo pro přeřazení.
+- Undo: Ctrl+Z, až 50 kroků zpět.
+- Zadej artikl → aplikace automaticky doplní popis a typové označení z databáze.
+- Přepínač desetinného oddělovače (tečka / čárka) pro export.
+- Import z existujícího TXT exportu: tlačítko "Import".
+- Výběhový díl (status U): aplikace zobrazí varování a automaticky doplní poznámku 2.
+
+## Karel Bot (AI asistent)
+- Plovoucí tlačítko v pravém dolním rohu.
+- Hledej přirozenou češtinou: "nerezová záslepka M20", "ABB pojistka 16A", "průchodka IP68".
+- AI rozumí výrobcům — "ABB pojistka" filtruje výsledky jen na ABB.
+- Ozubené kolečko: zapne/vypne webové vyhledávání (Tavily) — výchozí: vypnuto.
+- Webové vyhledávání je vhodné pro: datasheet, cena, kde koupit, technická dokumentace.
+- Chat okno lze přetáhnout za levý horní roh pro změnu velikosti.
+- Limitace: AI vybírá max 5 karet z 40 kandidátů — ne vždy najde vše co v DB je.
+
+## Výběhové díly a neaktivní materiály
+- Artikl se statusem "U" = výběhový díl, zobrazí se varování na kartě výsledku.
+- Při použití v ZBOM se automaticky doplní poznámka 2: "Neaktivní materiál".
+
+## Export
+- Klasické vyhledávání: tlačítko "Export CSV" v záhlaví výsledků.
+- Hromadné vyhledávání: export zaškrtnutých výsledků do CSV.
+- ZBOM: export do TXT (formát kompatibilní s importem).`;
 
 async function expandQuery(userMessage, history) {
   const resp = await client.chat.complete({
@@ -49,7 +106,7 @@ async function expandQuery(userMessage, history) {
 
   try {
     const parsed = JSON.parse(resp.choices[0].message.content);
-    const type = ['search', 'web_search', 'conversation'].includes(parsed.type)
+    const type = ['search', 'web_search', 'support', 'conversation'].includes(parsed.type)
       ? parsed.type
       : 'search';
     return {
@@ -92,7 +149,9 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
     context = '\n\n[Poznámka: Uživatel žádal webové vyhledávání, ale není zapnuto. Řekni mu to a nevymýšlej odpověď.]';
   }
 
-  if (type === 'search') {
+  if (type === 'support') {
+    context = `\n\nDokumentace aplikace Robo Filler:\n${APP_DOCS}`;
+  } else if (type === 'search') {
     context = articles.length > 0
       ? `\n\nKandidáti (${articles.length}) — vyber indexy max 5 nejrelevantnějších:\n` + articles
           .map((a, i) => `[${i}] ${a.artikl} | ${a.nazev} | ${a.vyrobce}`)
@@ -142,7 +201,9 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
     webSearchBlocked = true;
   }
 
-  if (type === 'search') {
+  if (type === 'support') {
+    sendStatus('searching', 'Hledám v dokumentaci aplikace...');
+  } else if (type === 'search') {
     const preview = terms.slice(0, 3).join(', ') + (terms.length > 3 ? '...' : '');
     const mfrLabel = manufacturer ? ` [výrobce: ${manufacturer}]` : '';
     sendStatus('searching', `Hledám v databázi: ${preview}${mfrLabel}`);

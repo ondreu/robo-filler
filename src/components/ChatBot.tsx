@@ -222,7 +222,7 @@ export function ChatBot() {
       {/* Floating toggle button */}
       <button
         onClick={() => setIsOpen(o => !o)}
-        className={`fixed bottom-6 right-6 z-50 rounded-full p-4 transition-all duration-200
+        className={`fixed bottom-6 right-6 z-[60] rounded-full p-4 transition-all duration-200
           ${isOpen
             ? 'bg-surface2 hover:bg-overlay0 text-text shadow-lg'
             : 'bg-mauve hover:bg-pink text-crust shadow-[0_0_20px_4px_rgba(203,166,247,0.5)] hover:shadow-[0_0_28px_6px_rgba(245,194,231,0.6)] hover:scale-105'
@@ -236,7 +236,7 @@ export function ChatBot() {
       {/* Chat panel */}
       {isOpen && (
         <div
-          className="fixed bottom-24 right-6 z-50 bg-base border border-surface1 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+          className="fixed bottom-24 right-6 z-[60] bg-base border border-surface1 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           style={{ width: panelW, height: panelH }}
         >
           {/* Resize handle — top-left corner */}
