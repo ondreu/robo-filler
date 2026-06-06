@@ -77,10 +77,20 @@ function fuzzySearch(articles, query) {
 
 /**
  * Run combined search for a single query term, return top N unique articles.
+ * Optional manufacturerFilter pre-filters corpus to matching vyrobce entries.
  */
-export function searchTerm(query, topN = 5) {
-  const wildcard = wildcardSearch(allArticles, query);
-  const fuzzy    = fuzzySearch(allArticles, query);
+export function searchTerm(query, topN = 5, manufacturerFilter = null) {
+  let corpus = allArticles;
+  if (manufacturerFilter) {
+    const mfr = removeDiacritics(manufacturerFilter).toLowerCase();
+    const filtered = allArticles.filter(a =>
+      removeDiacritics(a.vyrobce).toLowerCase().includes(mfr)
+    );
+    if (filtered.length > 0) corpus = filtered;
+  }
+
+  const wildcard = wildcardSearch(corpus, query);
+  const fuzzy    = fuzzySearch(corpus, query);
 
   const seen = new Set();
   const results = [];
