@@ -10,6 +10,20 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V070626',
+    date: '7. 6. 2026',
+    changes: [
+      'Karel Bot: oprava diakritiky v kartičkách výsledků (CSV data převedena na UTF-8, „DIN lišta" místo „DIN li?ta")',
+      'Karel Bot: přesnější vyhledávání díky BM25 full-text indexu (AND sémantika) vedle Fuse.js',
+      'Karel Bot: dvoukolová validace — AI upřesní dotaz pokud první výsledky nejsou dostatečné',
+      'Karel Bot: kartičky se automaticky přidají pokud AI je zmíní jmenovitě v textu odpovědi',
+      'Karel Bot: web vyhledávání preferuje známé výrobce (Weidmüller, Phoenix Contact, Rittal, …)',
+      'Karel Bot: wildcard search zkouší „lišta", „lista" i „lita" (varianty bez diakritiky)',
+      'Karel Bot: jemný mauve glow kolem okna AI módu',
+      'Data CSV jsou součástí Docker image — aktualizace databáze se přenese automaticky přes Watchtower bez zásahu na NAS',
+    ],
+  },
+  {
     version: 'V060626',
     date: '6. 6. 2026',
     major: true,
@@ -135,10 +149,7 @@ export function Changelog() {
     <>
       <div className="relative inline-flex">
         {!seen && (
-          <>
-            <span className="absolute -inset-1 rounded-xl bg-teal/50 blur-lg animate-pulse pointer-events-none" />
-            <span className="absolute -inset-2 rounded-xl bg-teal/20 blur-xl animate-pulse pointer-events-none" />
-          </>
+          <span className="absolute -inset-0.5 rounded-xl bg-teal/10 blur-sm animate-pulse pointer-events-none" />
         )}
         <button
           onClick={handleOpen}
