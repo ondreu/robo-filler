@@ -142,7 +142,10 @@ export function Changelog() {
         <span className="relative">
           <span className="font-mono text-xs px-1.5 py-0.5 bg-surface1 rounded-lg">{LATEST}</span>
           {!seen && (
-            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red" />
+            <span className="absolute -top-1 -right-1 flex w-2 h-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red opacity-75" />
+              <span className="relative inline-flex w-2 h-2 rounded-full bg-red" />
+            </span>
           )}
         </span>
       </button>
