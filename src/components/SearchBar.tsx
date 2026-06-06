@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
 import type { SearchMode, SearchField } from '../types';
 import { Tooltip } from './Tooltip';
@@ -50,6 +50,13 @@ export function SearchBar({
     });
   };
 
+  // Save to history after 7 s of stable query (user is clearly looking at results)
+  useEffect(() => {
+    if (!query.trim() || query.trim().length < 2) return;
+    const timer = setTimeout(() => saveToHistory(query), 7000);
+    return () => clearTimeout(timer);
+  }, [query]);
+
   return (
     <div className="space-y-4">
       {/* Search input */}
@@ -59,7 +66,6 @@ export function SearchBar({
           type="text"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter' && query.trim()) saveToHistory(query); }}
           placeholder="Zadejte hledaný výraz..."
           className="w-full pl-12 pr-4 py-3 bg-surface0 text-text rounded-2xl border-2 border-surface2
             focus:border-mauve focus:outline-none transition-colors placeholder:text-overlay1"
