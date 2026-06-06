@@ -582,7 +582,7 @@ function App() {
         </footer>
       </div>
 
-      {BACKEND_URL && <ChatBot />}
+      {BACKEND_URL && <ChatBot onTeleportToAi={() => setAppMode('ai')} />}
 
       {zbomEditorOpen && zbomTabs.length > 0 && activeZbomTabId && (() => {
         const activeTab = zbomTabs.find(t => t.id === activeZbomTabId);
