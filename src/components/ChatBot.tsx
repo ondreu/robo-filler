@@ -222,7 +222,7 @@ export function ChatBot() {
       {/* Floating toggle button */}
       <button
         onClick={() => setIsOpen(o => !o)}
-        className={`fixed bottom-6 right-6 z-50 rounded-full p-4 transition-all duration-200
+        className={`fixed bottom-6 right-6 z-[60] rounded-full p-4 transition-all duration-200
           ${isOpen
             ? 'bg-surface2 hover:bg-overlay0 text-text shadow-lg'
             : 'bg-mauve hover:bg-pink text-crust shadow-[0_0_20px_4px_rgba(203,166,247,0.5)] hover:shadow-[0_0_28px_6px_rgba(245,194,231,0.6)] hover:scale-105'
@@ -236,7 +236,7 @@ export function ChatBot() {
       {/* Chat panel */}
       {isOpen && (
         <div
-          className="fixed bottom-24 right-6 z-50 bg-base border border-surface1 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+          className="fixed bottom-24 right-6 z-[60] bg-base border border-surface1 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           style={{ width: panelW, height: panelH }}
         >
           {/* Resize handle — top-left corner */}
@@ -261,17 +261,35 @@ export function ChatBot() {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
             {messages.length === 0 && (
-              <div className="text-center mt-6 space-y-3">
-                <p className="text-subtext0 text-sm">Zeptej se na artikl přirozenou češtinou:</p>
-                {['záslepka M20', 'ABB pojistka 16A', 'kabelová průchodka IP68'].map(ex => (
-                  <button
-                    key={ex}
-                    onClick={() => { setInput(ex); inputRef.current?.focus(); }}
-                    className="block w-full text-left px-3 py-2 rounded-xl bg-surface0 hover:bg-surface1 text-subtext1 text-sm transition-colors"
-                  >
-                    <em>{ex}</em>
-                  </button>
-                ))}
+              <div className="mt-6 space-y-4">
+                <div className="space-y-2">
+                  <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Hledání artiklů</p>
+                  {['záslepka M20', 'ABB pojistka 16A', 'kabelová průchodka IP68'].map(ex => (
+                    <button
+                      key={ex}
+                      onClick={() => { setInput(ex); inputRef.current?.focus(); }}
+                      className="block w-full text-left px-3 py-2 rounded-xl bg-surface0 hover:bg-surface1 text-subtext1 text-sm transition-colors"
+                    >
+                      <em>{ex}</em>
+                    </button>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Pomoc s aplikací</p>
+                  {[
+                    'jak funguje hromadné vyhledávání?',
+                    'jak exportovat kusovník?',
+                    'proč mi nic nenašlo?',
+                  ].map(ex => (
+                    <button
+                      key={ex}
+                      onClick={() => { setInput(ex); inputRef.current?.focus(); }}
+                      className="block w-full text-left px-3 py-2 rounded-xl bg-surface0 hover:bg-surface1 text-subtext1 text-sm transition-colors"
+                    >
+                      {ex}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
