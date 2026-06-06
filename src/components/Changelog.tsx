@@ -5,9 +5,25 @@ interface ChangelogEntry {
   version: string;   // VDDMMYY
   date: string;      // human-readable
   changes: string[];
+  major?: boolean;
 }
 
 const ENTRIES: ChangelogEntry[] = [
+  {
+    version: 'V060626',
+    date: '6. 6. 2026',
+    major: true,
+    changes: [
+      'Karel Bot — AI asistent vyhledávání artiklů (plovoucí chat v pravém rohu)',
+      'Přirozená čeština: dotazy jako "nerezová záslepka M20" nebo "ABB pojistka 16A"',
+      'Dvoustupňové AI: query expansion (Mistral Small) + synthesis s rankingem (Mistral Medium)',
+      'LLM ranker vybírá TOP 5 nejrelevantnějších karet z až 40 kandidátů',
+      'Slovník průmyslových zkratek: materiály, barvy, plasty, IP krytí, elektro komponenty',
+      'Volitelné webové vyhledávání přes Tavily (ozubené kolečko v chatu)',
+      'Resizable chat okno, markdown odpovědi, SSE streaming se stavovými pílulkami',
+      'Auto-deploy backendu: GitHub Actions → Docker image → Watchtower na NAS',
+    ],
+  },
   {
     version: 'V050626',
     date: '5. 6. 2026',
@@ -126,7 +142,10 @@ export function Changelog() {
         <span className="relative">
           <span className="font-mono text-xs px-1.5 py-0.5 bg-surface1 rounded-lg">{LATEST}</span>
           {!seen && (
-            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red" />
+            <span className="absolute -top-1 -right-1 flex w-2 h-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red opacity-75" />
+              <span className="relative inline-flex w-2 h-2 rounded-full bg-red" />
+            </span>
           )}
         </span>
       </button>
@@ -160,13 +179,16 @@ export function Changelog() {
             <div className="overflow-y-auto px-6 py-4 space-y-5">
               {ENTRIES.map((entry, i) => (
                 <div key={entry.version}>
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <span className="font-mono text-xs px-2 py-0.5 bg-mauve/20 text-mauve rounded-lg font-bold">
                       {entry.version}
                     </span>
                     <span className="text-subtext0 text-xs">{entry.date}</span>
                     {i === 0 && (
                       <span className="text-xs px-1.5 py-0.5 bg-green/20 text-green rounded-lg">nejnovější</span>
+                    )}
+                    {entry.major && (
+                      <span className="text-xs px-1.5 py-0.5 bg-mauve text-crust rounded-lg font-semibold">★ major release</span>
                     )}
                   </div>
                   <ul className="space-y-1">
