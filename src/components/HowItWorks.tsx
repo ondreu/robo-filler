@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HelpCircle, X, Database, Search, Bot, List, Table2, Globe, ArrowRight } from 'lucide-react';
+import { HelpCircle, X, Database, Search, Bot, List, Table2, Globe, ArrowRight, Sparkles } from 'lucide-react';
 
 export function HowItWorks() {
   const [open, setOpen] = useState(false);
@@ -52,31 +52,36 @@ export function HowItWorks() {
                   <h3 className="font-semibold text-sm text-text">Databáze artiklů</h3>
                 </div>
                 <p className="text-sm text-subtext1 leading-relaxed">
-                  Aplikace načítá dva CSV soubory — <span className="text-text font-medium">master-data.csv</span> (Ústí)
-                  a <span className="text-text font-medium">master-data-effi.csv</span> (Effretikon) — celkem přes 90 000 artiklů.
-                  Každý artikl obsahuje: typové označení, číslo artiklu, výrobce, název a číslo dílu výrobce.
+                  Aplikace pracuje se dvěma interními databázemi — <span className="text-text font-medium">Ústí nad Orlicí</span> a <span className="text-text font-medium">Effretikon</span> — dohromady přes <span className="text-text font-medium">90 000 artiklů</span>.
+                  Každá položka má typové označení, číslo artiklu, výrobce, název a číslo dílu výrobce.
+                  Databáze se aktualizuje týdně a načítá se přímo v prohlížeči — vyhledávání nepotřebuje připojení k serveru.
                 </p>
               </section>
 
-              {/* Vyhledávání */}
+              {/* Klasické vyhledávání */}
               <section>
                 <div className="flex items-center gap-2 mb-2">
                   <Search size={15} className="text-mauve shrink-0" />
                   <h3 className="font-semibold text-sm text-text">Klasické vyhledávání</h3>
                 </div>
                 <p className="text-sm text-subtext1 leading-relaxed mb-3">
-                  Každý dotaz jde přes dva paralelní enginy — výsledky se sloučí, duplikáty odstraní:
+                  Každý dotaz prohledá databázi třemi způsoby zároveň a výsledky sloučí:
                 </p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <div className="bg-surface0 rounded-xl p-3">
-                    <p className="text-xs font-semibold text-text mb-1">Wildcard (přesný)</p>
-                    <p className="text-xs text-subtext1">Každé slovo dotazu musí být přítomno (AND logika). Rychlý, bez překlep-tolerance.</p>
+                    <p className="text-xs font-semibold text-text mb-1">Přesná shoda</p>
+                    <p className="text-xs text-subtext1">Každé slovo musí být v záznamu přítomno. Rychlé, bez tolerance překlepů.</p>
                   </div>
                   <div className="bg-surface0 rounded-xl p-3">
-                    <p className="text-xs font-semibold text-text mb-1">Fuzzy (Fuse.js)</p>
-                    <p className="text-xs text-subtext1">Toleruje překlepy a jiné pořadí slov. Threshold 0.3 — přísné, ale zachytí drobné chyby.</p>
+                    <p className="text-xs font-semibold text-text mb-1">Přibližná shoda</p>
+                    <p className="text-xs text-subtext1">Toleruje drobné překlepy a jiné pořadí slov — "poistka" najde "pojistka".</p>
+                  </div>
+                  <div className="bg-surface0 rounded-xl p-3">
+                    <p className="text-xs font-semibold text-text mb-1">Full-text ranking</p>
+                    <p className="text-xs text-subtext1">Statistický model řadí výsledky podle relevance — vzácnější slova mají větší váhu.</p>
                   </div>
                 </div>
+                <p className="text-xs text-subtext0 mt-2">Výsledky všech tří metod se sloučí, duplikáty odstraní a seřadí od nejpřesnějšího.</p>
               </section>
 
               {/* Karel Bot */}
@@ -86,36 +91,53 @@ export function HowItWorks() {
                   <h3 className="font-semibold text-sm text-text">Karel Bot — AI vyhledávání</h3>
                 </div>
                 <p className="text-sm text-subtext1 leading-relaxed mb-3">
-                  Chatovací asistent překládá přirozený jazyk na přesné dotazy a vybírá nejrelevantnější výsledky:
+                  Místo přesných klíčových slov stačí popsat co hledáš. AI dotaz přeloží, vyhledá a vybere nejrelevantnější výsledky:
                 </p>
 
-                {/* Pipeline */}
                 <div className="flex items-stretch gap-1.5 text-xs overflow-x-auto pb-1">
                   {[
-                    { label: 'Tvůj dotaz', sub: 'česky, volně', color: 'bg-surface0' },
-                    { label: 'Query expansion', sub: 'Mistral Small', color: 'bg-surface0', detail: 'synonyma, zkratky, CS/DE/EN' },
-                    { label: 'Fuse.js', sub: '40 kandidátů', color: 'bg-surface0', detail: 'wildcard + fuzzy' },
-                    { label: 'Ranking + odpověď', sub: 'Mistral Medium', color: 'bg-surface0', detail: 'vybere TOP 5' },
-                    { label: 'TOP 5 karet', sub: '+ text', color: 'bg-mauve/20' },
+                    { label: 'Tvůj dotaz', sub: 'přirozenou češtinou' },
+                    { label: 'Překlad na klíčová slova', sub: 'synonyma, zkratky, CS/DE/EN' },
+                    { label: 'Vyhledání v databázi', sub: 'až 60 kandidátů' },
+                    { label: 'AI výběr a komentář', sub: 'TOP 5 + popis proč' },
+                    { label: 'Výsledek', sub: 'karty + text', highlight: true },
                   ].map((step, i, arr) => (
                     <div key={i} className="flex items-center gap-1.5 shrink-0">
-                      <div className={`${step.color} rounded-xl px-2.5 py-2 text-center`}>
+                      <div className={`${step.highlight ? 'bg-mauve/20' : 'bg-surface0'} rounded-xl px-2.5 py-2 text-center`}>
                         <p className="font-semibold text-text">{step.label}</p>
                         <p className="text-overlay1 mt-0.5">{step.sub}</p>
-                        {step.detail && <p className="text-overlay0 mt-0.5 text-[10px]">{step.detail}</p>}
                       </div>
                       {i < arr.length - 1 && <ArrowRight size={12} className="text-overlay0 shrink-0" />}
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-3 flex items-start gap-2 bg-surface0 rounded-xl p-3">
-                  <Globe size={13} className="text-teal shrink-0 mt-0.5" />
-                  <p className="text-xs text-subtext1">
-                    <span className="text-text font-medium">Webové vyhledávání (Tavily)</span> — volitelné přes ozubené kolečko v chatu.
-                    Spustí se když AI vyhodnotí dotaz jako "hledání na internetu" (cena, datasheet, kde koupit…).
-                  </p>
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-start gap-2 bg-surface0 rounded-xl p-3">
+                    <Sparkles size={13} className="text-mauve shrink-0 mt-0.5" />
+                    <p className="text-xs text-subtext1">
+                      <span className="text-text font-medium">Dvoukolové upřesnění</span> — pokud první výsledky nejsou ideální, AI automaticky zkusí jiná klíčová slova a hledá znovu.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2 bg-surface0 rounded-xl p-3">
+                    <Globe size={13} className="text-teal shrink-0 mt-0.5" />
+                    <p className="text-xs text-subtext1">
+                      <span className="text-text font-medium">Webové vyhledávání</span> — zapni v nastavení chatu pro dotazy na cenu, datasheet nebo dostupnost. Prohledá internet místo interní databáze.
+                    </p>
+                  </div>
                 </div>
+              </section>
+
+              {/* AI mód */}
+              <section>
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles size={15} className="text-mauve shrink-0" />
+                  <h3 className="font-semibold text-sm text-text">AI mód</h3>
+                </div>
+                <p className="text-sm text-subtext1 leading-relaxed">
+                  Záložka <span className="text-text font-medium">AI mód</span> (nahoře vedle "Jednotlivé" a "Hromadné") je rozšířená verze Karel Bota — stejné funkce, ale přes celou šířku obrazovky.
+                  Vhodné pro delší konverzace. Z plovoucího chatu se sem lze přepnout tlačítkem v nastavení (<span className="text-text font-medium">Teleportovat do AI módu</span>) — konverzace se přenese celá.
+                </p>
               </section>
 
               {/* Hromadné vyhledávání */}
@@ -125,9 +147,8 @@ export function HowItWorks() {
                   <h3 className="font-semibold text-sm text-text">Hromadné vyhledávání</h3>
                 </div>
                 <p className="text-sm text-subtext1 leading-relaxed">
-                  Zadáš seznam výrazů (každý na řádek), aplikace prohledá databázi pro každý zvlášť
-                  a zobrazí výsledky seřazené podle shody. Duplicitní dotazy se vyhledají jen jednou.
-                  Výsledky lze exportovat do CSV nebo přenést do Tabulkového zpracování.
+                  Vlož seznam výrazů (každý na řádek) a aplikace prohledá databázi pro každý zvlášť — typicky kusovník od zákazníka.
+                  Výsledky jsou seřazené podle shody, lze označit zpracované položky, exportovat do CSV nebo přenést přímo do Tabulkového zpracování.
                 </p>
               </section>
 
@@ -138,10 +159,10 @@ export function HowItWorks() {
                   <h3 className="font-semibold text-sm text-text">Tabulkové zpracování (ZBOM)</h3>
                 </div>
                 <p className="text-sm text-subtext1 leading-relaxed">
-                  Excel-like kusovník pro sestavení výstupního souboru. Podporuje multi-cell výběr,
-                  kopírování, vkládání, drag & drop řádků a undo (Ctrl+Z, až 50 kroků).
-                  Zadáš artikl → aplikace doplní popis a typové označení z databáze.
-                  Export do TXT/CSV s volbou desetinného oddělovače.
+                  Jednoduchý tabulkový editor přímo v prohlížeči pro sestavení výstupního kusovníku.
+                  Zadáš číslo artiklu a aplikace doplní název a typové označení z databáze.
+                  Podporuje kopírování z Excelu, přeřazení řádků, undo (Ctrl+Z) a export do TXT nebo Excel.
+                  Lze mít otevřeno více kusovníků najednou jako záložky — vše se automaticky ukládá.
                 </p>
               </section>
 
