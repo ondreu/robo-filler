@@ -133,22 +133,19 @@ export function Changelog() {
 
   return (
     <>
-      <button
-        onClick={handleOpen}
-        className="inline-flex items-center gap-1.5 text-overlay0 hover:text-subtext0 transition-colors text-sm"
-        title="Zobrazit historii změn"
-      >
-        <span>changelog</span>
-        <span className="relative">
+      <div className="relative inline-flex">
+        {!seen && (
+          <span className="absolute inset-0 rounded-lg bg-mauve/30 blur-md animate-pulse pointer-events-none" />
+        )}
+        <button
+          onClick={handleOpen}
+          className="relative inline-flex items-center gap-1.5 text-overlay0 hover:text-subtext0 transition-colors text-sm"
+          title="Zobrazit historii změn"
+        >
+          <span>changelog</span>
           <span className="font-mono text-xs px-1.5 py-0.5 bg-surface1 rounded-lg">{LATEST}</span>
-          {!seen && (
-            <span className="absolute -top-1 -right-1 flex w-2 h-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red opacity-75" />
-              <span className="relative inline-flex w-2 h-2 rounded-full bg-red" />
-            </span>
-          )}
-        </span>
-      </button>
+        </button>
+      </div>
 
       {open && (
         <div
