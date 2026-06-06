@@ -18,6 +18,7 @@ interface Message {
 
 const BACKEND_URL = ((import.meta.env.VITE_BACKEND_URL as string | undefined) ?? '').trim().replace(/\/$/, '');
 const CHAT_SESSION_KEY = 'robo-filler-chat-session';
+const CHAT_LAST_KEY = 'robo-filler-chat-last';
 
 function ArticleCard({ article }: { article: Article }) {
   const [copied, setCopied] = useState(false);
@@ -118,6 +119,9 @@ export function ChatBot() {
 
   useEffect(() => {
     sessionStorage.setItem(CHAT_SESSION_KEY, JSON.stringify(messages));
+    if (messages.length > 0) {
+      localStorage.setItem(CHAT_LAST_KEY, JSON.stringify(messages));
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -131,6 +135,16 @@ export function ChatBot() {
   const clearChat = () => {
     setMessages([]);
     sessionStorage.removeItem(CHAT_SESSION_KEY);
+  };
+
+  const restoreLastChat = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CHAT_LAST_KEY) ?? '[]');
+      if (saved.length > 0) {
+        setMessages(saved);
+        setSettingsOpen(false);
+      }
+    } catch {}
   };
 
   const startResize = (e: React.MouseEvent) => {
@@ -369,6 +383,17 @@ export function ChatBot() {
                     }`} />
                   </button>
                 </label>
+                {(() => {
+                  const hasLast = !!localStorage.getItem(CHAT_LAST_KEY);
+                  return hasLast ? (
+                    <button
+                      onClick={restoreLastChat}
+                      className="mt-3 w-full text-left text-xs text-subtext1 hover:text-mauve transition-colors py-1"
+                    >
+                      ↩ Obnovit poslední chat
+                    </button>
+                  ) : null;
+                })()}
               </div>
             )}
             <input
