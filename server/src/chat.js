@@ -10,13 +10,14 @@ const MODEL_SYNTH  = 'mistral-medium-latest';
 const EXPAND_SYSTEM = `Jsi expert na průmyslové díly, elektrotechnické komponenty a aplikaci Robo Filler.
 Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
 
-1. Pokud jde o vyhledávání průmyslového dílu nebo artiklu v databázi (i follow-up jako "a pro M25?" nebo "zkus to s IP67"):
+1. Pokud jde o vyhledávání průmyslového dílu nebo artiklu v databázi (i follow-up jako "a pro M25?" nebo "zkus to s IP67" nebo "chci na DIN lištu"):
    Rozšiř hledaný výraz o synonyma a překlady (CS/DE/EN), zachovej rozměry a specifikace.
    Používej zkratky a konvence z přiložených znalostí databáze.
    Pokud dotaz obsahuje číslo artiklu nebo kód dílu (formáty jako 2204-1401, 5SY4116, XB4BA31, M20x1.5 apod.), VŽDY ho zahrň do terms přesně jak je — nesmíš ho vynechat ani nahradit popisem.
-   Pokud je v dotazu zmíněn výrobce (např. ABB, Siemens, Schneider, Phoenix Contact, Wago, Eaton, Legrand, OBO, Roxtec, Rittal, Moeller, Hager, Gewiss, Hensel aj.), extrahuj ho do pole "manufacturer" — přesně jak je napsán. Jinak "manufacturer": null.
+   VÝROBCE: Pokud je výrobce zmíněn v aktuálním dotazu, extrahuj ho do "manufacturer". Pokud aktuální dotaz je follow-up (navazuje na předchozí konverzaci) a v historii byl konkrétní výrobce zmíněn, zachovej ho — uživatel stále hledá u stejného výrobce. Jinak "manufacturer": null.
    Z termínů pro vyhledávání vynech jméno výrobce — hledej jen podle typu/názvu dílu.
-   Vrať: {"type": "search", "terms": ["term1", "term2", ...], "manufacturer": "ABB", "query": ""}
+   PŘEKLADY PRO DATABÁZI: "DIN lišta" / "na lištu" / "rail" = "řadová" nebo "Durchgang" nebo "Klemme". "TOPJOB S" = řadová svorka WAGO. "inline" / "instalační" = "Verbindungsklemme" nebo "spojovací".
+   Vrať: {"type": "search", "terms": ["term1", "term2", ...], "manufacturer": "WAGO", "query": ""}
 
 2. Pokud uživatel žádá informace z internetu (datasheet, cena, specifikace výrobce, kde koupit, technická dokumentace):
    Vrať: {"type": "web_search", "terms": [], "query": "přesný anglický vyhledávací dotaz"}
@@ -35,7 +36,7 @@ ${ABBREVIATIONS_CONTEXT}`;
 const SYNTH_SYSTEM = `Jsi Karel Bot, asistent pro vyhledávání průmyslových artiklů v databázi Robo Filler a podpora pro práci s aplikací.
 
 FORMÁT: Odpovídej VŽDY jako JSON objekt: {"answer": "česky, markdown povolen", "selected": []}
-SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. Pokud dotaz obsahuje konkrétní číslo artiklu nebo kód dílu, prioritně vyber kandidáta kde pole artikl, typ nebo díl přesně odpovídá — to je vždy nejrelevantnější. Pokud žádný nesedí nebo žádní nejsou, vrať "selected": []. NIKDY v textu "answer" nezmiňuj čísla indexů (jako "index 7" nebo "[3]") — indexy jsou interní a patří výhradně do pole "selected". Na konkrétní artikly odkazuj typovým označením nebo popisem.
+SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. DŮLEŽITÉ: Kandidáti jsou záznamy přímo z databáze — pokud je typové označení nebo číslo artiklu v kandidátech, pak JE v databázi; nikdy neříkej "není v databázi" o čemkoliv z kandidátů. Pokud v textu "answer" zmiňuješ konkrétní typové označení, číslo artiklu nebo dílu z kandidátů, MUSÍŠ jeho index přidat do "selected" — jinak uživatel kartu neuvidí. Pokud dotaz obsahuje konkrétní číslo artiklu nebo kód dílu, prioritně vyber kandidáta kde pole artikl, typ nebo díl přesně odpovídá — to je vždy nejrelevantnější. Pokud žádný nesedí nebo žádní nejsou, vrať "selected": []. NIKDY v textu "answer" nezmiňuj čísla indexů (jako "index 7" nebo "[3]") — indexy jsou interní a patří výhradně do pole "selected". Na konkrétní artikly odkazuj typovým označením nebo popisem.
 
 DB VÝSLEDKY — použij markdown pro přehlednost:
 - **Tučně** typové označení a klíčové parametry (proud, charakteristika, počet pólů, průřez…).
@@ -49,7 +50,8 @@ WEB: Shrň podrobně (5-8 vět), zdroje jako markdown odkazy na konci.
 WEB_NEDOSTUPNÉ: Pokud uvidíš poznámku že web search není zapnut, jasně to řekni, nevymýšlej.
 PODPORA: Pokud dostaneš dokumentaci aplikace, odpověz strukturovaně s markdown formátováním — používej **tučný text** pro důležité pojmy, odrážky pro kroky nebo seznamy, krátké nadpisy pokud odpověď pokrývá více témat. Buď konkrétní a praktický.
 ODMÍTNUTÍ: Odmítni POUZE dotazy zcela mimo téma (vaření, politika, obecné AI otázky). Vše co se byť vzdáleně týká vyhledávání artiklů, fungování aplikace, výsledků nebo průmyslových komponent vždy zodpověz — raději zodpověz zbytečně než odmítni legitimní dotaz.
-NENALEZENO: Navrhni jedno konkrétní alternativní hledání, "selected": [].`;
+HALUCINACE (KRITICKÉ): Nikdy nepiš konkrétní typová označení, čísla artiklů ani specifické produkty, které nejsou v seznamu kandidátů — ani kdyby sis byl jistý jejich existencí z jiných zdrojů. Pouze kandidáti z databáze jsou ověřené záznamy. Uvádění neověřených označení je halucinace.
+NENALEZENO: Pokud jsou kandidáti prázdní, stručně řekni co a proč nebylo nalezeno, navrhni konkrétní alternativní hledání jiným termínem. Neuváděj žádná typová označení ani čísla. "selected": [].`;
 
 const APP_DOCS = `# Dokumentace aplikace Robo Filler
 
@@ -431,11 +433,24 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   const { answer, selected } = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys);
 
   let pickedArticles;
-  if (type === 'search' && selected && selected.length > 0) {
-    pickedArticles = selected
-      .filter(i => typeof i === 'number' && i >= 0 && i < candidates.length)
-      .slice(0, 5)
-      .map(i => candidates[i]);
+  if (type === 'search') {
+    const autoSelect = new Set(
+      (selected ?? []).filter(i => typeof i === 'number' && i >= 0 && i < candidates.length)
+    );
+    // Auto-include candidates whose typoveOznaceni/artikl/cisloDiluVyrobce appear in the answer text
+    if (answer) {
+      const answerLower = answer.toLowerCase();
+      for (let i = 0; i < candidates.length && autoSelect.size < 5; i++) {
+        if (autoSelect.has(i)) continue;
+        const c = candidates[i];
+        const fields = [c.typoveOznaceni, c.artikl, c.cisloDiluVyrobce].filter(f => f && f.length >= 4);
+        if (fields.some(f => answerLower.includes(f.toLowerCase()))) {
+          autoSelect.add(i);
+        }
+      }
+    }
+    const resolved = [...autoSelect].slice(0, 5);
+    pickedArticles = resolved.length > 0 ? resolved.map(i => candidates[i]) : candidates.slice(0, 5);
   } else {
     pickedArticles = candidates.slice(0, 5);
   }
