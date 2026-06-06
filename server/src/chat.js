@@ -4,7 +4,7 @@ import { ABBREVIATIONS_CONTEXT } from './abbreviations.js';
 import { resolveManufacturerKey, detectDominantManufacturer, MANUFACTURER_DOCS } from './manufacturers.js';
 
 const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
-const MODEL_EXPAND = 'mistral-small-latest';
+const MODEL_EXPAND = 'mistral-medium-latest';
 const MODEL_SYNTH  = 'mistral-medium-latest';
 
 const EXPAND_SYSTEM = `Jsi expert na průmyslové díly, elektrotechnické komponenty a aplikaci Robo Filler.
@@ -39,8 +39,9 @@ ${ABBREVIATIONS_CONTEXT}`;
 
 const SYNTH_SYSTEM = `Jsi Karel Bot, asistent pro vyhledávání průmyslových artiklů v databázi Robo Filler a podpora pro práci s aplikací.
 
-FORMÁT: Odpovídej VŽDY jako JSON objekt: {"answer": "česky, markdown povolen", "selected": []}
-SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. DŮLEŽITÉ: Kandidáti jsou záznamy přímo z databáze — pokud je typové označení nebo číslo artiklu v kandidátech, pak JE v databázi; nikdy neříkej "není v databázi" o čemkoliv z kandidátů. Pokud v textu "answer" zmiňuješ konkrétní typové označení, číslo artiklu nebo dílu z kandidátů, MUSÍŠ jeho index přidat do "selected" — jinak uživatel kartu neuvidí. Pokud dotaz obsahuje konkrétní číslo artiklu nebo kód dílu, prioritně vyber kandidáta kde pole artikl, typ nebo díl přesně odpovídá — to je vždy nejrelevantnější. Pokud žádný nesedí nebo žádní nejsou, vrať "selected": []. NIKDY v textu "answer" nezmiňuj čísla indexů (jako "index 7" nebo "[3]") — indexy jsou interní a patří výhradně do pole "selected". Na konkrétní artikly odkazuj typovým označením nebo popisem.
+FORMÁT: Odpovídej VŽDY jako JSON objekt: {"answer": "česky, markdown povolen", "selected": [], "refinement": null}
+SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. Každý kandidát má skóre 0–100 % (100 % = přesná shoda) — použij ho jako vodítko, ale prioritizuj sémantickou shodu s dotazem. DŮLEŽITÉ: Kandidáti jsou záznamy přímo z databáze — pokud je typové označení nebo číslo artiklu v kandidátech, pak JE v databázi; nikdy neříkej "není v databázi" o čemkoliv z kandidátů. Pokud v textu "answer" zmiňuješ konkrétní typové označení, číslo artiklu nebo dílu z kandidátů, MUSÍŠ jeho index přidat do "selected" — jinak uživatel kartu neuvidí. Pokud dotaz obsahuje konkrétní číslo artiklu nebo kód dílu, prioritně vyber kandidáta kde pole artikl, typ nebo díl přesně odpovídá — to je vždy nejrelevantnější. Pokud žádný nesedí nebo žádní nejsou, vrať "selected": []. NIKDY v textu "answer" nezmiňuj čísla indexů (jako "index 7" nebo "[3]") — indexy jsou interní a patří výhradně do pole "selected". Na konkrétní artikly odkazuj typovým označením nebo popisem.
+REFINEMENT: Pokud žádný z kandidátů skutečně nesedí na dotaz a odlišné hledání by mohlo pomoct, vrať "refinement": {"terms": ["alternativní termín 1", "termín 2"], "reason": "stručný důvod"}. Maximálně 3 termíny, konkrétní, odlišné od původního dotazu. Pokud jsou výsledky použitelné nebo dostačující, vrať "refinement": null.
 
 DB VÝSLEDKY — použij markdown pro přehlednost:
 - **Tučně** typové označení a klíčové parametry (proud, charakteristika, počet pólů, průřez…).
@@ -349,10 +350,11 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
     context += articles.length > 0
       ? `\n\nKandidáti (${articles.length}) — vyber indexy max 5 nejrelevantnějších:\n` + articles
           .map((a, i) => {
+            const pct = a._score != null ? `[${Math.round(a._score * 100)}%]` : '';
             const parts = [a.artikl, a.nazev, a.vyrobce];
             if (a.typoveOznaceni) parts.push(`typ:${a.typoveOznaceni}`);
             if (a.cisloDiluVyrobce) parts.push(`díl:${a.cisloDiluVyrobce}`);
-            return `[${i}] ${parts.join(' | ')}`;
+            return `[${i}]${pct} ${parts.join(' | ')}`;
           })
           .join('\n')
       : '\n\nŽádné artikly v databázi nebyly nalezeny.';
@@ -376,12 +378,18 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
 
   try {
     const parsed = JSON.parse(resp.choices[0].message.content);
+    const refinement = (
+      parsed.refinement &&
+      Array.isArray(parsed.refinement.terms) &&
+      parsed.refinement.terms.length > 0
+    ) ? parsed.refinement : null;
     return {
       answer: typeof parsed.answer === 'string' ? parsed.answer : '',
       selected: Array.isArray(parsed.selected) ? parsed.selected : null,
+      refinement,
     };
   } catch {
-    return { answer: resp.choices[0].message.content, selected: null };
+    return { answer: resp.choices[0].message.content, selected: null, refinement: null };
   }
 }
 
@@ -426,7 +434,7 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   }
 
   sendStatus('generating', 'Formuluji odpověď...');
-  const candidates = articles.slice(0, 40);
+  let candidates = articles.slice(0, 40);
 
   // Resolve manufacturer docs: always from explicit mention; from dominant articles only on follow-up
   const primaryMfrKey = resolveManufacturerKey(manufacturer);
@@ -434,7 +442,30 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   const secondaryMfrKey = resolveManufacturerKey(dominantVyrobce);
   const mfrKeys = [...new Set([primaryMfrKey, secondaryMfrKey].filter(Boolean))];
 
-  const { answer, selected } = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys);
+  let { answer, selected, refinement } = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys);
+
+  // Two-pass: if SYNTH requests refinement, do a second search and re-synthesize
+  if (type === 'search' && refinement?.terms?.length > 0) {
+    const preview = refinement.terms.slice(0, 2).join(', ');
+    sendStatus('searching', `Upřesňuji výsledky: ${preview}…`);
+
+    const seenArtikls = new Set(articles.map(a => a.artikl));
+    for (const term of refinement.terms.slice(0, 3)) {
+      for (const article of searchTerm(term, 12, manufacturer)) {
+        if (!seenArtikls.has(article.artikl)) {
+          seenArtikls.add(article.artikl);
+          articles.push(article);
+        }
+      }
+    }
+    candidates = articles.slice(0, 60);
+
+    sendStatus('generating', 'Formuluji výslednou odpověď…');
+    const second = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys);
+    answer   = second.answer;
+    selected = second.selected;
+    // refinement from second pass is intentionally ignored
+  }
 
   let pickedArticles;
   if (type === 'search') {
