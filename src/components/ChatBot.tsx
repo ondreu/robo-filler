@@ -255,7 +255,7 @@ export function ChatBot() {
           <div className="bg-mantle border-b border-surface1 px-4 py-3 flex items-center gap-2 shrink-0">
             <MessageCircle size={16} className="text-mauve" />
             <span className="font-semibold text-sm text-text">Karel Bot</span>
-            <span className="text-overlay0 text-xs ml-1">AI asistent artiklů</span>
+            <span className="text-overlay0 text-xs ml-1">AI asistent vyhledávání artiklů</span>
           </div>
 
           {/* Messages */}
