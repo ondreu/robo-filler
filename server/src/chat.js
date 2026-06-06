@@ -36,7 +36,7 @@ ${ABBREVIATIONS_CONTEXT}`;
 const SYNTH_SYSTEM = `Jsi Karel Bot, asistent pro vyhledávání průmyslových artiklů v databázi Robo Filler a podpora pro práci s aplikací.
 
 FORMÁT: Odpovídej VŽDY jako JSON objekt: {"answer": "česky, markdown povolen", "selected": []}
-SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. Pokud dotaz obsahuje konkrétní číslo artiklu nebo kód dílu, prioritně vyber kandidáta kde pole artikl, typ nebo díl přesně odpovídá — to je vždy nejrelevantnější. Pokud žádný nesedí nebo žádní nejsou, vrať "selected": []. NIKDY v textu "answer" nezmiňuj čísla indexů (jako "index 7" nebo "[3]") — indexy jsou interní a patří výhradně do pole "selected". Na konkrétní artikly odkazuj typovým označením nebo popisem.
+SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. DŮLEŽITÉ: Kandidáti jsou záznamy přímo z databáze — pokud je typové označení nebo číslo artiklu v kandidátech, pak JE v databázi; nikdy neříkej "není v databázi" o čemkoliv z kandidátů. Pokud v textu "answer" zmiňuješ konkrétní typové označení, číslo artiklu nebo dílu z kandidátů, MUSÍŠ jeho index přidat do "selected" — jinak uživatel kartu neuvidí. Pokud dotaz obsahuje konkrétní číslo artiklu nebo kód dílu, prioritně vyber kandidáta kde pole artikl, typ nebo díl přesně odpovídá — to je vždy nejrelevantnější. Pokud žádný nesedí nebo žádní nejsou, vrať "selected": []. NIKDY v textu "answer" nezmiňuj čísla indexů (jako "index 7" nebo "[3]") — indexy jsou interní a patří výhradně do pole "selected". Na konkrétní artikly odkazuj typovým označením nebo popisem.
 
 DB VÝSLEDKY — použij markdown pro přehlednost:
 - **Tučně** typové označení a klíčové parametry (proud, charakteristika, počet pólů, průřez…).
@@ -433,11 +433,24 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   const { answer, selected } = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys);
 
   let pickedArticles;
-  if (type === 'search' && selected && selected.length > 0) {
-    pickedArticles = selected
-      .filter(i => typeof i === 'number' && i >= 0 && i < candidates.length)
-      .slice(0, 5)
-      .map(i => candidates[i]);
+  if (type === 'search') {
+    const autoSelect = new Set(
+      (selected ?? []).filter(i => typeof i === 'number' && i >= 0 && i < candidates.length)
+    );
+    // Auto-include candidates whose typoveOznaceni/artikl/cisloDiluVyrobce appear in the answer text
+    if (answer) {
+      const answerLower = answer.toLowerCase();
+      for (let i = 0; i < candidates.length && autoSelect.size < 5; i++) {
+        if (autoSelect.has(i)) continue;
+        const c = candidates[i];
+        const fields = [c.typoveOznaceni, c.artikl, c.cisloDiluVyrobce].filter(f => f && f.length >= 4);
+        if (fields.some(f => answerLower.includes(f.toLowerCase()))) {
+          autoSelect.add(i);
+        }
+      }
+    }
+    const resolved = [...autoSelect].slice(0, 5);
+    pickedArticles = resolved.length > 0 ? resolved.map(i => candidates[i]) : candidates.slice(0, 5);
   } else {
     pickedArticles = candidates.slice(0, 5);
   }
