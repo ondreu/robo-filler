@@ -320,7 +320,7 @@ export function ChatBot() {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Hledání artiklů</p>
-                    {['záslepka M20', 'ABB pojistka 16A', 'kabelová průchodka IP68'].map(ex => (
+                    {['záslepka M20', 'ABB pojistka 16A', 'Jistič 16A'].map(ex => (
                       <button
                         key={ex}
                         onClick={() => { setInput(ex); inputRef.current?.focus(); }}
