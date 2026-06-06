@@ -40,8 +40,9 @@ export const MANUFACTURER_DOCS = {
   Číslování: \`221-[průřez][počet_vodičů]\` — 221-412 = max 4mm², 2vodičová; 221-615 = max 6mm², 5vodičová.
   Číslo za "2": 4 = do 4mm², 6 = do 6mm². Poslední číslo: 2/3/5 = počet vodičů.
 - **TOPJOB S** (DIN lišta, Push-in CAGE CLAMP): Hlavní řada rozváděčových svorek. Bez nástrojů pro tuhé vodiče a vodiče s dutinkou.
-  Číslování: \`20XX-1Y01\` kde XX kóduje průřez: 01=1.5mm², 02=2.5mm², 04=4mm², 06=6mm², 10=10mm², 16=16mm².
+  Číslování: \`20XX-1YZZ\` kde XX kóduje průřez: 01=1.5mm², 02=2.5mm², 04=4mm², 06=6mm², 10=10mm², 16=16mm².
   Y = počet vodičů: 2=2vodičová, 4=4vodičová. Příklad: 2002-1201 = 2.5mm², 2vod.; 2004-1401 = 4mm², 4vod.
+  ZZ = barva: 01-šedá, 02-oranžová, 03-červená, 04-modrá, 05-černá, 06-žlutá, 07-Zelenožlutá, 08-bílá.
 - **2273 PUSH WIRE** (krabičkové svorky): Pro instalační krabice, bez nástrojů pro tuhé vodiče. Suffix = počet vodičů: -203=3vod., -208=8vod.
 - **285 POWER CAGE CLAMP**: Velkoprůřezové svorky 6–185mm².
 - **750/753 série**: Modulární I/O systém, PLC PFC100/PFC200.
