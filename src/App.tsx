@@ -4,6 +4,7 @@ import type { Article, SearchResult, SearchMode, SearchField, DataSource, AppMod
 import { parseBomTxt, type ImportResult } from './utils/bomExport';
 import { BomWizard } from './components/BomWizard';
 import { Changelog } from './components/Changelog';
+import { HowItWorks } from './components/HowItWorks';
 import { loadCSV, loadCSVMeta } from './utils/csvParser';
 import { search, getUniqueManufacturers } from './utils/searchEngine';
 import { SearchBar } from './components/SearchBar';
@@ -461,7 +462,10 @@ function App() {
         {/* Footer */}
         <footer className="text-center text-overlay0 text-sm pt-8 space-y-1">
           <p>Article Search App • Robo Filler</p>
-          <Changelog />
+          <div className="flex items-center justify-center gap-2">
+            <Changelog />
+            <HowItWorks />
+          </div>
         </footer>
       </div>
 
