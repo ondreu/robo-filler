@@ -20,6 +20,14 @@ const BACKEND_URL = ((import.meta.env.VITE_BACKEND_URL as string | undefined) ??
 const CHAT_SESSION_KEY = 'robo-filler-chat-session';
 const CHAT_LAST_KEY = 'robo-filler-chat-last';
 
+const GREETINGS = [
+  'Ahoj! Hledáš konkrétní artikl, nebo potřebuješ poradit s aplikací?',
+  'Dobrý den! Napiš název, artikl nebo výrobce — najdu co potřebuješ.',
+  'Zdravím! Jsem Karel Bot. Pomohu ti najít průmyslový artikl nebo odpovím na otázky k aplikaci.',
+  'Ahoj! S čím mohu dnes pomoci? Stačí napsat co hledáš.',
+  'Dobrý den! Zadej co hledáš — artikl, komponent nebo dotaz na aplikaci — a já se postarám.',
+];
+
 function ArticleCard({ article }: { article: Article }) {
   const [copied, setCopied] = useState(false);
 
@@ -102,6 +110,7 @@ const DEFAULT_H = 544;
 
 export function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [greeting] = useState(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
   const [messages, setMessages] = useState<Message[]>(() => {
     try { return JSON.parse(sessionStorage.getItem(CHAT_SESSION_KEY) ?? '[]'); }
     catch { return []; }
@@ -299,34 +308,44 @@ export function ChatBot() {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
             {messages.length === 0 && (
-              <div className="mt-6 space-y-4">
-                <div className="space-y-2">
-                  <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Hledání artiklů</p>
-                  {['záslepka M20', 'ABB pojistka 16A', 'kabelová průchodka IP68'].map(ex => (
-                    <button
-                      key={ex}
-                      onClick={() => { setInput(ex); inputRef.current?.focus(); }}
-                      className="block w-full text-left px-3 py-2 rounded-xl bg-surface0 hover:bg-surface1 text-subtext1 text-sm transition-colors"
-                    >
-                      <em>{ex}</em>
-                    </button>
-                  ))}
+              <div className="mt-2 space-y-4">
+                {/* Greeting bubble */}
+                <div className="flex justify-start">
+                  <div className="bg-surface0 text-text rounded-2xl rounded-bl-sm px-3 py-2 text-sm leading-relaxed max-w-[88%]">
+                    {greeting}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Pomoc s aplikací</p>
-                  {[
-                    'jak funguje hromadné vyhledávání?',
-                    'jak exportovat kusovník?',
-                    'proč mi nic nenašlo?',
-                  ].map(ex => (
-                    <button
-                      key={ex}
-                      onClick={() => { setInput(ex); inputRef.current?.focus(); }}
-                      className="block w-full text-left px-3 py-2 rounded-xl bg-surface0 hover:bg-surface1 text-subtext1 text-sm transition-colors"
-                    >
-                      {ex}
-                    </button>
-                  ))}
+
+                {/* Suggestions */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Hledání artiklů</p>
+                    {['záslepka M20', 'ABB pojistka 16A', 'kabelová průchodka IP68'].map(ex => (
+                      <button
+                        key={ex}
+                        onClick={() => { setInput(ex); inputRef.current?.focus(); }}
+                        className="block w-full text-left px-3 py-2 rounded-xl bg-surface0 hover:bg-surface1 text-subtext1 text-sm transition-colors"
+                      >
+                        <em>{ex}</em>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Pomoc s aplikací</p>
+                    {[
+                      'jak funguje hromadné vyhledávání?',
+                      'jak exportovat kusovník?',
+                      'proč mi nic nenašlo?',
+                    ].map(ex => (
+                      <button
+                        key={ex}
+                        onClick={() => { setInput(ex); inputRef.current?.focus(); }}
+                        className="block w-full text-left px-3 py-2 rounded-xl bg-surface0 hover:bg-surface1 text-subtext1 text-sm transition-colors"
+                      >
+                        {ex}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
