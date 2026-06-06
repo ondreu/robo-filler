@@ -12,6 +12,7 @@ Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
 1. Pokud jde o vyhledávání průmyslového dílu nebo artiklu v databázi (i follow-up jako "a pro M25?" nebo "zkus to s IP67"):
    Rozšiř hledaný výraz o synonyma a překlady (CS/DE/EN), zachovej rozměry a specifikace.
    Používej zkratky a konvence z přiložených znalostí databáze.
+   Pokud dotaz obsahuje číslo artiklu nebo kód dílu (formáty jako 2204-1401, 5SY4116, XB4BA31, M20x1.5 apod.), VŽDY ho zahrň do terms přesně jak je — nesmíš ho vynechat ani nahradit popisem.
    Pokud je v dotazu zmíněn výrobce (např. ABB, Siemens, Schneider, Phoenix Contact, Wago, Eaton, Legrand, OBO, Roxtec, Rittal, Moeller, Hager, Gewiss, Hensel aj.), extrahuj ho do pole "manufacturer" — přesně jak je napsán. Jinak "manufacturer": null.
    Z termínů pro vyhledávání vynech jméno výrobce — hledej jen podle typu/názvu dílu.
    Vrať: {"type": "search", "terms": ["term1", "term2", ...], "manufacturer": "ABB", "query": ""}
@@ -32,7 +33,7 @@ ${ABBREVIATIONS_CONTEXT}`;
 const SYNTH_SYSTEM = `Jsi Karel Bot, asistent pro vyhledávání průmyslových artiklů v databázi Robo Filler a podpora pro práci s aplikací.
 
 FORMÁT: Odpovídej VŽDY jako JSON objekt: {"answer": "česky, markdown povolen", "selected": []}
-SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. Pokud žádný nesedí nebo žádní nejsou, vrať "selected": [].
+SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. Pokud dotaz obsahuje konkrétní číslo artiklu nebo kód dílu, prioritně vyber kandidáta kde pole artikl, typ nebo díl přesně odpovídá — to je vždy nejrelevantnější. Pokud žádný nesedí nebo žádní nejsou, vrať "selected": [].
 
 DB VÝSLEDKY (2-4 věty):
 - Popiš co jsi našel — počet, kategorie, výrobce.
@@ -279,7 +280,12 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
   } else if (type === 'search') {
     context = articles.length > 0
       ? `\n\nKandidáti (${articles.length}) — vyber indexy max 5 nejrelevantnějších:\n` + articles
-          .map((a, i) => `[${i}] ${a.artikl} | ${a.nazev} | ${a.vyrobce}`)
+          .map((a, i) => {
+            const parts = [a.artikl, a.nazev, a.vyrobce];
+            if (a.typoveOznaceni) parts.push(`typ:${a.typoveOznaceni}`);
+            if (a.cisloDiluVyrobce) parts.push(`díl:${a.cisloDiluVyrobce}`);
+            return `[${i}] ${parts.join(' | ')}`;
+          })
           .join('\n')
       : '\n\nŽádné artikly v databázi nebyly nalezeny.';
   } else if (type === 'web_search') {
