@@ -89,8 +89,8 @@ app.post('/api/bom-build', async (req, res) => {
     const result = await handleBomBuild(
       rows,
       preferences,
-      (rowIndex, total, typoveOznaceni, status) =>
-        send('progress', { rowIndex, total, typoveOznaceni, status }),
+      (rowIndex, total, typoveOznaceni, status, mfrName) =>
+        send('progress', { rowIndex, total, typoveOznaceni, status, mfrName }),
       answers,
     );
     send('result', { ...result, produktovaHierarchie, artiklVrcholu });

@@ -1,5 +1,6 @@
 import { Mistral } from '@mistralai/mistralai';
 import { searchTerm } from './search.js';
+import { resolveManufacturerKey, MANUFACTURER_DOCS } from './manufacturers.js';
 
 const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
 const MODEL = 'mistral-small-latest';
@@ -88,7 +89,7 @@ export async function checkClarification(rows, preferences) {
   }
 }
 
-async function pickBestMatch(typoveOznaceni, popis, vyrobce, candidates, preferences) {
+async function pickBestMatch(typoveOznaceni, popis, vyrobce, candidates, preferences, mfrDoc = '') {
   if (candidates.length === 0) return null;
 
   const candidateList = candidates.map(c =>
@@ -96,6 +97,7 @@ async function pickBestMatch(typoveOznaceni, popis, vyrobce, candidates, prefere
   ).join('\n');
 
   const queryParts = [
+    mfrDoc ? `Znalostní přehled výrobce:\n${mfrDoc}` : null,
     `Hledané typové označení: "${typoveOznaceni}"`,
     popis ? `Popis: "${popis}"` : null,
     vyrobce ? `Výrobce: "${vyrobce}"` : null,
@@ -137,6 +139,12 @@ async function estimateUnit(nazev, typoveOznaceni) {
   }
 }
 
+const MFR_DISPLAY = {
+  wago: 'WAGO', abb: 'ABB', siemens: 'Siemens', phoenix: 'Phoenix Contact',
+  weidmuller: 'Weidmüller', allen_bradley: 'Allen-Bradley', rittal: 'Rittal',
+  eaton: 'Eaton', omron: 'Omron', schneider: 'Schneider Electric',
+};
+
 export async function handleBomBuild(rows, preferences, sendProgress, answers = []) {
   // Merge answers into preferences context so pickBestMatch benefits from them
   let enrichedPrefs = preferences || '';
@@ -146,6 +154,7 @@ export async function handleBomBuild(rows, preferences, sendProgress, answers = 
   }
   const bomRows = [];
   const toCreate = [];
+  const announcedMfr = new Set(); // track which manufacturer knowledge was already announced
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
@@ -166,6 +175,16 @@ export async function handleBomBuild(rows, preferences, sendProgress, answers = 
       continue;
     }
 
+    // Resolve manufacturer knowledge: explicit vyrobce field, or inferred from type designation
+    const mfrKey = resolveManufacturerKey(vyrobce) || resolveManufacturerKey(mainQuery) || resolveManufacturerKey(altQuery);
+    const mfrDoc = mfrKey ? (MANUFACTURER_DOCS[mfrKey] ?? '') : '';
+
+    // Announce manufacturer knowledge once per unique manufacturer
+    if (mfrKey && mfrDoc && !announcedMfr.has(mfrKey)) {
+      announcedMfr.add(mfrKey);
+      sendProgress(i, rows.length, mainQuery || altQuery, 'knowledge', MFR_DISPLAY[mfrKey] ?? mfrKey);
+    }
+
     sendProgress(i, rows.length, mainQuery || altQuery, 'searching');
 
     let found = null;
@@ -173,7 +192,7 @@ export async function handleBomBuild(rows, preferences, sendProgress, answers = 
     // Round 1: search by main type designation
     if (mainQuery) {
       const results1 = searchTerm(mainQuery, 5, vyrobce.trim() || null);
-      found = await pickBestMatch(mainQuery, popis, vyrobce, results1, enrichedPrefs);
+      found = await pickBestMatch(mainQuery, popis, vyrobce, results1, enrichedPrefs, mfrDoc);
     }
 
     // Round 2: search by alternative type designation (or retry without manufacturer filter)
@@ -181,7 +200,7 @@ export async function handleBomBuild(rows, preferences, sendProgress, answers = 
       const round2Query = altQuery || mainQuery;
       const round2Mfr = altQuery ? (vyrobce.trim() || null) : null;
       const results2 = searchTerm(round2Query, 5, round2Mfr);
-      found = await pickBestMatch(round2Query, popis, vyrobce, results2, enrichedPrefs);
+      found = await pickBestMatch(round2Query, popis, vyrobce, results2, enrichedPrefs, mfrDoc);
     }
 
     if (found) {
@@ -194,6 +213,7 @@ export async function handleBomBuild(rows, preferences, sendProgress, answers = 
         mnozstvi: Number(pocet) || 1,
         poznamka1: '',
         poznamka2: oznaceniPristroje,
+        aiFilledPopis: !popis.trim(), // mark when description was empty and AI filled it from DB
       });
     } else {
       sendProgress(i, rows.length, mainQuery || altQuery, 'not_found');

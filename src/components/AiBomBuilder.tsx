@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, Play, Loader2, Download, Check, X, ChevronRight, MessageCircle } from 'lucide-react';
+import { Plus, Trash2, Play, Loader2, Download, Check, X, ChevronRight, MessageCircle, BookOpen } from 'lucide-react';
 import type { BomRow, BomHeader } from '../types';
 import type { ImportResult } from '../utils/bomExport';
 
@@ -21,7 +21,8 @@ interface ProgressItem {
   rowIndex: number;
   total: number;
   typoveOznaceni: string;
-  status: 'waiting' | 'searching' | 'found' | 'not_found' | 'skipped';
+  status: 'waiting' | 'searching' | 'found' | 'not_found' | 'skipped' | 'knowledge';
+  mfrName?: string;
 }
 
 interface BomResultRow {
@@ -32,6 +33,7 @@ interface BomResultRow {
   mnozstvi: number;
   poznamka1: string;
   poznamka2: string;
+  aiFilledPopis?: boolean;
 }
 
 interface ToCreateRow {
@@ -136,6 +138,7 @@ function StatusIcon({ status }: { status: ProgressItem['status'] }) {
   if (status === 'found') return <Check size={12} className="text-green" />;
   if (status === 'not_found') return <X size={12} className="text-red" />;
   if (status === 'skipped') return <span className="text-overlay0 text-xs">—</span>;
+  if (status === 'knowledge') return <BookOpen size={12} className="text-teal" />;
   return <span className="w-3 h-3 rounded-full border border-surface2 inline-block" />;
 }
 
@@ -294,7 +297,14 @@ function BomTable({ rows }: { rows: BomResultRow[] }) {
                 <td className="border-r border-surface1 px-2 py-1 text-text truncate max-w-xs">
                   {row.type === 'T'
                     ? <span className="italic text-overlay1">{row.poznamka1 || '—'}</span>
-                    : row.popis}
+                    : (
+                      <span className="flex items-center gap-1.5 min-w-0">
+                        <span className="truncate">{row.popis}</span>
+                        {row.aiFilledPopis && (
+                          <span className="shrink-0 text-[10px] font-medium bg-teal/15 text-teal rounded px-1 py-0.5 leading-none">AI</span>
+                        )}
+                      </span>
+                    )}
                 </td>
                 <td className="border-r border-surface1 px-2 py-1 font-mono text-subtext1">{row.typoveOznaceni || '—'}</td>
                 <td className="border-r border-surface1 px-2 py-1 text-center font-mono">{row.mnozstvi}</td>
@@ -454,16 +464,21 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
             try {
               const data = JSON.parse(line.slice(6));
               if (eventType === 'progress') {
-                setProgressItems(prev => {
-                  const next = [...prev];
-                  const idx = data.rowIndex;
-                  if (idx < next.length) {
-                    next[idx] = { ...next[idx], ...data };
+                if (data.status === 'knowledge') {
+                  // Insert knowledge notification as a separate line (not a row update)
+                  setProgressItems(prev => [...prev, data as ProgressItem]);
+                } else {
+                  setProgressItems(prev => {
+                    const next = [...prev];
+                    const idx = data.rowIndex;
+                    if (idx < next.length) {
+                      next[idx] = { ...next[idx], ...data };
+                    }
+                    return next;
+                  });
+                  if (data.status === 'found' || data.status === 'not_found' || data.status === 'skipped') {
+                    setProcessedCount(c => c + 1);
                   }
-                  return next;
-                });
-                if (data.status === 'found' || data.status === 'not_found' || data.status === 'skipped') {
-                  setProcessedCount(c => c + 1);
                 }
               } else if (eventType === 'result') {
                 setBomRows(data.bomRows ?? []);
@@ -720,24 +735,31 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
           {/* Row-by-row status */}
           <div className="space-y-1 max-h-64 overflow-y-auto">
             {progressItems.map((item, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs py-0.5">
-                <StatusIcon status={item.status} />
-                <span className="font-mono text-subtext1 flex-1 truncate">
-                  {item.typoveOznaceni || <span className="text-overlay0">—</span>}
-                </span>
-                <span className={`text-xs shrink-0 ${
-                  item.status === 'found' ? 'text-green'
-                  : item.status === 'not_found' ? 'text-red'
-                  : item.status === 'searching' ? 'text-mauve'
-                  : 'text-overlay0'
-                }`}>
-                  {item.status === 'found' ? 'nalezeno'
-                  : item.status === 'not_found' ? 'k založení'
-                  : item.status === 'searching' ? 'hledám…'
-                  : item.status === 'skipped' ? 'přeskočeno'
-                  : ''}
-                </span>
-              </div>
+              item.status === 'knowledge' ? (
+                <div key={i} className="flex items-center gap-2 text-xs py-0.5 text-teal">
+                  <BookOpen size={10} className="shrink-0" />
+                  <span className="flex-1">Načítám znalosti: {item.mfrName ?? item.typoveOznaceni}</span>
+                </div>
+              ) : (
+                <div key={i} className="flex items-center gap-2 text-xs py-0.5">
+                  <StatusIcon status={item.status} />
+                  <span className="font-mono text-subtext1 flex-1 truncate">
+                    {item.typoveOznaceni || <span className="text-overlay0">—</span>}
+                  </span>
+                  <span className={`text-xs shrink-0 ${
+                    item.status === 'found' ? 'text-green'
+                    : item.status === 'not_found' ? 'text-red'
+                    : item.status === 'searching' ? 'text-mauve'
+                    : 'text-overlay0'
+                  }`}>
+                    {item.status === 'found' ? 'nalezeno'
+                    : item.status === 'not_found' ? 'k založení'
+                    : item.status === 'searching' ? 'hledám…'
+                    : item.status === 'skipped' ? 'přeskočeno'
+                    : ''}
+                  </span>
+                </div>
+              )
             ))}
           </div>
         </div>
