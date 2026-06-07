@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Send, Loader2, Copy, Check, ExternalLink, Settings,
   PenLine, Download, ChevronDown, ChevronUp, MessageCircle, Globe,
+  Search, Sparkles,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
@@ -17,15 +18,22 @@ const SYNTH_MODELS = [
   { value: 'mistral-medium-latest', label: 'Mistral Medium 3.5' },
 ];
 
+interface Status {
+  step: string;
+  label: string;
+  terms?: string[];
+  webQuery?: boolean;
+  refinement?: boolean;
+}
+
 interface AiMessage {
   role: 'user' | 'assistant';
   content: string;
   articles?: Article[];
   allCandidates?: Article[];
   expandedTerms?: string[];
+  statusLog?: Status[];
 }
-
-interface Status { step: string; label: string; }
 
 const GREETINGS = [
   'Ahoj! Hledáš konkrétní artikl, nebo potřebuješ poradit s aplikací?',
@@ -80,9 +88,9 @@ function AiArticleCard({ article, dim = false }: { article: Article; dim?: boole
 const MD_COMPONENTS: Components = {
   p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
   strong: ({ children }) => <strong className="font-semibold text-mauve">{children}</strong>,
-  ul: ({ children }) => <ul className="list-disc list-inside space-y-1 mt-1.5">{children}</ul>,
-  ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 mt-1.5">{children}</ol>,
-  li: ({ children }) => <li>{children}</li>,
+  ul: ({ children }) => <ul className="list-disc list-outside ml-4 space-y-1.5 mt-1.5 [&_ul]:list-none [&_ul]:ml-2 [&_ul]:space-y-0.5 [&_ul]:mt-0.5 [&_ul]:text-subtext1">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal list-outside ml-4 space-y-1 mt-1.5">{children}</ol>,
+  li: ({ children }) => <li className="pl-0.5">{children}</li>,
   code: ({ children }) => <code className="bg-surface1 rounded px-1.5 py-0.5 font-mono text-sm">{children}</code>,
   a: ({ href, children }) => (
     <a href={href} target="_blank" rel="noopener noreferrer" className="text-mauve underline hover:text-pink">{children}</a>
@@ -101,6 +109,46 @@ const MD_COMPONENTS: Components = {
   td: ({ children }) => <td className="px-3 py-1.5">{children}</td>,
 };
 
+function StatusTrace({ log, isLoading = false }: { log: Status[]; isLoading?: boolean }) {
+  if (log.length === 0) return null;
+  return (
+    <div className="space-y-1">
+      {log.map((s, i) => {
+        const isLast = isLoading && i === log.length - 1;
+        const hasPills = s.terms && s.terms.length > 0;
+        return (
+          <div key={i} className="flex items-start gap-1.5 text-xs">
+            <span className={`shrink-0 mt-0.5 ${isLast ? 'text-mauve' : 'text-overlay0'}`}>
+              {isLast
+                ? <Loader2 size={10} className="animate-spin" />
+                : s.step === 'searching'
+                ? <Search size={10} />
+                : s.step === 'generating'
+                ? <Sparkles size={10} />
+                : <span className="inline-block w-2.5 text-center">·</span>
+              }
+            </span>
+            {hasPills ? (
+              <div className="flex flex-wrap gap-1 items-baseline">
+                <span className="text-overlay0 shrink-0">
+                  {s.refinement ? 'upřesnění:' : s.webQuery ? 'web:' : 'hledám:'}
+                </span>
+                {s.terms!.map((t, ti) => (
+                  <span key={ti} className="bg-surface1 text-subtext0 rounded px-1.5 py-0.5 font-mono leading-none">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className={isLast ? 'text-subtext1' : 'text-overlay0'}>{s.label}</span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function AiChat() {
   const [greeting] = useState(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
   const [messages, setMessages] = useState<AiMessage[]>(() => {
@@ -109,7 +157,8 @@ export function AiChat() {
   });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState<Status | null>(null);
+  const [currentStatusLog, setCurrentStatusLog] = useState<Status[]>([]);
+  const statusLogRef = useRef<Status[]>([]);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [synthModel, setSynthModelState] = useState<string>(() => {
     try {
@@ -133,7 +182,7 @@ export function AiChat() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, status]);
+  }, [messages, currentStatusLog]);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -154,6 +203,8 @@ export function AiChat() {
     setMessages([]);
     setExpandedMsgs(new Set());
     setLastAllCandidates([]);
+    setCurrentStatusLog([]);
+    statusLogRef.current = [];
     sessionStorage.removeItem(AI_CHAT_KEY);
   };
 
@@ -224,7 +275,8 @@ export function AiChat() {
     setInput('');
     setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
-    setStatus(null);
+    setCurrentStatusLog([]);
+    statusLogRef.current = [];
 
     const history = [...messages, userMsg]
       .slice(-8)
@@ -258,7 +310,9 @@ export function AiChat() {
             try {
               const data = JSON.parse(line.slice(6));
               if (eventType === 'status') {
-                setStatus(data as Status);
+                const newLog = [...statusLogRef.current, data as Status];
+                statusLogRef.current = newLog;
+                setCurrentStatusLog(newLog);
               } else if (eventType === 'result') {
                 if (data.allCandidates?.length > 0) setLastAllCandidates(data.allCandidates);
                 setMessages(prev => [...prev, {
@@ -267,11 +321,18 @@ export function AiChat() {
                   articles: data.articles,
                   allCandidates: data.allCandidates,
                   expandedTerms: data.expandedTerms,
+                  statusLog: statusLogRef.current,
                 }]);
-                setStatus(null);
+                setCurrentStatusLog([]);
+                statusLogRef.current = [];
               } else if (eventType === 'error') {
-                setMessages(prev => [...prev, { role: 'assistant', content: `Chyba: ${data.error}` }]);
-                setStatus(null);
+                setMessages(prev => [...prev, {
+                  role: 'assistant',
+                  content: `Chyba: ${data.error}`,
+                  statusLog: statusLogRef.current,
+                }]);
+                setCurrentStatusLog([]);
+                statusLogRef.current = [];
               }
             } catch { /* malformed JSON */ }
             eventType = '';
@@ -280,8 +341,13 @@ export function AiChat() {
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Neznámá chyba';
-      setMessages(prev => [...prev, { role: 'assistant', content: `Chyba: ${msg}` }]);
-      setStatus(null);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `Chyba: ${msg}`,
+        statusLog: statusLogRef.current,
+      }]);
+      setCurrentStatusLog([]);
+      statusLogRef.current = [];
     } finally {
       setIsLoading(false);
     }
@@ -361,7 +427,15 @@ export function AiChat() {
                   {msg.content}
                 </div>
               ) : (
-                <div className="w-full space-y-3">
+                <div className="w-full space-y-2">
+                  {/* Activity trace */}
+                  {msg.statusLog && msg.statusLog.length > 0 && (
+                    <div className="px-1 pb-0.5">
+                      <StatusTrace log={msg.statusLog} />
+                    </div>
+                  )}
+
+                  {/* Response bubble */}
                   <div className="bg-surface0 text-text rounded-2xl rounded-bl-sm px-4 py-3 leading-relaxed">
                     <ReactMarkdown components={MD_COMPONENTS}>{msg.content}</ReactMarkdown>
                   </div>
@@ -406,11 +480,11 @@ export function AiChat() {
             </div>
           ))}
 
-          {status && (
+          {/* Live activity trace while loading */}
+          {isLoading && currentStatusLog.length > 0 && (
             <div className="flex justify-start">
-              <div className="bg-surface0 rounded-2xl rounded-bl-sm px-4 py-2.5 flex items-center gap-2 text-sm text-subtext1">
-                <Loader2 size={14} className="animate-spin text-mauve shrink-0" />
-                {status.label}
+              <div className="bg-surface0 rounded-2xl rounded-bl-sm px-4 py-3">
+                <StatusTrace log={currentStatusLog} isLoading={true} />
               </div>
             </div>
           )}
