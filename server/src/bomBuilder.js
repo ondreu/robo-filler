@@ -187,18 +187,29 @@ const MFR_DISPLAY = {
 };
 
 export async function handleBomBuild(rows, preferences, sendProgress, answers = []) {
-  // Merge answers into preferences context so pickBestMatch benefits from them
   let enrichedPrefs = preferences || '';
   if (answers.length > 0) {
     const answerLines = answers.map(a => `${a.question}: ${a.answer}`).join('\n');
     enrichedPrefs = [enrichedPrefs, `\n[Upřesnění od uživatele]\n${answerLines}`].filter(Boolean).join('\n');
   }
-  const bomRows = [];
-  const toCreate = [];
-  const announcedMfr = new Set(); // track which manufacturer knowledge was already announced
 
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
+  // Pre-announce manufacturer knowledge synchronously to avoid duplicate announcements
+  // when rows for the same manufacturer run in parallel
+  const announcedMfr = new Set();
+  rows.forEach((row, i) => {
+    const mainQuery = (row.typoveOznaceni || '').trim();
+    const altQuery = (row.altTypoveOznaceni || '').trim();
+    if (!mainQuery && !altQuery) return;
+    const mfrKey = resolveManufacturerKey(row.vyrobce || '') || resolveManufacturerKey(mainQuery) || resolveManufacturerKey(altQuery);
+    const mfrDoc = mfrKey ? (MANUFACTURER_DOCS[mfrKey] ?? '') : '';
+    if (mfrKey && mfrDoc && !announcedMfr.has(mfrKey)) {
+      announcedMfr.add(mfrKey);
+      sendProgress(i, rows.length, mainQuery || altQuery, 'knowledge', MFR_DISPLAY[mfrKey] ?? mfrKey);
+    }
+  });
+
+  // Process all rows in parallel — each row is independent
+  const results = await Promise.all(rows.map(async (row, i) => {
     const {
       typoveOznaceni = '',
       altTypoveOznaceni = '',
@@ -213,30 +224,21 @@ export async function handleBomBuild(rows, preferences, sendProgress, answers = 
 
     if (!mainQuery && !altQuery) {
       sendProgress(i, rows.length, '', 'skipped');
-      continue;
+      return null;
     }
 
-    // Resolve manufacturer knowledge: explicit vyrobce field, or inferred from type designation
     const mfrKey = resolveManufacturerKey(vyrobce) || resolveManufacturerKey(mainQuery) || resolveManufacturerKey(altQuery);
     const mfrDoc = mfrKey ? (MANUFACTURER_DOCS[mfrKey] ?? '') : '';
-
-    // Announce manufacturer knowledge once per unique manufacturer
-    if (mfrKey && mfrDoc && !announcedMfr.has(mfrKey)) {
-      announcedMfr.add(mfrKey);
-      sendProgress(i, rows.length, mainQuery || altQuery, 'knowledge', MFR_DISPLAY[mfrKey] ?? mfrKey);
-    }
 
     sendProgress(i, rows.length, mainQuery || altQuery, 'searching');
 
     let found = null;
 
-    // Round 1: search by main type designation
     if (mainQuery) {
       const results1 = searchTerm(mainQuery, 5, vyrobce.trim() || null);
       found = await pickBestMatch(mainQuery, popis, vyrobce, results1, enrichedPrefs, mfrDoc);
     }
 
-    // Round 2: search by alternative type designation (or retry without manufacturer filter)
     if (!found) {
       const round2Query = altQuery || mainQuery;
       const round2Mfr = altQuery ? (vyrobce.trim() || null) : null;
@@ -244,7 +246,6 @@ export async function handleBomBuild(rows, preferences, sendProgress, answers = 
       found = await pickBestMatch(round2Query, popis, vyrobce, results2, enrichedPrefs, mfrDoc);
     }
 
-    // Derive description from type designation when popis is empty and manufacturer is known
     let derivedPopis = '';
     if (!popis.trim() && mfrDoc) {
       derivedPopis = await deriveDescription(mainQuery || altQuery, mfrDoc);
@@ -252,41 +253,51 @@ export async function handleBomBuild(rows, preferences, sendProgress, answers = 
 
     if (found) {
       sendProgress(i, rows.length, mainQuery || altQuery, 'found');
-      bomRows.push({
-        type: 'L',
-        artikl: found.artikl,
-        popis: derivedPopis || found.nazev,
-        typoveOznaceni: found.typoveOznaceni,
-        mnozstvi: Number(pocet) || 1,
-        poznamka1: '',
-        poznamka2: oznaceniPristroje,
-        aiFilledPopis: !popis.trim() && !!(derivedPopis || found.nazev),
-      });
+      return {
+        bomRow: {
+          type: 'L',
+          artikl: found.artikl,
+          popis: derivedPopis || found.nazev,
+          typoveOznaceni: found.typoveOznaceni,
+          mnozstvi: Number(pocet) || 1,
+          poznamka1: '',
+          poznamka2: oznaceniPristroje,
+          aiFilledPopis: !popis.trim() && !!(derivedPopis || found.nazev),
+        },
+        toCreateEntry: null,
+      };
     } else {
       sendProgress(i, rows.length, mainQuery || altQuery, 'not_found');
-
       const unit = await estimateUnit(popis, mainQuery || altQuery);
-
-      // T row in BOM: type designation in note1, instrument tag in note2
-      bomRows.push({
-        type: 'T',
-        artikl: '',
-        popis: '',
-        typoveOznaceni: '',
-        mnozstvi: Number(pocet) || 1,
-        poznamka1: mainQuery || altQuery,
-        poznamka2: oznaceniPristroje,
-      });
-
-      toCreate.push({
-        nazev: derivedPopis || popis,
-        vyrobce,
-        typoveOznaceni: mainQuery || altQuery,
-        unit,
-        oznaceniPristroje,
-        aiFilledPopis: !popis.trim() && !!derivedPopis,
-      });
+      return {
+        bomRow: {
+          type: 'T',
+          artikl: '',
+          popis: '',
+          typoveOznaceni: '',
+          mnozstvi: Number(pocet) || 1,
+          poznamka1: mainQuery || altQuery,
+          poznamka2: oznaceniPristroje,
+        },
+        toCreateEntry: {
+          nazev: derivedPopis || popis,
+          vyrobce,
+          typoveOznaceni: mainQuery || altQuery,
+          unit,
+          oznaceniPristroje,
+          aiFilledPopis: !popis.trim() && !!derivedPopis,
+        },
+      };
     }
+  }));
+
+  // Assemble results in original row order
+  const bomRows = [];
+  const toCreate = [];
+  for (const r of results) {
+    if (!r) continue;
+    bomRows.push(r.bomRow);
+    if (r.toCreateEntry) toCreate.push(r.toCreateEntry);
   }
 
   return { bomRows, toCreate };
