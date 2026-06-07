@@ -149,6 +149,54 @@ function StatusTrace({ log, isLoading = false }: { log: Status[]; isLoading?: bo
   );
 }
 
+function StatusTraceToggle({
+  log,
+  isLoading = false,
+  expanded,
+  onToggle,
+}: {
+  log: Status[];
+  isLoading?: boolean;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  if (log.length === 0) return null;
+  const allTerms = log
+    .filter(s => s.step === 'searching' && s.terms?.length)
+    .flatMap(s => s.terms!);
+  return (
+    <div className="rounded-xl border border-surface1 overflow-hidden text-xs">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center gap-1.5 px-3 py-1.5 text-overlay0 hover:text-subtext0 transition-colors hover:bg-surface0/40"
+      >
+        {isLoading
+          ? <Loader2 size={10} className="animate-spin text-mauve shrink-0" />
+          : <Search size={10} className="shrink-0" />
+        }
+        {expanded ? (
+          <span className="flex-1 text-left">postup hledání</span>
+        ) : allTerms.length > 0 ? (
+          <div className="flex flex-wrap gap-1 flex-1 min-w-0 items-center">
+            {allTerms.slice(0, 8).map((t, i) => (
+              <span key={i} className="bg-surface1 text-subtext0 rounded px-1.5 py-0.5 font-mono leading-none">{t}</span>
+            ))}
+            {allTerms.length > 8 && <span className="text-overlay0">+{allTerms.length - 8}</span>}
+          </div>
+        ) : (
+          <span className="flex-1 text-left truncate">{log[log.length - 1]?.label}</span>
+        )}
+        <ChevronDown size={10} className={`shrink-0 transition-transform duration-150 ml-1 ${expanded ? 'rotate-180' : ''}`} />
+      </button>
+      {expanded && (
+        <div className="px-3 pb-2.5 pt-1.5 border-t border-surface1/50">
+          <StatusTrace log={log} isLoading={isLoading} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function AiChat() {
   const [greeting] = useState(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
   const [messages, setMessages] = useState<AiMessage[]>(() => {
@@ -169,6 +217,7 @@ export function AiChat() {
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [expandedMsgs, setExpandedMsgs] = useState<Set<number>>(new Set());
+  const [expandedTraces, setExpandedTraces] = useState<Set<number>>(new Set());
   const [lastAllCandidates, setLastAllCandidates] = useState<Article[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -202,6 +251,7 @@ export function AiChat() {
   const clearChat = () => {
     setMessages([]);
     setExpandedMsgs(new Set());
+    setExpandedTraces(new Set());
     setLastAllCandidates([]);
     setCurrentStatusLog([]);
     statusLogRef.current = [];
@@ -261,6 +311,14 @@ export function AiChat() {
 
   const toggleExpanded = (idx: number) => {
     setExpandedMsgs(prev => {
+      const next = new Set(prev);
+      next.has(idx) ? next.delete(idx) : next.add(idx);
+      return next;
+    });
+  };
+
+  const toggleTrace = (idx: number) => {
+    setExpandedTraces(prev => {
       const next = new Set(prev);
       next.has(idx) ? next.delete(idx) : next.add(idx);
       return next;
@@ -428,11 +486,13 @@ export function AiChat() {
                 </div>
               ) : (
                 <div className="w-full space-y-2">
-                  {/* Activity trace */}
+                  {/* Activity trace — collapsible */}
                   {msg.statusLog && msg.statusLog.length > 0 && (
-                    <div className="px-1 pb-0.5">
-                      <StatusTrace log={msg.statusLog} />
-                    </div>
+                    <StatusTraceToggle
+                      log={msg.statusLog}
+                      expanded={expandedTraces.has(i)}
+                      onToggle={() => toggleTrace(i)}
+                    />
                   )}
 
                   {/* Response bubble */}
@@ -480,11 +540,16 @@ export function AiChat() {
             </div>
           ))}
 
-          {/* Live activity trace while loading */}
+          {/* Live activity trace while loading — always expanded */}
           {isLoading && currentStatusLog.length > 0 && (
             <div className="flex justify-start">
-              <div className="bg-surface0 rounded-2xl rounded-bl-sm px-4 py-3">
-                <StatusTrace log={currentStatusLog} isLoading={true} />
+              <div className="w-full max-w-xl">
+                <StatusTraceToggle
+                  log={currentStatusLog}
+                  isLoading={true}
+                  expanded={true}
+                  onToggle={() => {}}
+                />
               </div>
             </div>
           )}
