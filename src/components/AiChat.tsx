@@ -505,7 +505,7 @@ export function AiChat() {
                   {msg.statusLog && msg.statusLog.length > 0 && (
                     <StatusTraceToggle
                       log={msg.statusLog}
-                      expanded={expandedTraces.has(i)}
+                      expanded={!expandedTraces.has(i)}
                       onToggle={() => toggleTrace(i)}
                     />
                   )}
