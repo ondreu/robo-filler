@@ -15,6 +15,7 @@ const AI_CHAT_LAST_KEY = 'robo-filler-ai-chat-last';
 const SYNTH_MODEL_KEY = 'karel_bot_synth_model';
 const USAGE_KEY = 'robo-filler-chat-usage';
 const SESSIONS_KEY = 'robo-filler-chat-sessions';
+const SESSION_ID_KEY = 'robo-filler-ai-session-id';
 
 interface ChatSession {
   id: string;
@@ -293,12 +294,16 @@ export function AiChat() {
   const [lastAllCandidates, setLastAllCandidates] = useState<Article[]>([]);
   const [showUsageWarning, setShowUsageWarning] = useState(false);
   const [sessions, setSessions] = useState<ChatSession[]>(() => loadSessions());
-  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(() => {
+    try { return sessionStorage.getItem(SESSION_ID_KEY); } catch { return null; }
+  });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
-  const sessionIdRef = useRef<string | null>(null);
+  const sessionIdRef = useRef<string | null>((() => {
+    try { return sessionStorage.getItem(SESSION_ID_KEY); } catch { return null; }
+  })());
   const skipSaveRef = useRef(false);
 
   useEffect(() => {
@@ -312,6 +317,7 @@ export function AiChat() {
       sessionIdRef.current = id;
       setCurrentSessionId(id);
     }
+    try { sessionStorage.setItem(SESSION_ID_KEY, id); } catch {}
     const title = sessionTitle(messages);
     const all = loadSessions();
     const idx = all.findIndex(s => s.id === id);
@@ -350,6 +356,7 @@ export function AiChat() {
     setCurrentStatusLog([]);
     statusLogRef.current = [];
     sessionStorage.removeItem(AI_CHAT_KEY);
+    try { sessionStorage.removeItem(SESSION_ID_KEY); } catch {}
   };
 
   const loadSession = (id: string) => {
@@ -358,6 +365,7 @@ export function AiChat() {
     skipSaveRef.current = true;
     sessionIdRef.current = id;
     setCurrentSessionId(id);
+    try { sessionStorage.setItem(SESSION_ID_KEY, id); } catch {}
     setMessages(session.messages);
     setExpandedMsgs(new Set());
     setExpandedTraces(new Set());
@@ -639,7 +647,7 @@ export function AiChat() {
                   {msg.content}
                 </div>
               ) : (
-                <div className="w-full space-y-2">
+                <div className="max-w-[82%] space-y-2">
                   {/* Activity trace — collapsible */}
                   {msg.statusLog && msg.statusLog.length > 0 && (
                     <StatusTraceToggle
