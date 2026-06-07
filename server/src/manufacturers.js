@@ -129,7 +129,7 @@ export const MANUFACTURER_CATEGORIES = {
   svorkovnic:   ['wago', 'phoenix', 'weidmuller'],  // svorkovnice, svorkovnicový
   terminal:     ['wago', 'phoenix', 'weidmuller'],
   konektor:     ['phoenix', 'weidmuller'],
-  pruchod:      ['phoenix', 'weidmuller', 'rittal'], // průchodka / průchodky
+  // pruchod intentionally omitted — průchodka (cable gland) has no dominant manufacturer in DB
 
   // --- Jistič / MCB / MCCB ---
   jistic:       ['abb', 'siemens', 'eaton', 'schneider'], // jistič, jisticí, jistice
