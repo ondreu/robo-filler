@@ -480,8 +480,7 @@ function App() {
                         <div>
                           <h3 className="text-text font-semibold text-base mb-1">Pozor — nákladný režim</h3>
                           <p className="text-subtext1 text-sm leading-relaxed">
-                            Každé sestavení kusovníku stojí peníze — AI volání se platí za spotřebované tokeny.
-                            Spouštějte prosím jen tehdy, kdy to skutečně potřebujete.
+                            Vyhledávání v tomto režimu jsou drahá. Používejte s rozvahou.
                           </p>
                         </div>
                       </div>
