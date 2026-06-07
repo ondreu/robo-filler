@@ -98,31 +98,31 @@ function AiArticleCard({ article, dim = false }: { article: Article; dim?: boole
     window.open(`https://www.google.com/search?q=${q}`, '_blank', 'noopener');
   };
   return (
-    <div className={`border rounded-xl p-3.5 space-y-1.5 transition-colors ${
+    <div className={`border rounded-xl p-2 space-y-1 transition-colors ${
       dim
         ? 'bg-mantle border-surface1 hover:bg-surface0'
         : 'bg-surface0 border-surface2 hover:bg-surface1'
     }`}>
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-mauve font-semibold text-sm">{article.artikl}</span>
+      <div className="flex items-center justify-between gap-1.5">
+        <div className="flex items-center gap-1.5">
+          <span className="font-mono text-mauve font-semibold text-xs">{article.artikl}</span>
           <button onClick={copyArtkl} title="Kopírovat artikl" className="text-overlay1 hover:text-mauve transition-colors">
-            {copied ? <Check size={13} /> : <Copy size={13} />}
+            {copied ? <Check size={11} /> : <Copy size={11} />}
           </button>
         </div>
-        <span className="text-subtext0 text-xs shrink-0">{article.vyrobce}</span>
+        <span className="text-subtext0 text-[10px] shrink-0">{article.vyrobce}</span>
       </div>
-      <div className="text-text text-sm font-medium leading-snug">{article.nazev}</div>
+      <div className="text-text text-xs font-medium leading-snug">{article.nazev}</div>
       {article.typoveOznaceni && (
-        <div className="flex items-center gap-1.5">
-          <span className="text-subtext0 text-xs">{article.typoveOznaceni}</span>
+        <div className="flex items-center gap-1">
+          <span className="text-subtext0 text-[10px]">{article.typoveOznaceni}</span>
           <button onClick={googleSearch} title="Hledat na Google" className="text-overlay1 hover:text-mauve transition-colors shrink-0">
-            <ExternalLink size={11} />
+            <ExternalLink size={10} />
           </button>
         </div>
       )}
       {article.vybehovyDil === 'U' && (
-        <span className="text-xs text-red font-medium">⚠ Výběhový díl</span>
+        <span className="text-[10px] text-red font-medium">⚠ Výběhový díl</span>
       )}
     </div>
   );
@@ -363,6 +363,7 @@ export function AiChat() {
     setExpandedTraces(new Set());
     setLastAllCandidates([]);
     setCurrentStatusLog([]);
+    setIsLoading(false);
     statusLogRef.current = [];
   };
 
@@ -440,6 +441,9 @@ export function AiChat() {
 
     if (recordQuery()) setShowUsageWarning(true);
 
+    const originSessionId = sessionIdRef.current;
+    const sameSession = () => sessionIdRef.current === originSessionId;
+
     const userMsg: AiMessage = { role: 'user', content: text };
     setInput('');
     setMessages(prev => [...prev, userMsg]);
@@ -464,8 +468,9 @@ export function AiChat() {
       const decoder = new TextDecoder();
       let buffer = '';
       let eventType = '';
+      let abandoned = false;
 
-      while (true) {
+      while (!abandoned) {
         const { done, value } = await reader.read();
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
@@ -479,10 +484,12 @@ export function AiChat() {
             try {
               const data = JSON.parse(line.slice(6));
               if (eventType === 'status') {
+                if (!sameSession()) { abandoned = true; break; }
                 const newLog = [...statusLogRef.current, data as Status];
                 statusLogRef.current = newLog;
                 setCurrentStatusLog(newLog);
               } else if (eventType === 'result') {
+                if (!sameSession()) { abandoned = true; break; }
                 if (data.allCandidates?.length > 0) setLastAllCandidates(data.allCandidates);
                 const savedLog = statusLogRef.current;
                 statusLogRef.current = [];
@@ -496,6 +503,7 @@ export function AiChat() {
                   statusLog: savedLog,
                 }]);
               } else if (eventType === 'error') {
+                if (!sameSession()) { abandoned = true; break; }
                 const savedLog = statusLogRef.current;
                 statusLogRef.current = [];
                 setCurrentStatusLog([]);
@@ -511,24 +519,26 @@ export function AiChat() {
         }
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Neznámá chyba';
-      const savedLog = statusLogRef.current;
-      statusLogRef.current = [];
-      setCurrentStatusLog([]);
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: `Chyba: ${msg}`,
-        statusLog: savedLog,
-      }]);
+      if (sameSession()) {
+        const msg = err instanceof Error ? err.message : 'Neznámá chyba';
+        const savedLog = statusLogRef.current;
+        statusLogRef.current = [];
+        setCurrentStatusLog([]);
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `Chyba: ${msg}`,
+          statusLog: savedLog,
+        }]);
+      }
     } finally {
-      setIsLoading(false);
+      if (sameSession()) setIsLoading(false);
     }
   }
 
   return (
     <div
       className="flex rounded-2xl overflow-hidden border border-surface1"
-      style={{ height: 'calc(100vh - 190px)', minHeight: '560px', boxShadow: '0 0 32px 4px rgba(203,166,247,0.08), 0 0 8px 0px rgba(203,166,247,0.06)' }}
+      style={{ height: 'calc(100vh - 130px)', minHeight: '600px', boxShadow: '0 0 32px 4px rgba(203,166,247,0.08), 0 0 8px 0px rgba(203,166,247,0.06)' }}
     >
       {/* Sidebar */}
       <div className="w-52 shrink-0 bg-crust border-r border-surface1 flex flex-col overflow-hidden">
@@ -585,11 +595,11 @@ export function AiChat() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-4 min-h-0">
+      <div className="flex-1 overflow-y-auto px-8 py-5 space-y-4 min-h-0">
         {messages.length === 0 && (
           <div className="max-w-5xl mx-auto space-y-5 mt-2">
             <div className="flex justify-start">
-              <div className="bg-surface0 text-text rounded-2xl rounded-bl-sm px-4 py-3 leading-relaxed max-w-xl">
+              <div className="bg-surface0 text-text text-sm rounded-2xl rounded-bl-sm px-5 py-3.5 leading-relaxed max-w-xl">
                 {greeting}
               </div>
             </div>
@@ -625,7 +635,7 @@ export function AiChat() {
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.role === 'user' ? (
-                <div className="bg-mauve text-crust rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[75%] leading-relaxed">
+                <div className="bg-mauve text-crust text-sm rounded-2xl rounded-br-sm px-5 py-3 max-w-[75%] leading-relaxed">
                   {msg.content}
                 </div>
               ) : (
@@ -640,7 +650,7 @@ export function AiChat() {
                   )}
 
                   {/* Response bubble */}
-                  <div className="bg-surface0 text-text rounded-2xl rounded-bl-sm px-4 py-3 leading-relaxed">
+                  <div className="bg-surface0 text-text text-sm rounded-2xl rounded-bl-sm px-5 py-4 leading-relaxed">
                     <ReactMarkdown components={MD_COMPONENTS} remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                   </div>
 
@@ -650,7 +660,7 @@ export function AiChat() {
                       <p className="text-xs text-subtext0 uppercase tracking-wide font-medium px-0.5">
                         Vybrané artikly ({msg.articles.length})
                       </p>
-                      <div className="grid sm:grid-cols-2 gap-2">
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-1.5">
                         {msg.articles.map(a => (
                           <AiArticleCard key={a.artikl} article={a} />
                         ))}
@@ -671,7 +681,7 @@ export function AiChat() {
                           : `Zobrazit všechny nalezené (${msg.allCandidates.length})`}
                       </button>
                       {expandedMsgs.has(i) && (
-                        <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                        <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5">
                           {msg.allCandidates.map(a => (
                             <AiArticleCard key={a.artikl} article={a} dim />
                           ))}
