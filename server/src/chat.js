@@ -15,8 +15,8 @@ Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
    Databáze je primárně česká s průmyslovými zkratkami — generuj termíny v tomto pořadí priority:
    1. ČESKY — přesné i zkrácené formy, česká synonyma, zachovej rozměry a specifikace
    2. ZKRATKY Z DB — MS, PA, HT, A2, A4, nerez, PE, PP, IP67, IP68 a další zkratky materiálů/krytí které se vyskytují přímo v názvech položek
-   3. NĚMČINA — pouze výrazy reálně používané v českých průmyslových katalozích (Edelstahl, Klemme, Verschraubung, Hutschiene, Tragschiene) — ne generické překlady
-   4. ANGLIČTINA — vynech, pokud výrobce nebo norma anglický název explicitně nepoužívá
+   3. NĚMČINA — výrazy reálně používané v českých průmyslových katalozích (Edelstahl, Klemme, Verschraubung…) — méně než čeština
+   4. ANGLIČTINA — jen nejběžnější průmyslové termíny, méně než němčina
    Pokud dotaz obsahuje číslo artiklu nebo kód dílu (formáty jako 2204-1401, 5SY4116, XB4BA31, M20x1.5 apod.), VŽDY ho zahrň do terms přesně jak je.
    VÝROBCE: Pokud je výrobce zmíněn v aktuálním dotazu, extrahuj ho do "manufacturer". Pokud aktuální dotaz je follow-up a v historii byl konkrétní výrobce zmíněn, zachovej ho. Jinak "manufacturer": null.
    Z termínů pro vyhledávání vynech jméno výrobce — hledej jen podle typu/názvu dílu.
