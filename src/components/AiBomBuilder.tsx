@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Plus, Trash2, Play, Loader2, Download, Check, X, ChevronRight, MessageCircle, BookOpen } from 'lucide-react';
 import type { BomRow, BomHeader } from '../types';
 import type { ImportResult } from '../utils/bomExport';
@@ -73,6 +73,41 @@ function initRows(): InputRow[] {
   return [newRow(), newRow(), newRow()];
 }
 
+// ── BOM history (localStorage, last 5) ───────────────────────────────────────
+
+interface BomHistoryEntry {
+  key: string;
+  label: string;
+  rows: InputRow[];
+  preferences: string;
+  produktovaHierarchie: string;
+  artiklVrcholu: string;
+  bomRows: BomResultRow[];
+  toCreate: ToCreateRow[];
+}
+
+const HISTORY_KEY = 'robo-filler-bom-history';
+
+function bomCacheKey(rows: InputRow[], preferences: string): string {
+  return JSON.stringify(rows.map(r => [r.typoveOznaceni, r.altTypoveOznaceni, r.vyrobce, r.pocet, r.oznaceniPristroje])) + '|' + preferences;
+}
+
+function loadHistory(): BomHistoryEntry[] {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) ?? '[]'); } catch { return []; }
+}
+
+function saveHistory(entry: BomHistoryEntry) {
+  const history = loadHistory().filter(e => e.key !== entry.key);
+  history.unshift(entry);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 5)));
+}
+
+function historyLabel(rows: InputRow[]): string {
+  const active = rows.filter(r => r.typoveOznaceni.trim() || r.altTypoveOznaceni.trim());
+  const sample = active.slice(0, 3).map(r => r.typoveOznaceni || r.altTypoveOznaceni).join(', ');
+  return `${active.length} pol. — ${sample}${active.length > 3 ? '…' : ''}`;
+}
+
 const thCls = 'px-2 py-2 font-medium text-left border-r border-surface1 last:border-r-0 whitespace-nowrap text-xs text-overlay1';
 const tdCls = 'border-r border-surface1 last:border-r-0 p-0';
 const inputCls = 'w-full px-2 py-1.5 bg-transparent text-text text-xs placeholder:text-overlay0 focus:outline-none focus:bg-surface1/40 rounded transition-colors';
@@ -145,12 +180,64 @@ function StatusIcon({ status }: { status: ProgressItem['status'] }) {
 
 // ── input table ───────────────────────────────────────────────────────────────
 
+const INPUT_COLS = ['popis', 'vyrobce', 'typoveOznaceni', 'altTypoveOznaceni', 'pocet', 'oznaceniPristroje'] as const;
+
 function InputTable({ rows, onChange }: { rows: InputRow[]; onChange: (rows: InputRow[]) => void }) {
   const update = (id: string, field: keyof InputRow, value: string | number) => {
     onChange(rows.map(r => r.id === id ? { ...r, [field]: value } : r));
   };
   const remove = (id: string) => onChange(rows.filter(r => r.id !== id));
   const add = () => onChange([...rows, newRow()]);
+  const clear = () => onChange(initRows());
+
+  // Excel-like selection
+  const [selAnchor, setSelAnchor] = useState<{ r: number; c: number } | null>(null);
+  const [selEnd, setSelEnd] = useState<{ r: number; c: number } | null>(null);
+  const inputRefs = useRef<(HTMLInputElement | null)[][]>([]);
+
+  const isSelected = useCallback((r: number, c: number) => {
+    if (!selAnchor || !selEnd) return false;
+    const r1 = Math.min(selAnchor.r, selEnd.r), r2 = Math.max(selAnchor.r, selEnd.r);
+    const c1 = Math.min(selAnchor.c, selEnd.c), c2 = Math.max(selAnchor.c, selEnd.c);
+    return r >= r1 && r <= r2 && c >= c1 && c <= c2;
+  }, [selAnchor, selEnd]);
+
+  const focusCell = (r: number, c: number) => {
+    const clamped = { r: Math.max(0, Math.min(r, rows.length - 1)), c: Math.max(0, Math.min(c, INPUT_COLS.length - 1)) };
+    inputRefs.current[clamped.r]?.[clamped.c]?.focus();
+    setSelAnchor(clamped);
+    setSelEnd(clamped);
+  };
+
+  const handleCellMouseDown = (ri: number, ci: number, e: React.MouseEvent) => {
+    if (e.shiftKey && selAnchor) {
+      e.preventDefault();
+      setSelEnd({ r: ri, c: ci });
+    } else {
+      setSelAnchor({ r: ri, c: ci });
+      setSelEnd({ r: ri, c: ci });
+    }
+  };
+
+  const handleKeyDown = (ri: number, ci: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      if (e.shiftKey) {
+        ci > 0 ? focusCell(ri, ci - 1) : ri > 0 && focusCell(ri - 1, INPUT_COLS.length - 1);
+      } else {
+        ci < INPUT_COLS.length - 1 ? focusCell(ri, ci + 1) : focusCell(ri + 1, 0);
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      focusCell(ri + 1, ci);
+    } else if (e.key === 'ArrowDown' && (e.target as HTMLInputElement).selectionStart === (e.target as HTMLInputElement).value.length) {
+      e.preventDefault();
+      focusCell(ri + 1, ci);
+    } else if (e.key === 'ArrowUp' && (e.target as HTMLInputElement).selectionStart === 0) {
+      e.preventDefault();
+      focusCell(ri - 1, ci);
+    }
+  };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTableElement>) => {
     const target = e.target as HTMLElement;
@@ -158,7 +245,6 @@ function InputTable({ rows, onChange }: { rows: InputRow[]; onChange: (rows: Inp
     const tr = target.closest('tr');
     if (!td || !tr) return;
 
-    const cols = ['popis', 'vyrobce', 'typoveOznaceni', 'altTypoveOznaceni', 'pocet', 'oznaceniPristroje'] as const;
     const colIndex = Array.from(tr.querySelectorAll('td')).indexOf(td as HTMLTableCellElement) - 1;
     if (colIndex < 0) return;
 
@@ -166,7 +252,9 @@ function InputTable({ rows, onChange }: { rows: InputRow[]; onChange: (rows: Inp
     if (rowIndex < 0) return;
 
     const text = e.clipboardData.getData('text');
-    const lines = text.split(/\r?\n/).filter(l => l.length > 0);
+    // Trim only the single trailing newline Excel always appends, preserve empty inner rows
+    const rawLines = text.split(/\r?\n/);
+    const lines = rawLines[rawLines.length - 1] === '' ? rawLines.slice(0, -1) : rawLines;
     if (lines.length <= 1 && !text.includes('\t')) return;
 
     e.preventDefault();
@@ -179,7 +267,7 @@ function InputTable({ rows, onChange }: { rows: InputRow[]; onChange: (rows: Inp
       for (let c = 0; c < grid[r].length; c++) {
         const ci = colIndex + c;
         if (ci >= cols.length) break;
-        const field = cols[ci];
+        const field = INPUT_COLS[ci];
         const val = grid[r][c];
         (updated[ri] as unknown as Record<string, unknown>)[field] = field === 'pocet' ? (parseFloat(val) || 1) : val;
       }
@@ -205,46 +293,66 @@ function InputTable({ rows, onChange }: { rows: InputRow[]; onChange: (rows: Inp
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, ri) => (
-            <tr
-              key={row.id}
-              data-row-id={row.id}
-              className={`border-t border-surface1 ${ri % 2 === 0 ? 'bg-base' : 'bg-mantle/40'} hover:bg-surface0/30 transition-colors`}
-            >
-              <td className={`${tdCls} text-center px-1 text-overlay0 select-none`}>{ri + 1}</td>
-              <td className={tdCls}>
-                <input className={inputCls} value={row.popis} onChange={e => update(row.id, 'popis', e.target.value)} placeholder="název / popis" />
-              </td>
-              <td className={tdCls}>
-                <input className={inputCls} value={row.vyrobce} onChange={e => update(row.id, 'vyrobce', e.target.value)} placeholder="výrobce" />
-              </td>
-              <td className={tdCls}>
-                <input className={`${inputCls} font-mono`} value={row.typoveOznaceni} onChange={e => update(row.id, 'typoveOznaceni', e.target.value)} placeholder="5SY4116-1" />
-              </td>
-              <td className={tdCls}>
-                <input className={`${inputCls} font-mono`} value={row.altTypoveOznaceni} onChange={e => update(row.id, 'altTypoveOznaceni', e.target.value)} placeholder="alternativa..." />
-              </td>
-              <td className={tdCls}>
-                <input className={`${inputCls} text-center font-mono`} type="number" min={1} value={row.pocet} onChange={e => update(row.id, 'pocet', parseFloat(e.target.value) || 1)} />
-              </td>
-              <td className={tdCls}>
-                <input className={`${inputCls} font-mono`} value={row.oznaceniPristroje} onChange={e => update(row.id, 'oznaceniPristroje', e.target.value)} placeholder="-Q1" />
-              </td>
-              <td className={`${tdCls} text-center`}>
-                <button onClick={() => remove(row.id)} className="p-0.5 text-overlay0 hover:text-red transition-colors m-1" title="Odebrat řádek">
-                  <Trash2 size={12} />
-                </button>
-              </td>
-            </tr>
-          ))}
+          {rows.map((row, ri) => {
+            if (!inputRefs.current[ri]) inputRefs.current[ri] = [];
+            const cellCls = (ci: number) =>
+              `${tdCls} ${isSelected(ri, ci) ? 'bg-mauve/15 ring-1 ring-inset ring-mauve/40' : ''}`;
+            const cellProps = (ci: number) => ({
+              onMouseDown: (e: React.MouseEvent) => handleCellMouseDown(ri, ci, e),
+            });
+            const inputProps = (ci: number, extra?: string) => ({
+              className: `${inputCls}${extra ? ' ' + extra : ''}`,
+              onFocus: () => { setSelAnchor({ r: ri, c: ci }); setSelEnd({ r: ri, c: ci }); },
+              onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => handleKeyDown(ri, ci, e),
+              ref: (el: HTMLInputElement | null) => { inputRefs.current[ri][ci] = el; },
+            });
+            return (
+              <tr
+                key={row.id}
+                data-row-id={row.id}
+                className={`border-t border-surface1 ${ri % 2 === 0 ? 'bg-base' : 'bg-mantle/40'} hover:bg-surface0/30 transition-colors`}
+              >
+                <td className={`${tdCls} text-center px-1 text-overlay0 select-none`}>{ri + 1}</td>
+                <td className={cellCls(0)} {...cellProps(0)}>
+                  <input {...inputProps(0)} value={row.popis} onChange={e => update(row.id, 'popis', e.target.value)} placeholder="název / popis" />
+                </td>
+                <td className={cellCls(1)} {...cellProps(1)}>
+                  <input {...inputProps(1)} value={row.vyrobce} onChange={e => update(row.id, 'vyrobce', e.target.value)} placeholder="výrobce" />
+                </td>
+                <td className={cellCls(2)} {...cellProps(2)}>
+                  <input {...inputProps(2, 'font-mono')} value={row.typoveOznaceni} onChange={e => update(row.id, 'typoveOznaceni', e.target.value)} placeholder="5SY4116-1" />
+                </td>
+                <td className={cellCls(3)} {...cellProps(3)}>
+                  <input {...inputProps(3, 'font-mono')} value={row.altTypoveOznaceni} onChange={e => update(row.id, 'altTypoveOznaceni', e.target.value)} placeholder="alternativa..." />
+                </td>
+                <td className={cellCls(4)} {...cellProps(4)}>
+                  <input {...inputProps(4, 'text-center font-mono')} type="number" min={1} value={row.pocet} onChange={e => update(row.id, 'pocet', parseFloat(e.target.value) || 1)} />
+                </td>
+                <td className={cellCls(5)} {...cellProps(5)}>
+                  <input {...inputProps(5, 'font-mono')} value={row.oznaceniPristroje} onChange={e => update(row.id, 'oznaceniPristroje', e.target.value)} placeholder="-Q1" />
+                </td>
+                <td className={`${tdCls} text-center`}>
+                  <button onClick={() => remove(row.id)} className="p-0.5 text-overlay0 hover:text-red transition-colors m-1" title="Odebrat řádek">
+                    <Trash2 size={12} />
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
-      <div className="p-2 border-t border-surface1">
+      <div className="p-2 border-t border-surface1 flex items-center gap-2">
         <button
           onClick={add}
           className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium text-subtext1 hover:text-text hover:bg-surface1 transition-colors"
         >
           <Plus size={12} /> Přidat řádek
+        </button>
+        <button
+          onClick={clear}
+          className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium text-overlay0 hover:text-red hover:bg-surface1 transition-colors ml-auto"
+        >
+          <Trash2 size={12} /> Vyčistit
         </button>
       </div>
     </div>
@@ -396,7 +504,7 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
   const [produktovaHierarchie, setProduktova] = useState('');
   const [artiklVrcholu, setArtiklVrcholu] = useState('');
 
-  const [phase, setPhase] = useState<'input' | 'checking' | 'clarifying' | 'processing' | 'results'>('input');
+  const [phase, setPhase] = useState<'input' | 'processing' | 'post_check' | 'clarifying' | 'results'>('input');
   const [progressItems, setProgressItems] = useState<ProgressItem[]>([]);
   const [processedCount, setProcessedCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -410,6 +518,8 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
   const [resultArtiklVrcholu, setResultArtiklVrcholu] = useState('');
   const [resultTab, setResultTab] = useState<'bom' | 'create'>('bom');
   const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<BomHistoryEntry[]>(loadHistory);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const activeRows = rows.filter(r => r.typoveOznaceni.trim() || r.altTypoveOznaceni.trim());
 
@@ -489,12 +599,29 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
                   }
                 }
               } else if (eventType === 'result') {
-                setBomRows(data.bomRows ?? []);
-                setToCreate(data.toCreate ?? []);
-                setResultProdHier(data.produktovaHierarchie ?? '');
-                setResultArtiklVrcholu(data.artiklVrcholu ?? '');
+                const newBomRows: BomResultRow[] = data.bomRows ?? [];
+                const newToCreate: ToCreateRow[] = data.toCreate ?? [];
+                const prodHier = data.produktovaHierarchie ?? '';
+                const arVrch = data.artiklVrcholu ?? '';
+                setBomRows(newBomRows);
+                setToCreate(newToCreate);
+                setResultProdHier(prodHier);
+                setResultArtiklVrcholu(arVrch);
                 setResultTab('bom');
-                setPhase('results');
+                // Save to history
+                const entry: BomHistoryEntry = {
+                  key: bomCacheKey(rows, preferences),
+                  label: historyLabel(rows),
+                  rows: rows.map(r => ({ ...r })),
+                  preferences,
+                  produktovaHierarchie: prodHier,
+                  artiklVrcholu: arVrch,
+                  bomRows: newBomRows,
+                  toCreate: newToCreate,
+                };
+                saveHistory(entry);
+                setHistory(loadHistory());
+                await runPostCheck(newBomRows, newToCreate);
               } else if (eventType === 'error') {
                 setError(data.error ?? 'Neznámá chyba.');
                 setPhase('input');
@@ -512,39 +639,114 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
 
   async function submit() {
     if (activeRows.length === 0) return;
-    setPhase('checking');
     setError(null);
-    setClarifyAnswers({});
+    // Check cache first
+    const cacheKey = bomCacheKey(rows, preferences);
+    const cached = loadHistory().find(e => e.key === cacheKey);
+    if (cached) {
+      setBomRows(cached.bomRows);
+      setToCreate(cached.toCreate);
+      setResultProdHier(cached.produktovaHierarchie);
+      setResultArtiklVrcholu(cached.artiklVrcholu);
+      setResultTab('bom');
+      setPhase('results');
+      return;
+    }
+    await startBuild([]);
+  }
 
+  async function runPostCheck(currentBomRows: BomResultRow[], currentToCreate: ToCreateRow[]) {
+    const notFoundRows = rows.filter((_, i) => currentBomRows[i]?.type === 'T');
+    if (notFoundRows.length === 0) { setPhase('results'); return; }
+    setPhase('post_check');
     try {
-      const resp = await fetch(`${BACKEND_URL}/api/bom-check`, {
+      const resp = await fetch(`${BACKEND_URL}/api/bom-post-check`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rows: rows.map(r => ({ typoveOznaceni: r.typoveOznaceni, altTypoveOznaceni: r.altTypoveOznaceni, popis: r.popis, vyrobce: r.vyrobce })), preferences }),
+        body: JSON.stringify({
+          notFoundRows: notFoundRows.map(r => ({ typoveOznaceni: r.typoveOznaceni, altTypoveOznaceni: r.altTypoveOznaceni, popis: r.popis, vyrobce: r.vyrobce })),
+          preferences,
+        }),
       });
-
-      if (!resp.ok) throw new Error('Check failed');
+      if (!resp.ok) throw new Error();
       const check = await resp.json() as { needsClarification: boolean; questions: ClarificationQuestion[] };
-
       if (check.needsClarification && check.questions.length > 0) {
         setClarifyQuestions(check.questions);
+        setClarifyAnswers({});
         setPhase('clarifying');
       } else {
-        await startBuild([]);
+        setPhase('results');
       }
     } catch {
-      // On check error, proceed without clarification
-      await startBuild([]);
+      setPhase('results');
     }
   }
 
-  function confirmAnswers() {
+  async function confirmAnswers() {
     const answers: ClarificationAnswer[] = clarifyQuestions.map(q => ({
       id: q.id,
       question: q.question,
       answer: clarifyAnswers[q.id] ?? '',
     })).filter(a => a.answer);
-    startBuild(answers);
+    // Re-run only not-found rows with enriched preferences
+    const notFoundIndices = bomRows.map((r, i) => r.type === 'T' ? i : -1).filter(i => i >= 0);
+    const notFoundInputRows = notFoundIndices.map(i => rows[i]);
+    const answerLines = answers.map(a => `${a.question}: ${a.answer}`).join('\n');
+    const enrichedPrefs = [preferences, `\n[Upřesnění od uživatele]\n${answerLines}`].filter(Boolean).join('\n');
+    setPhase('processing');
+    setTotalCount(notFoundInputRows.length);
+    setProcessedCount(0);
+    setProgressItems(notFoundInputRows.map((r, i) => ({
+      rowIndex: i, total: notFoundInputRows.length,
+      typoveOznaceni: r.typoveOznaceni || r.altTypoveOznaceni,
+      status: 'waiting' as const,
+    })));
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/bom-build`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rows: notFoundInputRows.map(r => ({ typoveOznaceni: r.typoveOznaceni, altTypoveOznaceni: r.altTypoveOznaceni, popis: r.popis, vyrobce: r.vyrobce, pocet: r.pocet, oznaceniPristroje: r.oznaceniPristroje })), preferences: enrichedPrefs, produktovaHierarchie, artiklVrcholu, answers }),
+      });
+      if (!response.ok || !response.body) throw new Error();
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '', eventType = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (line.startsWith('event: ')) { eventType = line.slice(7).trim(); }
+          else if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (eventType === 'progress') {
+                if (data.status === 'knowledge') {
+                  setProgressItems(prev => [...prev, data as ProgressItem]);
+                } else {
+                  setProgressItems(prev => { const next = [...prev]; if (data.rowIndex < next.length) next[data.rowIndex] = { ...next[data.rowIndex], ...data }; return next; });
+                  if (data.status === 'found' || data.status === 'not_found' || data.status === 'skipped') setProcessedCount(c => c + 1);
+                }
+              } else if (eventType === 'result') {
+                // Merge refined results back into original bomRows/toCreate
+                const newBomRows = [...bomRows];
+                const newToCreate: ToCreateRow[] = [];
+                (data.bomRows as BomResultRow[]).forEach((refined, idx) => { newBomRows[notFoundIndices[idx]] = refined; });
+                newBomRows.forEach(r => { /* toCreate is rebuilt from T rows in results view */ });
+                setBomRows(newBomRows);
+                setToCreate(data.toCreate ?? []);
+                setPhase('results');
+              }
+            } catch { /* ignore */ }
+            eventType = '';
+          }
+        }
+      }
+    } catch {
+      setPhase('results');
+    }
   }
 
   // ── input phase ──────────────────────────────────────────────────────────────
@@ -560,11 +762,11 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
 
         <div className="grid md:grid-cols-3 gap-4">
           <div className="md:col-span-3 space-y-1.5">
-            <label className="text-sm font-medium text-text">Preference výběru artiklů</label>
+            <label className="text-sm font-medium text-text">Pokyny pro AI</label>
             <textarea
               value={preferences}
               onChange={e => setPreferences(e.target.value)}
-              placeholder="Např.: Prefer articles with prefix STA_ or suffix _STA — jde o projektový materiál se zákaznickou cenou. Pokud existuje STA_ varianta, preferuj ji."
+              placeholder="Např.: Preferuj artikly bez zákaznického prefixu nebo sufixu."
               rows={3}
               className="w-full px-3 py-2 bg-surface0 border border-surface2 rounded-xl text-sm text-text placeholder:text-overlay0 focus:outline-none focus:ring-2 focus:ring-mauve focus:border-transparent resize-none"
             />
@@ -598,7 +800,7 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
             />
           </div>
 
-          <div className="flex items-end">
+          <div className="flex items-end gap-3">
             <button
               onClick={submit}
               disabled={activeRows.length === 0}
@@ -607,44 +809,81 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
               <Play size={16} />
               Spustit ({activeRows.length} {activeRows.length === 1 ? 'položka' : activeRows.length < 5 ? 'položky' : 'položek'})
             </button>
+            {history.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setHistoryOpen(o => !o)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm text-subtext1 hover:text-text hover:bg-surface1 transition-colors border border-surface2"
+                >
+                  Nedávné ({history.length})
+                </button>
+                {historyOpen && (
+                  <div className="absolute bottom-full mb-1 left-0 z-20 bg-mantle border border-surface1 rounded-xl shadow-xl min-w-72 overflow-hidden">
+                    {history.map((entry, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setRows(entry.rows.map(r => ({ ...r, id: `ir-${++rowIdCtr}` })));
+                          setPreferences(entry.preferences);
+                          setProduktova(entry.produktovaHierarchie);
+                          setArtiklVrcholu(entry.artiklVrcholu);
+                          setBomRows(entry.bomRows);
+                          setToCreate(entry.toCreate);
+                          setResultProdHier(entry.produktovaHierarchie);
+                          setResultArtiklVrcholu(entry.artiklVrcholu);
+                          setResultTab('bom');
+                          setHistoryOpen(false);
+                          setPhase('results');
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-xs text-subtext1 hover:bg-surface1 hover:text-text transition-colors border-b border-surface1 last:border-b-0"
+                      >
+                        <span className="text-overlay0 mr-2">{i + 1}.</span>
+                        {entry.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
     );
   }
 
-  // ── checking phase ───────────────────────────────────────────────────────────
+  // ── post_check phase ─────────────────────────────────────────────────────────
 
-  if (phase === 'checking') {
+  if (phase === 'post_check') {
     return (
       <div className="bg-mantle border border-surface1 rounded-2xl p-6 flex items-center gap-3">
         <Loader2 size={18} className="animate-spin text-mauve shrink-0" />
         <div>
-          <p className="text-text font-medium text-sm">Analyzuji kusovník…</p>
-          <p className="text-overlay0 text-xs">Kontroluji zda je vše jasné před zahájením vyhledávání.</p>
+          <p className="text-text font-medium text-sm">Vyhodnocuji výsledky…</p>
+          <p className="text-overlay0 text-xs">AI kontroluje zda by upřesnění pomohlo.</p>
         </div>
       </div>
     );
   }
 
-  // ── clarifying phase ─────────────────────────────────────────────────────────
+  // ── clarifying phase (post-search) ───────────────────────────────────────────
 
   if (phase === 'clarifying') {
     const allAnswered = clarifyQuestions.every(q => clarifyAnswers[q.id]?.trim());
+    const notFoundCount = bomRows.filter(r => r.type === 'T').length;
     return (
       <div className="bg-mantle border border-surface1 rounded-2xl p-6 space-y-5">
-        {/* Header */}
         <div className="flex items-start gap-3">
           <MessageCircle size={18} className="text-mauve shrink-0 mt-0.5" />
           <div>
-            <p className="text-text font-medium text-sm">Před zahájením potřebuji upřesnit pár věcí</p>
+            <p className="text-text font-medium text-sm">
+              AI má pár otázek k {notFoundCount} nenalezeným položkám
+            </p>
             <p className="text-overlay0 text-xs mt-0.5">
-              Odpovědi pomůžou vybrat správné artikly. Volitelné — můžeš přeskočit.
+              Odpovědi pomůžou zlepšit výsledky. Volitelné — můžeš přeskočit.
             </p>
           </div>
         </div>
 
-        {/* Questions */}
         <div className="space-y-5">
           {clarifyQuestions.map((q, qi) => (
             <div key={q.id} className="space-y-2">
@@ -657,61 +896,34 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
                   {q.choices.map(choice => (
                     <label key={choice} className="flex items-center gap-2.5 cursor-pointer group">
                       <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${
-                        clarifyAnswers[q.id] === choice
-                          ? 'border-mauve bg-mauve'
-                          : 'border-surface2 group-hover:border-mauve/50'
+                        clarifyAnswers[q.id] === choice ? 'border-mauve bg-mauve' : 'border-surface2 group-hover:border-mauve/50'
                       }`}>
-                        {clarifyAnswers[q.id] === choice && (
-                          <div className="w-1.5 h-1.5 rounded-full bg-crust" />
-                        )}
+                        {clarifyAnswers[q.id] === choice && <div className="w-1.5 h-1.5 rounded-full bg-crust" />}
                       </div>
-                      <input
-                        type="radio"
-                        name={q.id}
-                        value={choice}
-                        checked={clarifyAnswers[q.id] === choice}
-                        onChange={() => setClarifyAnswers(prev => ({ ...prev, [q.id]: choice }))}
-                        className="sr-only"
-                      />
-                      <span className={`text-sm transition-colors ${
-                        clarifyAnswers[q.id] === choice ? 'text-text' : 'text-subtext1 group-hover:text-text'
-                      }`}>{choice}</span>
+                      <input type="radio" name={q.id} value={choice} checked={clarifyAnswers[q.id] === choice}
+                        onChange={() => setClarifyAnswers(prev => ({ ...prev, [q.id]: choice }))} className="sr-only" />
+                      <span className={`text-sm transition-colors ${clarifyAnswers[q.id] === choice ? 'text-text' : 'text-subtext1 group-hover:text-text'}`}>{choice}</span>
                     </label>
                   ))}
                 </div>
               ) : (
-                <input
-                  type="text"
-                  value={clarifyAnswers[q.id] ?? ''}
+                <input type="text" value={clarifyAnswers[q.id] ?? ''}
                   onChange={e => setClarifyAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
                   placeholder="Vaše odpověď…"
-                  className="w-full px-3 py-2 bg-surface0 border border-surface2 rounded-xl text-sm text-text placeholder:text-overlay0 focus:outline-none focus:ring-2 focus:ring-mauve focus:border-transparent"
-                />
+                  className="w-full px-3 py-2 bg-surface0 border border-surface2 rounded-xl text-sm text-text placeholder:text-overlay0 focus:outline-none focus:ring-2 focus:ring-mauve focus:border-transparent" />
               )}
             </div>
           ))}
         </div>
 
-        {/* Actions */}
         <div className="flex items-center gap-3 pt-1">
-          <button
-            onClick={confirmAnswers}
-            disabled={!allAnswered}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl font-medium bg-mauve text-crust hover:bg-pink disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm"
-          >
-            <Play size={14} /> Pokračovat
+          <button onClick={confirmAnswers} disabled={!allAnswered}
+            className="flex items-center gap-2 px-5 py-2 rounded-xl font-medium bg-mauve text-crust hover:bg-pink disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm">
+            <Play size={14} /> Znovu prohledat nenalezené
           </button>
-          <button
-            onClick={() => startBuild([])}
-            className="px-4 py-2 rounded-xl text-sm text-subtext1 hover:text-text hover:bg-surface1 transition-colors"
-          >
-            Přeskočit a spustit bez upřesnění
-          </button>
-          <button
-            onClick={() => setPhase('input')}
-            className="ml-auto px-4 py-2 rounded-xl text-sm text-overlay1 hover:text-text hover:bg-surface0 transition-colors"
-          >
-            Zpět
+          <button onClick={() => setPhase('results')}
+            className="px-4 py-2 rounded-xl text-sm text-subtext1 hover:text-text hover:bg-surface1 transition-colors">
+            Přeskočit — zobrazit výsledky
           </button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { handleChat } from './chat.js';
-import { handleBomBuild, checkClarification } from './bomBuilder.js';
+import { handleBomBuild, checkClarification, postCheckClarification } from './bomBuilder.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -62,6 +62,22 @@ app.post('/api/bom-check', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('[bom-check]', err);
+    res.json({ needsClarification: false, questions: [] });
+  }
+});
+
+app.post('/api/bom-post-check', async (req, res) => {
+  const { notFoundRows = [], preferences = '' } = req.body ?? {};
+
+  if (!process.env.MISTRAL_API_KEY) {
+    return res.status(500).json({ error: 'MISTRAL_API_KEY není nastaven.' });
+  }
+
+  try {
+    const result = await postCheckClarification(notFoundRows, preferences);
+    res.json(result);
+  } catch (err) {
+    console.error('[bom-post-check]', err);
     res.json({ needsClarification: false, questions: [] });
   }
 });

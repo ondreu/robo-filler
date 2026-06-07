@@ -444,6 +444,7 @@ function App() {
                     }`}
                   >
                     AI stavba kusovníku
+                    <span className="ml-1.5 text-[10px] font-semibold bg-yellow/20 text-yellow rounded px-1 py-0.5 leading-none align-middle">BETA</span>
                   </button>
                 </div>
 
@@ -479,8 +480,8 @@ function App() {
                         <div>
                           <h3 className="text-text font-semibold text-base mb-1">Pozor — nákladný režim</h3>
                           <p className="text-subtext1 text-sm leading-relaxed">
-                            Každé sestavení kusovníku volá AI pro každý řádek zvlášť.
-                            Prosím používejte s rozvahou — zbytečné spouštění zbytečně zatěžuje API.
+                            Sestavení kusovníku je náročná operace a může trvat delší dobu.
+                            Spouštějte prosím jen tehdy, kdy to skutečně potřebujete.
                           </p>
                         </div>
                       </div>

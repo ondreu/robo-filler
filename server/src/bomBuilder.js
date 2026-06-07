@@ -56,6 +56,57 @@ Pravidla:
 
 Odpovídej POUZE jako JSON: {"unit": "ks"}`;
 
+const POST_CHECK_SYSTEM = `Jsi expert na průmyslové komponenty. Prošel/a jsi kusovník a některé položky nebyly nalezeny v databázi.
+Rozhodni, zda by upřesnění od uživatele mohlo pomoci tyto položky najít.
+
+ZEPTEJ SE POUZE pokud:
+1. Je více nenalezených položek a konkrétní odpověď by VÝRAZNĚ zvýšila šanci na nalezení
+2. Otázka je actionable — výsledek odpovědi přímo ovlivní vyhledávání
+3. Nelze odvodit z dostupných informací
+
+Příklady kdy se ZEPTAT:
+- Jsou nenalezené položky zákaznické (s prefixem/sufixem) nebo standardní?
+- Je preferovaný konkrétní výrobce pro nenalezené skupiny?
+
+Příklady kdy SE NEZEPTAT:
+- Jen 1-2 nenalezené položky (pravděpodobně opravdu neexistují v databázi)
+- Typová označení jsou jasně specifická
+- Všechno je dostatečně popsané
+
+Max 2 otázky. Vrať JSON ve stejném formátu jako checkClarification.`;
+
+export async function postCheckClarification(notFoundRows, preferences) {
+  if (notFoundRows.length < 3) return { needsClarification: false, questions: [] };
+
+  const summary = notFoundRows.slice(0, 15).map((r, i) =>
+    `${i + 1}. typ:"${r.typoveOznaceni || ''}" popis:"${r.popis || ''}" výrobce:"${r.vyrobce || ''}"`
+  ).join('\n');
+
+  const userContent = [
+    preferences ? `Zadané preference: ${preferences}` : '',
+    `Nenalezené položky (${notFoundRows.length} celkem):\n${summary}`,
+    notFoundRows.length > 15 ? `... a ${notFoundRows.length - 15} dalších` : '',
+  ].filter(Boolean).join('\n');
+
+  try {
+    const resp = await client.chat.complete({
+      model: MODEL,
+      responseFormat: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: POST_CHECK_SYSTEM },
+        { role: 'user', content: userContent },
+      ],
+    });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    return {
+      needsClarification: !!parsed.needsClarification,
+      questions: Array.isArray(parsed.questions) ? parsed.questions : [],
+    };
+  } catch {
+    return { needsClarification: false, questions: [] };
+  }
+}
+
 export async function checkClarification(rows, preferences) {
   const activeRows = rows.filter(r => (r.typoveOznaceni || '').trim() || (r.altTypoveOznaceni || '').trim());
   if (activeRows.length === 0) return { needsClarification: false, questions: [] };
