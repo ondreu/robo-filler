@@ -309,7 +309,40 @@ Záložka **AI mód** (třetí záložka nahoře vedle "Jednotlivé" a "Hromadn�
 
 ### "Export nefunguje"
 - Prohlížeč musí povolovat stahování. Zkontroluj nastavení prohlížeče nebo blokátor stahování.
-- Export ZBOM .txt vyžaduje vyplněné Číslo vrcholu — pokud chybí, aplikace nejprve otevře formulář záhlaví.`;
+- Export ZBOM .txt vyžaduje vyplněné Číslo vrcholu — pokud chybí, aplikace nejprve otevře formulář záhlaví.
+
+---
+
+## AI stavba kusovníku (BETA)
+
+Experimentální funkce dostupná v záložce **AI mód** přes přepínač **"AI stavba kusovníku"** (vedle "Běžný").
+
+### K čemu slouží
+Automaticky sestaví kusovník z tabulky typových označení — každou položku vyhledá v databázi a vrátí výsledný kusovník připravený pro ZBOM editor nebo export.
+
+### Jak na to
+1. Přejdi do záložky **AI mód** → klikni na **"AI stavba kusovníku"**.
+2. Potvrď varování (operace je placená).
+3. Vyplň tabulku — povinný sloupec je **Typové označení**. Ostatní (Popis, Výrobce, Počet, Označení přístroje) jsou volitelné.
+4. Volitelně zadej **Pokyny pro AI** (např. preferovat artikly bez zákaznického prefixu).
+5. Klikni **Spustit** — AI prohledá databázi pro každý řádek paralelně.
+
+### Výsledky
+- Záložka **Kusovník**: nalezené artikly jako L-řádky (materiál), nenalezené jako T-řádky (placeholder). Lze otevřít přímo v ZBOM editoru.
+- Záložka **K-Založení**: nenalezené položky připravené pro zakládání nových artiklů, export do CSV.
+- Sloupec Popis s ikonou **AI** = popis byl doplněn nebo odvozen automaticky.
+
+### Funkce
+- **Znalosti výrobců**: pro WAGO, Siemens, ABB, Schneider, Phoenix Contact aj. AI odvodí popis z typového označení pokud je prázdný.
+- **Upřesňující dotazy**: po vyhledávání se AI může zeptat na doplňující informace pro nenalezené položky — odpovědi spustí přehledávání jen těch řádků.
+- **Historie**: posledních 5 sestavení se ukládá — kliknutím na "Nedávné" se okamžitě načte výsledek bez opakování vyhledávání.
+- **Vyčistit**: tlačítko vpravo dole v tabulce smaže obsah a vrátí 3 prázdné řádky.
+- **Excel-like tabulka**: výběr buněk klikem nebo shift+klikem, navigace Tab/Enter/šipky, vkládání z Excelu zachovává prázdné buňky.
+
+### Limity a poznámky
+- Funkce je označena jako **BETA** — může se chovat neočekávaně.
+- Každé vyhledávání je placené — využívejte historii pro opakované dotazy.
+- AI párování nemusí být vždy správné — výsledky zkontrolujte před použitím.`;
 
 async function expandQuery(userMessage, history) {
   const resp = await client.chat.complete({
