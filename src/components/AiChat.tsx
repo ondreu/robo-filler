@@ -133,9 +133,9 @@ function StatusTrace({ log, isLoading = false }: { log: Status[]; isLoading?: bo
             </span>
             {s.mfr && s.mfr.length > 0 ? (
               <div className="flex flex-wrap gap-1 items-baseline">
-                <span className="text-overlay0 shrink-0">znalosti:</span>
+                <span className="text-overlay0 shrink-0">Získávám znalosti o:</span>
                 {s.mfr.map((m, mi) => (
-                  <span key={mi} className="bg-surface1 text-green rounded px-1.5 py-0.5 font-mono leading-none">
+                  <span key={mi} className="bg-surface1 text-subtext0 rounded px-1.5 py-0.5 font-mono leading-none">
                     {m}
                   </span>
                 ))}
