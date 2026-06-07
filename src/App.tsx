@@ -16,6 +16,7 @@ import { AdvancedSettings } from './components/AdvancedSettings';
 import { BulkSearch } from './components/BulkSearch';
 import { ChatBot } from './components/ChatBot';
 import { AiChat } from './components/AiChat';
+import { AiBomBuilder } from './components/AiBomBuilder';
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -59,8 +60,10 @@ function App() {
   const [isSearching, setIsSearching] = useState(false);
   const [displayedCount, setDisplayedCount] = useState(10);
 
-  // App mode (single / bulk)
+  // App mode (single / bulk / ai)
   const [appMode, setAppMode] = useState<AppMode>('single');
+  // AI sub-mode: chat = existing Karel Bot, bom = AI BOM builder
+  const [aiSubMode, setAiSubMode] = useState<'chat' | 'bom'>('chat');
 
   // ZBOM tabs — persisted in localStorage so they survive page refresh
   type ZbomTab = { id: string; name: string; importData?: ImportResult };
@@ -422,7 +425,44 @@ function App() {
         {!isLoading && !error && activeArticles.length > 0 && (
           <>
             {appMode === 'ai' && (
-              <AiChat />
+              <div className="space-y-4">
+                {/* AI sub-mode toggle */}
+                <div className="flex bg-surface0 rounded-xl p-1 gap-1 w-fit">
+                  <button
+                    onClick={() => setAiSubMode('chat')}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      aiSubMode === 'chat' ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
+                    }`}
+                  >
+                    Běžný
+                  </button>
+                  <button
+                    onClick={() => setAiSubMode('bom')}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      aiSubMode === 'bom' ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
+                    }`}
+                  >
+                    AI stavba kusovníku
+                  </button>
+                </div>
+
+                {aiSubMode === 'chat' && <AiChat />}
+                {aiSubMode === 'bom' && (
+                  <div className="bg-mantle rounded-2xl border border-surface1 p-6">
+                    <div className="mb-5">
+                      <h2 className="text-text font-semibold text-base">AI stavba kusovníku</h2>
+                      <p className="text-overlay0 text-xs mt-0.5">
+                        Zadej typová označení — AI agent každé vyhledá v databázi a sestaví kusovník a seznam k&nbsp;založení.
+                      </p>
+                    </div>
+                    <AiBomBuilder
+                      onOpenInZbom={(importData) => {
+                        openNewZbomTab(importData);
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             )}
 
             {appMode === 'bulk' && (
