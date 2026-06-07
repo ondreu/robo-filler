@@ -181,7 +181,7 @@ function InputTable({ rows, onChange }: { rows: InputRow[]; onChange: (rows: Inp
         if (ci >= cols.length) break;
         const field = cols[ci];
         const val = grid[r][c];
-        (updated[ri] as Record<string, unknown>)[field] = field === 'pocet' ? (parseFloat(val) || 1) : val;
+        (updated[ri] as unknown as Record<string, unknown>)[field] = field === 'pocet' ? (parseFloat(val) || 1) : val;
       }
     }
     onChange(updated);
