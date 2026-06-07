@@ -16,6 +16,37 @@ KRITÉRIA SHODY:
 
 Odpovídej POUZE jako JSON: {"artikl": "číslo_artiklu"} nebo {"artikl": null}`;
 
+const CHECK_SYSTEM = `Jsi expert na průmyslové komponenty a sestavení kusovníků. Dostaneš seznam položek kusovníku pro vyhledávání v databázi artiklů.
+
+TVŮJ ÚKOL: Rozhodn, zda potřebuješ upřesnění od uživatele PŘED vyhledáváním. Pravidlo je "málo, ale správně" — zeptej se POUZE pokud:
+1. Odpověď by VÝRAZNĚ ovlivnila výběr artiklů pro více řádků najednou (ne jen okrajově)
+2. Informaci nelze odvodit z typového označení, popisu ani zadaných preferencí
+3. Otázka je konkrétní a actionable — uživatel by nevěděl "proč se ptáš"
+
+NEPTEJ SE na: výrobce pokud je jasný z typového označení, konkrétní parametry pokud jsou v typovém označení, obecné preference pokud jsou zadané, výchozí volby pokud jedna možnost je zjevně správná.
+
+TYPICKÉ SITUACE KDY SE ZEPTAT:
+- Zadány prefixy zákazníků v preferencích ale není jasné pro které výrobce — upřesni
+- Hledané položky by mohly být zákaznické/projektové materiály a to není v preferencích uvedeno
+- Více položek stejného druhu s rozdílnými parametry které se nedají odvodit (např. "jistič" bez proudu)
+- Preferovaný výrobce pro skupinu položek není jasný
+
+Maximálně 3 otázky. Otázky musí být stručné a konkrétní. Pokud je vše dostatečně jasné, vrať needsClarification: false.
+
+Vrať JSON:
+{
+  "needsClarification": true,
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Stručná otázka?",
+      "type": "choice",
+      "choices": ["Možnost A", "Možnost B", "Jiné / neurčeno"]
+    }
+  ]
+}
+Nebo: {"needsClarification": false, "questions": []}`;
+
 const UNIT_SYSTEM = `Odhadni základní měrnou jednotku pro průmyslový artikl.
 Pravidla:
 - Kabely, vodiče, lany, hadice, trubky, lišty DIN, těsnění v roli → "m"
@@ -23,6 +54,39 @@ Pravidla:
 - Všechno ostatní (komponenty, přístroje, svorky, šrouby, atd.) → "ks"
 
 Odpovídej POUZE jako JSON: {"unit": "ks"}`;
+
+export async function checkClarification(rows, preferences) {
+  const activeRows = rows.filter(r => (r.typoveOznaceni || '').trim() || (r.altTypoveOznaceni || '').trim());
+  if (activeRows.length === 0) return { needsClarification: false, questions: [] };
+
+  const rowSummary = activeRows.slice(0, 20).map((r, i) =>
+    `${i + 1}. typ:"${r.typoveOznaceni || ''}" popis:"${r.popis || ''}" výrobce:"${r.vyrobce || ''}"`
+  ).join('\n');
+
+  const userContent = [
+    preferences ? `Zadané preference: ${preferences}` : 'Preference: žádné',
+    `\nPoložky kusovníku (${activeRows.length} celkem):\n${rowSummary}`,
+    activeRows.length > 20 ? `... a ${activeRows.length - 20} dalších` : '',
+  ].filter(Boolean).join('\n');
+
+  try {
+    const resp = await client.chat.complete({
+      model: MODEL,
+      responseFormat: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: CHECK_SYSTEM },
+        { role: 'user', content: userContent },
+      ],
+    });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    return {
+      needsClarification: !!parsed.needsClarification,
+      questions: Array.isArray(parsed.questions) ? parsed.questions : [],
+    };
+  } catch {
+    return { needsClarification: false, questions: [] };
+  }
+}
 
 async function pickBestMatch(typoveOznaceni, popis, vyrobce, candidates, preferences) {
   if (candidates.length === 0) return null;
@@ -73,7 +137,13 @@ async function estimateUnit(nazev, typoveOznaceni) {
   }
 }
 
-export async function handleBomBuild(rows, preferences, sendProgress) {
+export async function handleBomBuild(rows, preferences, sendProgress, answers = []) {
+  // Merge answers into preferences context so pickBestMatch benefits from them
+  let enrichedPrefs = preferences || '';
+  if (answers.length > 0) {
+    const answerLines = answers.map(a => `${a.question}: ${a.answer}`).join('\n');
+    enrichedPrefs = [enrichedPrefs, `\n[Upřesnění od uživatele]\n${answerLines}`].filter(Boolean).join('\n');
+  }
   const bomRows = [];
   const toCreate = [];
 
@@ -103,7 +173,7 @@ export async function handleBomBuild(rows, preferences, sendProgress) {
     // Round 1: search by main type designation
     if (mainQuery) {
       const results1 = searchTerm(mainQuery, 5, vyrobce.trim() || null);
-      found = await pickBestMatch(mainQuery, popis, vyrobce, results1, preferences);
+      found = await pickBestMatch(mainQuery, popis, vyrobce, results1, enrichedPrefs);
     }
 
     // Round 2: search by alternative type designation (or retry without manufacturer filter)
@@ -111,7 +181,7 @@ export async function handleBomBuild(rows, preferences, sendProgress) {
       const round2Query = altQuery || mainQuery;
       const round2Mfr = altQuery ? (vyrobce.trim() || null) : null;
       const results2 = searchTerm(round2Query, 5, round2Mfr);
-      found = await pickBestMatch(round2Query, popis, vyrobce, results2, preferences);
+      found = await pickBestMatch(round2Query, popis, vyrobce, results2, enrichedPrefs);
     }
 
     if (found) {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, Play, Loader2, Download, Check, X, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Play, Loader2, Download, Check, X, ChevronRight, MessageCircle } from 'lucide-react';
 import type { BomRow, BomHeader } from '../types';
 import type { ImportResult } from '../utils/bomExport';
 
@@ -40,6 +40,19 @@ interface ToCreateRow {
   typoveOznaceni: string;
   unit: string;
   oznaceniPristroje: string;
+}
+
+interface ClarificationQuestion {
+  id: string;
+  question: string;
+  type: 'choice' | 'text';
+  choices?: string[];
+}
+
+interface ClarificationAnswer {
+  id: string;
+  question: string;
+  answer: string;
 }
 
 interface BomBuilderProps {
@@ -365,10 +378,13 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
   const [produktovaHierarchie, setProduktova] = useState('');
   const [artiklVrcholu, setArtiklVrcholu] = useState('');
 
-  const [phase, setPhase] = useState<'input' | 'processing' | 'results'>('input');
+  const [phase, setPhase] = useState<'input' | 'checking' | 'clarifying' | 'processing' | 'results'>('input');
   const [progressItems, setProgressItems] = useState<ProgressItem[]>([]);
   const [processedCount, setProcessedCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+
+  const [clarifyQuestions, setClarifyQuestions] = useState<ClarificationQuestion[]>([]);
+  const [clarifyAnswers, setClarifyAnswers] = useState<Record<string, string>>({});
 
   const [bomRows, setBomRows] = useState<BomResultRow[]>([]);
   const [toCreate, setToCreate] = useState<ToCreateRow[]>([]);
@@ -379,21 +395,8 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
 
   const activeRows = rows.filter(r => r.typoveOznaceni.trim() || r.altTypoveOznaceni.trim());
 
-  async function submit() {
-    if (activeRows.length === 0) return;
-
-    setPhase('processing');
-    setError(null);
-    setTotalCount(rows.length);
-    setProcessedCount(0);
-    setProgressItems(rows.map((r, i) => ({
-      rowIndex: i,
-      total: rows.length,
-      typoveOznaceni: r.typoveOznaceni || r.altTypoveOznaceni,
-      status: 'waiting',
-    })));
-
-    const payload = {
+  function buildPayload(answers: ClarificationAnswer[]) {
+    return {
       rows: rows.map(r => ({
         typoveOznaceni: r.typoveOznaceni,
         altTypoveOznaceni: r.altTypoveOznaceni,
@@ -405,13 +408,27 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
       preferences,
       produktovaHierarchie,
       artiklVrcholu,
+      answers,
     };
+  }
+
+  async function startBuild(answers: ClarificationAnswer[]) {
+    setPhase('processing');
+    setError(null);
+    setTotalCount(rows.length);
+    setProcessedCount(0);
+    setProgressItems(rows.map((r, i) => ({
+      rowIndex: i,
+      total: rows.length,
+      typoveOznaceni: r.typoveOznaceni || r.altTypoveOznaceni,
+      status: 'waiting',
+    })));
 
     try {
       const response = await fetch(`${BACKEND_URL}/api/bom-build`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(buildPayload(answers)),
       });
 
       if (!response.ok || !response.body) {
@@ -453,7 +470,7 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
                 setToCreate(data.toCreate ?? []);
                 setResultProdHier(data.produktovaHierarchie ?? '');
                 setResultArtiklVrcholu(data.artiklVrcholu ?? '');
-                setResultTab(data.toCreate?.length > 0 ? 'bom' : 'bom');
+                setResultTab('bom');
                 setPhase('results');
               } else if (eventType === 'error') {
                 setError(data.error ?? 'Neznámá chyba.');
@@ -468,6 +485,43 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
       setError(err instanceof Error ? err.message : 'Chyba spojení se serverem.');
       setPhase('input');
     }
+  }
+
+  async function submit() {
+    if (activeRows.length === 0) return;
+    setPhase('checking');
+    setError(null);
+    setClarifyAnswers({});
+
+    try {
+      const resp = await fetch(`${BACKEND_URL}/api/bom-check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rows: rows.map(r => ({ typoveOznaceni: r.typoveOznaceni, altTypoveOznaceni: r.altTypoveOznaceni, popis: r.popis, vyrobce: r.vyrobce })), preferences }),
+      });
+
+      if (!resp.ok) throw new Error('Check failed');
+      const check = await resp.json() as { needsClarification: boolean; questions: ClarificationQuestion[] };
+
+      if (check.needsClarification && check.questions.length > 0) {
+        setClarifyQuestions(check.questions);
+        setPhase('clarifying');
+      } else {
+        await startBuild([]);
+      }
+    } catch {
+      // On check error, proceed without clarification
+      await startBuild([]);
+    }
+  }
+
+  function confirmAnswers() {
+    const answers: ClarificationAnswer[] = clarifyQuestions.map(q => ({
+      id: q.id,
+      question: q.question,
+      answer: clarifyAnswers[q.id] ?? '',
+    })).filter(a => a.answer);
+    startBuild(answers);
   }
 
   // ── input phase ──────────────────────────────────────────────────────────────
@@ -531,6 +585,111 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
               Spustit ({activeRows.length} {activeRows.length === 1 ? 'položka' : activeRows.length < 5 ? 'položky' : 'položek'})
             </button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── checking phase ───────────────────────────────────────────────────────────
+
+  if (phase === 'checking') {
+    return (
+      <div className="bg-mantle border border-surface1 rounded-2xl p-6 flex items-center gap-3">
+        <Loader2 size={18} className="animate-spin text-mauve shrink-0" />
+        <div>
+          <p className="text-text font-medium text-sm">Analyzuji kusovník…</p>
+          <p className="text-overlay0 text-xs">Kontroluji zda je vše jasné před zahájením vyhledávání.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── clarifying phase ─────────────────────────────────────────────────────────
+
+  if (phase === 'clarifying') {
+    const allAnswered = clarifyQuestions.every(q => clarifyAnswers[q.id]?.trim());
+    return (
+      <div className="bg-mantle border border-surface1 rounded-2xl p-6 space-y-5">
+        {/* Header */}
+        <div className="flex items-start gap-3">
+          <MessageCircle size={18} className="text-mauve shrink-0 mt-0.5" />
+          <div>
+            <p className="text-text font-medium text-sm">Před zahájením potřebuji upřesnit pár věcí</p>
+            <p className="text-overlay0 text-xs mt-0.5">
+              Odpovědi pomůžou vybrat správné artikly. Volitelné — můžeš přeskočit.
+            </p>
+          </div>
+        </div>
+
+        {/* Questions */}
+        <div className="space-y-5">
+          {clarifyQuestions.map((q, qi) => (
+            <div key={q.id} className="space-y-2">
+              <p className="text-sm text-text font-medium">
+                <span className="text-overlay0 mr-1.5">{qi + 1}.</span>
+                {q.question}
+              </p>
+              {q.type === 'choice' && q.choices && q.choices.length > 0 ? (
+                <div className="space-y-1.5 pl-4">
+                  {q.choices.map(choice => (
+                    <label key={choice} className="flex items-center gap-2.5 cursor-pointer group">
+                      <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${
+                        clarifyAnswers[q.id] === choice
+                          ? 'border-mauve bg-mauve'
+                          : 'border-surface2 group-hover:border-mauve/50'
+                      }`}>
+                        {clarifyAnswers[q.id] === choice && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-crust" />
+                        )}
+                      </div>
+                      <input
+                        type="radio"
+                        name={q.id}
+                        value={choice}
+                        checked={clarifyAnswers[q.id] === choice}
+                        onChange={() => setClarifyAnswers(prev => ({ ...prev, [q.id]: choice }))}
+                        className="sr-only"
+                      />
+                      <span className={`text-sm transition-colors ${
+                        clarifyAnswers[q.id] === choice ? 'text-text' : 'text-subtext1 group-hover:text-text'
+                      }`}>{choice}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  value={clarifyAnswers[q.id] ?? ''}
+                  onChange={e => setClarifyAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                  placeholder="Vaše odpověď…"
+                  className="w-full px-3 py-2 bg-surface0 border border-surface2 rounded-xl text-sm text-text placeholder:text-overlay0 focus:outline-none focus:ring-2 focus:ring-mauve focus:border-transparent"
+                />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-3 pt-1">
+          <button
+            onClick={confirmAnswers}
+            disabled={!allAnswered}
+            className="flex items-center gap-2 px-5 py-2 rounded-xl font-medium bg-mauve text-crust hover:bg-pink disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm"
+          >
+            <Play size={14} /> Pokračovat
+          </button>
+          <button
+            onClick={() => startBuild([])}
+            className="px-4 py-2 rounded-xl text-sm text-subtext1 hover:text-text hover:bg-surface1 transition-colors"
+          >
+            Přeskočit a spustit bez upřesnění
+          </button>
+          <button
+            onClick={() => setPhase('input')}
+            className="ml-auto px-4 py-2 rounded-xl text-sm text-overlay1 hover:text-text hover:bg-surface0 transition-colors"
+          >
+            Zpět
+          </button>
         </div>
       </div>
     );

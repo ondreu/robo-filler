@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { handleChat } from './chat.js';
-import { handleBomBuild } from './bomBuilder.js';
+import { handleBomBuild, checkClarification } from './bomBuilder.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -50,8 +50,24 @@ app.post('/api/chat', async (req, res) => {
   res.end();
 });
 
+app.post('/api/bom-check', async (req, res) => {
+  const { rows = [], preferences = '' } = req.body ?? {};
+
+  if (!process.env.MISTRAL_API_KEY) {
+    return res.status(500).json({ error: 'MISTRAL_API_KEY není nastaven.' });
+  }
+
+  try {
+    const result = await checkClarification(rows, preferences);
+    res.json(result);
+  } catch (err) {
+    console.error('[bom-check]', err);
+    res.json({ needsClarification: false, questions: [] });
+  }
+});
+
 app.post('/api/bom-build', async (req, res) => {
-  const { rows = [], preferences = '', produktovaHierarchie = '', artiklVrcholu = '' } = req.body ?? {};
+  const { rows = [], preferences = '', produktovaHierarchie = '', artiklVrcholu = '', answers = [] } = req.body ?? {};
 
   if (!Array.isArray(rows) || rows.length === 0) {
     return res.status(400).json({ error: 'Chybí vstupní data.' });
@@ -75,6 +91,7 @@ app.post('/api/bom-build', async (req, res) => {
       preferences,
       (rowIndex, total, typoveOznaceni, status) =>
         send('progress', { rowIndex, total, typoveOznaceni, status }),
+      answers,
     );
     send('result', { ...result, produktovaHierarchie, artiklVrcholu });
   } catch (err) {
