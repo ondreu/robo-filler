@@ -469,6 +469,16 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   const secondaryMfrKey = resolveManufacturerKey(dominantVyrobce);
   const mfrKeys = [...new Set([primaryMfrKey, secondaryMfrKey].filter(Boolean))];
 
+  if (mfrKeys.length > 0) {
+    const MFR_DISPLAY = {
+      wago: 'WAGO', abb: 'ABB', siemens: 'Siemens', phoenix: 'Phoenix Contact',
+      weidmuller: 'Weidmüller', allen_bradley: 'Allen-Bradley', rittal: 'Rittal',
+      eaton: 'Eaton', omron: 'Omron',
+    };
+    const names = mfrKeys.map(k => MFR_DISPLAY[k] ?? k);
+    sendStatus('knowledge', `Načítám znalosti výrobce: ${names.join(', ')}`, { mfr: names });
+  }
+
   let { answer, selected, refinement } = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys, synthModel);
 
   // Two-pass: if SYNTH requests refinement, do a second search and re-synthesize
