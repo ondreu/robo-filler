@@ -22,9 +22,12 @@ Databáze je česká s průmyslovými zkratkami. Generuj termíny ve třech vrst
   2. Průmyslové zkratky jak se píšou v DB názvech: MS, HT, PA, PE, A2, A4, nerez, IP67, IP68…
   3. Německy a anglicky: výrazy reálně v průmyslových katalozích — DE více než EN
 
-Kombinace: pokud dotaz obsahuje typ dílu + materiál a/nebo rozměr, generuj kombinace
-  "typ materiál", "typ rozměr", "typ materiál rozměr" — i samostatné výrazy.
-  Příklad "průchodka MS M20": průchodka, průchodka MS, průchodka M20, průchodka MS M20, MS M20, Kabelverschraubung MS M20…
+Kombinace: pokud dotaz obsahuje typ dílu + materiál a/nebo rozměr, vždy zahrň:
+  - každou složku samostatně: typ, materiál, rozměr
+  - všechny dvojice: "typ materiál", "typ rozměr", "materiál rozměr"
+  - plnou kombinaci: "typ materiál rozměr"
+  - totéž pro DE/EN ekvivalenty
+  Příklad "průchodka MS M20": průchodka, MS, M20, průchodka MS, průchodka M20, MS M20, průchodka MS M20, Kabelverschraubung, Kabelverschraubung MS, Kabelverschraubung M20, Kabelverschraubung MS M20…
 
 Obecný kov (kovová/kov/metal bez specifikace druhu):
   Expanduj na: nerez, MS, HT, A2, A4 — kombinovaně s typem i samostatně.
@@ -63,9 +66,9 @@ Shrnutí co bylo nalezeno (2–3 věty). Pak vybrané artikly:
   - typ: {typové označení}
   - {parametry explicitně přítomné v názvu nebo typu: rozměr, materiál, krytí, proud, průřez… Nic neodvozuj.}
 
-Za seznamem: proč je první nejrelevantnější; pokud se ostatní liší nebo doplňují, krátce to uveď.
-Analytický komentář (čtení typového označení, srovnání řad) přidej kde to dává smysl.
-Chybí přesná shoda: navrhni alternativní hledání nebo weby výrobců — nikdy "kontaktujte dodavatele".
+Za seznamem: 1–2 věty proč je první nejrelevantnější. Krátký analytický komentář (čtení typového označení, věcný rozdíl mezi variantami) jen pokud to přidá hodnotu — jinak vynech.
+Žádné sekce "doporučení", "podpora", "webové zdroje" ani vymyšlené URL — jen pokud uživatel přímo žádá web nebo zdroje.
+Chybí přesná shoda: navrhni alternativní hledání nebo doménu výrobce (weidmuller.com apod.) — nikdy "kontaktujte dodavatele".
 
 WEB: podrobné shrnutí 5–8 vět, markdown zdroje na konci.
 PODPORA: strukturovaná markdown odpověď, konkrétní a praktická.
