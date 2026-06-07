@@ -500,7 +500,7 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   const primaryMfrKey = resolveManufacturerKey(manufacturer);
   const dominantVyrobce = (type === 'search' && history.length > 0) ? detectDominantManufacturer(candidates) : null;
   const secondaryMfrKey = resolveManufacturerKey(dominantVyrobce);
-  const categoryMfrKeys = type === 'search' ? resolveManufacturersByCategory(userMessage) : [];
+  const categoryMfrKeys = (type === 'search' && !primaryMfrKey) ? resolveManufacturersByCategory(userMessage) : [];
   const mfrKeys = [...new Set([primaryMfrKey, secondaryMfrKey, ...categoryMfrKeys].filter(Boolean))];
 
   if (mfrKeys.length > 0) {
