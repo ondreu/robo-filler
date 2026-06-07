@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Send, Loader2, Copy, Check, ExternalLink, Settings,
   PenLine, Download, ChevronDown, ChevronUp, MessageCircle, Globe,
-  Search, Sparkles, BookOpen,
+  Search, Sparkles, BookOpen, X,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
@@ -14,6 +14,35 @@ const AI_CHAT_KEY = 'robo-filler-ai-chat';
 const AI_CHAT_LAST_KEY = 'robo-filler-ai-chat-last';
 const SYNTH_MODEL_KEY = 'karel_bot_synth_model';
 const USAGE_KEY = 'robo-filler-chat-usage';
+const SESSIONS_KEY = 'robo-filler-chat-sessions';
+
+interface ChatSession {
+  id: string;
+  title: string;
+  messages: AiMessage[];
+  updatedAt: number;
+}
+
+function loadSessions(): ChatSession[] {
+  try { return JSON.parse(localStorage.getItem(SESSIONS_KEY) ?? '[]'); } catch { return []; }
+}
+function saveSessions(sessions: ChatSession[]) {
+  localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions.slice(0, 30)));
+}
+function sessionTitle(messages: AiMessage[]): string {
+  const first = messages.find(m => m.role === 'user');
+  if (!first) return 'Nový chat';
+  const text = first.content.trim();
+  return text.length > 46 ? text.slice(0, 45) + '…' : text;
+}
+function relativeDate(ts: number): string {
+  const diff = Date.now() - ts;
+  if (diff < 60_000) return 'právě teď';
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} min`;
+  if (diff < 86_400_000) return 'dnes';
+  if (diff < 172_800_000) return 'včera';
+  return new Date(ts).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' });
+}
 
 // Track query timestamps and check thresholds: 20+ in 2h or 40+ in 24h
 function recordQuery(): boolean {
@@ -263,14 +292,33 @@ export function AiChat() {
   const [expandedTraces, setExpandedTraces] = useState<Set<number>>(new Set());
   const [lastAllCandidates, setLastAllCandidates] = useState<Article[]>([]);
   const [showUsageWarning, setShowUsageWarning] = useState(false);
+  const [sessions, setSessions] = useState<ChatSession[]>(() => loadSessions());
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
+  const sessionIdRef = useRef<string | null>(null);
+  const skipSaveRef = useRef(false);
 
   useEffect(() => {
     sessionStorage.setItem(AI_CHAT_KEY, JSON.stringify(messages));
-    if (messages.length > 0) localStorage.setItem(AI_CHAT_LAST_KEY, JSON.stringify(messages));
+    if (messages.length === 0) return;
+    localStorage.setItem(AI_CHAT_LAST_KEY, JSON.stringify(messages));
+    if (skipSaveRef.current) { skipSaveRef.current = false; return; }
+    let id = sessionIdRef.current;
+    if (!id) {
+      id = `chat-${Date.now()}`;
+      sessionIdRef.current = id;
+      setCurrentSessionId(id);
+    }
+    const title = sessionTitle(messages);
+    const all = loadSessions();
+    const idx = all.findIndex(s => s.id === id);
+    const entry: ChatSession = { id, title, messages, updatedAt: Date.now() };
+    if (idx >= 0) { all[idx] = entry; } else { all.unshift(entry); }
+    saveSessions(all);
+    setSessions(all.slice(0, 30));
   }, [messages]);
 
   useEffect(() => {
@@ -293,6 +341,8 @@ export function AiChat() {
   }, [settingsOpen]);
 
   const clearChat = () => {
+    sessionIdRef.current = null;
+    setCurrentSessionId(null);
     setMessages([]);
     setExpandedMsgs(new Set());
     setExpandedTraces(new Set());
@@ -302,11 +352,26 @@ export function AiChat() {
     sessionStorage.removeItem(AI_CHAT_KEY);
   };
 
-  const restoreLastChat = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(AI_CHAT_LAST_KEY) ?? '[]');
-      if (saved.length > 0) { setMessages(saved); setSettingsOpen(false); }
-    } catch {}
+  const loadSession = (id: string) => {
+    const session = sessions.find(s => s.id === id);
+    if (!session) return;
+    skipSaveRef.current = true;
+    sessionIdRef.current = id;
+    setCurrentSessionId(id);
+    setMessages(session.messages);
+    setExpandedMsgs(new Set());
+    setExpandedTraces(new Set());
+    setLastAllCandidates([]);
+    setCurrentStatusLog([]);
+    statusLogRef.current = [];
+  };
+
+  const deleteSession = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = sessions.filter(s => s.id !== id);
+    saveSessions(updated);
+    setSessions(updated);
+    if (sessionIdRef.current === id) clearChat();
   };
 
   const exportConversation = () => {
@@ -460,13 +525,53 @@ export function AiChat() {
     }
   }
 
-  const hasLastChat = !!localStorage.getItem(AI_CHAT_LAST_KEY);
-
   return (
     <div
-      className="bg-mantle rounded-2xl flex flex-col overflow-hidden border border-surface1"
+      className="flex rounded-2xl overflow-hidden border border-surface1"
       style={{ height: 'calc(100vh - 190px)', minHeight: '560px', boxShadow: '0 0 32px 4px rgba(203,166,247,0.08), 0 0 8px 0px rgba(203,166,247,0.06)' }}
     >
+      {/* Sidebar */}
+      <div className="w-52 shrink-0 bg-crust border-r border-surface1 flex flex-col overflow-hidden">
+        <div className="px-2 py-2.5 border-b border-surface1 shrink-0">
+          <button
+            onClick={clearChat}
+            className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm text-subtext1 hover:bg-surface0 hover:text-text transition-colors"
+          >
+            <PenLine size={13} />
+            Nový chat
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto py-1.5 space-y-px px-1.5 min-h-0">
+          {sessions.length === 0 && (
+            <p className="text-xs text-overlay0 px-2 py-3 text-center">Žádné předchozí chaty</p>
+          )}
+          {sessions.map(s => (
+            <div
+              key={s.id}
+              className={`group flex items-start gap-1 rounded-lg px-2 py-1.5 transition-colors ${
+                s.id === currentSessionId
+                  ? 'bg-surface1 text-text'
+                  : 'hover:bg-surface0 text-subtext1 hover:text-text cursor-pointer'
+              }`}
+            >
+              <button onClick={() => loadSession(s.id)} className="flex-1 min-w-0 text-left">
+                <div className="text-xs font-medium truncate leading-snug">{s.title}</div>
+                <div className="text-[10px] text-overlay0 mt-0.5">{relativeDate(s.updatedAt)}</div>
+              </button>
+              <button
+                onClick={e => deleteSession(s.id, e)}
+                className="shrink-0 text-overlay0 hover:text-red opacity-0 group-hover:opacity-100 transition-all p-0.5 rounded mt-0.5"
+                title="Smazat"
+              >
+                <X size={11} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main chat */}
+      <div className="flex-1 bg-mantle flex flex-col overflow-hidden min-w-0">
       {/* Header */}
       <div className="bg-mantle border-b border-surface1 px-5 py-3 flex items-center gap-2.5 shrink-0">
         <MessageCircle size={18} className="text-mauve shrink-0" />
@@ -477,16 +582,6 @@ export function AiChat() {
             <Globe size={11} /> Web
           </span>
         )}
-        <div className="ml-auto flex items-center gap-2">
-          <button
-            onClick={clearChat}
-            title="Nový chat"
-            disabled={messages.length === 0}
-            className="text-overlay1 hover:text-mauve transition-colors disabled:opacity-30 disabled:cursor-not-allowed p-1"
-          >
-            <PenLine size={15} />
-          </button>
-        </div>
       </div>
 
       {/* Messages */}
@@ -668,16 +763,6 @@ export function AiChat() {
                 </button>
               </div>
 
-              {hasLastChat && (
-                <div className="border-t border-surface1 pt-3">
-                  <button
-                    onClick={restoreLastChat}
-                    className="w-full text-left text-sm text-subtext1 hover:text-mauve transition-colors py-1"
-                  >
-                    ↩ Obnovit poslední chat
-                  </button>
-                </div>
-              )}
             </div>
           )}
 
@@ -712,6 +797,8 @@ export function AiChat() {
           </button>
         </div>
       </div>
+
+      </div>{/* end main chat */}
 
       {/* Usage warning popup */}
       {showUsageWarning && (
