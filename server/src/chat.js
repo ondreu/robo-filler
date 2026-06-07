@@ -21,6 +21,8 @@ Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
    - "DIN lišta" jako KOMPONENT (hledám lištu samotnou) = "lišta", "lista", "NS 35", "TS 35", "UB 7,5", "Tragschiene", "Hutschiene". Přidej materiál pokud zmíněn: nerez/A2/A4 = "nerez", "Edelstahl", "stainless".
    - "na DIN lištu" / "pro DIN lištu" / "rail mount" (hledám zařízení montované na lištu) = "řadová" nebo "Durchgang" nebo "Klemme".
    - "TOPJOB S" = řadová svorka WAGO. "inline" / "instalační" = "Verbindungsklemme" nebo "spojovací".
+   KOMBINOVANÉ VÝRAZY: Pokud dotaz obsahuje materiál + typ dílu, VŽDY přidej kombinované výrazy "materiál typ" — samotný materiál bez kontextu dílu vrací příliš obecné výsledky. Příklad: dotaz "nerezová záslepka M20" → terms musí obsahovat "nerez záslepka", "nerez plug", ne jen "nerez" a "záslepka" zvlášť.
+   OBECNÝ MATERIÁL "kov/kovová/metal": Pokud je materiál nespecifikovaný ("kovová", "kov", "metal", "metallic") bez konkrétního druhu, expanduj na všechny běžné kovy kombinované s typem dílu: nerez, Edelstahl, stainless, MS, mosaz, Messing, brass, ocel, Stahl, steel, hliník, Aluminium, aluminium. Každý jako kombinaci s typem dílu ("nerez záslepka", "mosaz záslepka", "MS záslepka" atd.).
    Vrať: {"type": "search", "terms": ["term1", "term2", ...], "manufacturer": "WAGO", "query": ""}
 
 2. Pokud uživatel žádá informace z internetu (datasheet, cena, specifikace výrobce, kde koupit, technická dokumentace):
