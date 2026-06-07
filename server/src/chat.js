@@ -62,9 +62,9 @@ REFINEMENT — {"terms": [...], "reason": "..."} pokud: výsledky nesedí a jin�
 ANSWER — struktura pro DB výsledky:
 Shrnutí co bylo nalezeno (2–3 věty). Pak vybrané artikly:
 
-- **{artikl}** — `{název}` | `{výrobce}`
-  - typ: `{typové označení}`
-  - {parametry explicitně přítomné v názvu nebo typu: `rozměr`, `materiál`, `krytí`, `proud`, `průřez…` Nic neodvozuj.}
+- **{artikl}** — {název} | {výrobce}
+  - typ: {typové označení}
+  - {parametry explicitně přítomné v názvu nebo typu: rozměr, materiál, krytí, proud, průřez… Nic neodvozuj.}
 
 Za seznamem: 1–2 věty proč je první nejrelevantnější. Krátký analytický komentář (čtení typového označení, věcný rozdíl mezi variantami) jen pokud to přidá hodnotu — jinak vynech.
 Žádné sekce "doporučení", "podpora", "webové zdroje" ani vymyšlené URL — jen pokud uživatel přímo žádá web nebo zdroje.
