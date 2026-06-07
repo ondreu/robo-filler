@@ -321,7 +321,11 @@ export function AiChat() {
     const title = sessionTitle(messages);
     const all = loadSessions();
     const idx = all.findIndex(s => s.id === id);
-    const entry: ChatSession = { id, title, messages, updatedAt: Date.now() };
+    const existing = idx >= 0 ? all[idx] : null;
+    const updatedAt = existing && existing.messages.length >= messages.length
+      ? existing.updatedAt
+      : Date.now();
+    const entry: ChatSession = { id, title, messages, updatedAt };
     if (idx >= 0) { all[idx] = entry; } else { all.unshift(entry); }
     saveSessions(all);
     setSessions(all.slice(0, 30));
