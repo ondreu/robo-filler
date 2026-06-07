@@ -444,6 +444,7 @@ function App() {
                     }`}
                   >
                     AI stavba kusovníku
+                    <span className="ml-1.5 text-[10px] font-semibold bg-yellow/20 text-yellow rounded px-1 py-0.5 leading-none align-middle">BETA</span>
                   </button>
                 </div>
 
