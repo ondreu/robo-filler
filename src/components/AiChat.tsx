@@ -88,9 +88,9 @@ function AiArticleCard({ article, dim = false }: { article: Article; dim?: boole
 const MD_COMPONENTS: Components = {
   p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
   strong: ({ children }) => <strong className="font-semibold text-mauve">{children}</strong>,
-  ul: ({ children }) => <ul className="list-disc list-inside space-y-1 mt-1.5">{children}</ul>,
-  ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 mt-1.5">{children}</ol>,
-  li: ({ children }) => <li>{children}</li>,
+  ul: ({ children }) => <ul className="list-disc list-outside ml-4 space-y-1.5 mt-1.5 [&_ul]:list-none [&_ul]:ml-2 [&_ul]:space-y-0.5 [&_ul]:mt-0.5 [&_ul]:text-subtext1">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal list-outside ml-4 space-y-1 mt-1.5">{children}</ol>,
+  li: ({ children }) => <li className="pl-0.5">{children}</li>,
   code: ({ children }) => <code className="bg-surface1 rounded px-1.5 py-0.5 font-mono text-sm">{children}</code>,
   a: ({ href, children }) => (
     <a href={href} target="_blank" rel="noopener noreferrer" className="text-mauve underline hover:text-pink">{children}</a>

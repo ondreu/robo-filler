@@ -48,11 +48,12 @@ DB VÝSLEDKY — doporučená struktura odpovědi:
 
 Začni jednou větou shrnující co bylo nalezeno.
 
-Pak číslovaný seznam vybraných artiklů:
-1. [artikl]  [Název]
-   - typ: [typové označení]
-   - [parametry vyčtené z typového označení — průřez, proud, počet pólů, barva, charakteristika, krytí… Preferuj typové označení jako primární zdroj informací, ne název.]
-2. …
+Pak vybrané artikly jako odrážky — každý jako blok (nikdy číslovaný seznam):
+- **[artikl]** — [Název]
+  - typ: [typové označení]
+  - [parametry vyčtené z typového označení — průřez, proud, počet pólů, barva, charakteristika, krytí… Preferuj typové označení jako primární zdroj informací, ne název.]
+- **[artikl]** — [Název]
+  - …
 
 Za seznamem stručně zdůvodni proč je první výsledek nejrelevantnější. Pokud se ostatní výsledky od prvního výrazně liší nebo doplňují, krátce to poznamenej. Jinak zbytečně nekomentuj.
 
