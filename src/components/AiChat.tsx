@@ -12,6 +12,18 @@ const BACKEND_URL = ((import.meta.env.VITE_BACKEND_URL as string | undefined) ??
 const AI_CHAT_KEY = 'robo-filler-ai-chat';
 const AI_CHAT_LAST_KEY = 'robo-filler-ai-chat-last';
 const SYNTH_MODEL_KEY = 'karel_bot_synth_model';
+const USAGE_KEY = 'robo-filler-chat-usage';
+
+// Track query timestamps and check thresholds: 20+ in 2h or 40+ in 24h
+function recordQuery(): boolean {
+  const now = Date.now();
+  const stored: number[] = JSON.parse(localStorage.getItem(USAGE_KEY) ?? '[]');
+  const pruned = stored.filter(t => now - t < 24 * 60 * 60 * 1000);
+  pruned.push(now);
+  localStorage.setItem(USAGE_KEY, JSON.stringify(pruned));
+  const last2h = pruned.filter(t => now - t < 2 * 60 * 60 * 1000).length;
+  return last2h > 20 || pruned.length > 40;
+}
 
 const SYNTH_MODELS = [
   { value: 'mistral-small-latest', label: 'Mistral Small 4' },
@@ -231,6 +243,7 @@ export function AiChat() {
   const [expandedMsgs, setExpandedMsgs] = useState<Set<number>>(new Set());
   const [expandedTraces, setExpandedTraces] = useState<Set<number>>(new Set());
   const [lastAllCandidates, setLastAllCandidates] = useState<Article[]>([]);
+  const [showUsageWarning, setShowUsageWarning] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -340,6 +353,8 @@ export function AiChat() {
   async function sendMessage() {
     const text = input.trim();
     if (!text || isLoading) return;
+
+    if (recordQuery()) setShowUsageWarning(true);
 
     const userMsg: AiMessage = { role: 'user', content: text };
     setInput('');
@@ -678,6 +693,36 @@ export function AiChat() {
           </button>
         </div>
       </div>
+
+      {/* Usage warning popup */}
+      {showUsageWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-crust/70 backdrop-blur-sm"
+          onClick={() => setShowUsageWarning(false)}>
+          <div className="bg-mantle border border-surface1 rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-start gap-3 mb-4">
+              <span className="text-yellow text-xl leading-none mt-0.5">⚠</span>
+              <div>
+                <h3 className="text-text font-semibold text-base mb-2">Používejte s rozvahou</h3>
+                <p className="text-subtext1 text-sm leading-relaxed">
+                  Prosím používejte AI s rozvahou — tento chat využívá výkonné placené modely, za které se platí. Zvažte zda by pro váš dotaz nestačil klasický vyhledávač.
+                </p>
+                <p className="text-overlay0 text-xs leading-relaxed mt-2">
+                  Pokud je ale AI pro vaši práci skutečně užitečná, klidně pokračujte — jsem rád, že se osvědčila.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowUsageWarning(false)}
+                className="px-4 py-1.5 rounded-lg text-sm font-medium bg-mauve text-crust hover:bg-mauve/90 transition-colors"
+              >
+                Rozumím
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

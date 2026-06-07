@@ -480,8 +480,7 @@ function App() {
                         <div>
                           <h3 className="text-text font-semibold text-base mb-1">Pozor — nákladný režim</h3>
                           <p className="text-subtext1 text-sm leading-relaxed">
-                            Sestavení kusovníku je náročná operace a může trvat delší dobu.
-                            Spouštějte prosím jen tehdy, kdy to skutečně potřebujete.
+                            Vyhledávání v tomto režimu jsou drahá. Používejte s rozvahou.
                           </p>
                         </div>
                       </div>
