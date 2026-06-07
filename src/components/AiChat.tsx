@@ -305,6 +305,7 @@ export function AiChat() {
     try { return sessionStorage.getItem(SESSION_ID_KEY); } catch { return null; }
   })());
   const skipSaveRef = useRef(false);
+  const requestCounterRef = useRef(0);
 
   useEffect(() => {
     sessionStorage.setItem(AI_CHAT_KEY, JSON.stringify(messages));
@@ -366,6 +367,7 @@ export function AiChat() {
   const loadSession = (id: string) => {
     const session = sessions.find(s => s.id === id);
     if (!session) return;
+    requestCounterRef.current++;
     skipSaveRef.current = true;
     sessionIdRef.current = id;
     setCurrentSessionId(id);
@@ -453,8 +455,8 @@ export function AiChat() {
 
     if (recordQuery()) setShowUsageWarning(true);
 
-    const originSessionId = sessionIdRef.current;
-    const sameSession = () => sessionIdRef.current === originSessionId;
+    const myCount = ++requestCounterRef.current;
+    const isCurrentRequest = () => requestCounterRef.current === myCount;
 
     const userMsg: AiMessage = { role: 'user', content: text };
     setInput('');
@@ -496,12 +498,12 @@ export function AiChat() {
             try {
               const data = JSON.parse(line.slice(6));
               if (eventType === 'status') {
-                if (!sameSession()) { abandoned = true; break; }
+                if (!isCurrentRequest()) { abandoned = true; break; }
                 const newLog = [...statusLogRef.current, data as Status];
                 statusLogRef.current = newLog;
                 setCurrentStatusLog(newLog);
               } else if (eventType === 'result') {
-                if (!sameSession()) { abandoned = true; break; }
+                if (!isCurrentRequest()) { abandoned = true; break; }
                 if (data.allCandidates?.length > 0) setLastAllCandidates(data.allCandidates);
                 const savedLog = statusLogRef.current;
                 statusLogRef.current = [];
@@ -515,7 +517,7 @@ export function AiChat() {
                   statusLog: savedLog,
                 }]);
               } else if (eventType === 'error') {
-                if (!sameSession()) { abandoned = true; break; }
+                if (!isCurrentRequest()) { abandoned = true; break; }
                 const savedLog = statusLogRef.current;
                 statusLogRef.current = [];
                 setCurrentStatusLog([]);
@@ -531,7 +533,7 @@ export function AiChat() {
         }
       }
     } catch (err) {
-      if (sameSession()) {
+      if (isCurrentRequest()) {
         const msg = err instanceof Error ? err.message : 'Neznámá chyba';
         const savedLog = statusLogRef.current;
         statusLogRef.current = [];
@@ -543,7 +545,7 @@ export function AiChat() {
         }]);
       }
     } finally {
-      if (sameSession()) setIsLoading(false);
+      if (isCurrentRequest()) setIsLoading(false);
     }
   }
 
