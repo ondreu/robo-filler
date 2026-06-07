@@ -41,14 +41,14 @@ ${ABBREVIATIONS_CONTEXT}`;
 const SYNTH_SYSTEM = `Jsi Karel Bot, asistent pro vyhledávání průmyslových artiklů v databázi Robo Filler a podpora pro práci s aplikací.
 
 FORMÁT: Odpovídej VŽDY jako JSON objekt: {"answer": "česky, markdown povolen", "selected": [], "refinement": null}
-SELECTED: Z kandidátů artiklů vyber do "selected" indexy max 5 nejrelevantnějších. PRIORITA ATRIBUTŮ: Pokud dotaz obsahuje konkrétní atribut (materiál: nerez, mosaz, plast; krytí: IP67; proud: 16A; rozměr: M20…) a kandidát tento atribut přímo obsahuje v názvu nebo popisu, VŽDY ho zař na první místo — bez ohledu na % skóre. Kandidát s nerez v názvu při dotazu "nerezová DIN lišta" je vždy relevantnější než ocelový s vyšším skóre. Pokud dotaz obsahuje konkrétní číslo artiklu nebo kód dílu, prioritně vyber kandidáta kde pole artikl, typ nebo díl přesně odpovídá. DŮLEŽITÉ: Kandidáti jsou záznamy přímo z databáze — nikdy neříkej "není v databázi" o čemkoliv z kandidátů. Pokud v textu "answer" zmiňuješ konkrétní typové označení, číslo artiklu nebo dílu z kandidátů, MUSÍŠ jeho index přidat do "selected". Pokud žádný nesedí nebo žádní nejsou, vrať "selected": []. NIKDY v textu "answer" nezmiňuj čísla indexů — indexy patří výhradně do pole "selected". Na konkrétní artikly odkazuj typovým označením nebo popisem.
+SELECTED: Z kandidátů artiklů vyber do "selected" artikl čísla (pole "artikl") max 5 nejrelevantnějších — např. "selected": ["1813-5819", "1814-1685"]. PRIORITA ATRIBUTŮ: Pokud dotaz obsahuje konkrétní atribut (materiál: nerez, mosaz, plast; krytí: IP67; proud: 16A; rozměr: M20…) a kandidát tento atribut přímo obsahuje v názvu nebo popisu, VŽDY ho zař na první místo — bez ohledu na % skóre. Kandidát s nerez v názvu při dotazu "nerezová DIN lišta" je vždy relevantnější než ocelový s vyšším skóre. Pokud dotaz obsahuje konkrétní číslo artiklu nebo kód dílu, prioritně vyber kandidáta kde pole artikl, typ nebo díl přesně odpovídá. DŮLEŽITÉ: Kandidáti jsou záznamy přímo z databáze — nikdy neříkej "není v databázi" o čemkoliv z kandidátů. Pokud v textu "answer" zmiňuješ konkrétní typové označení, číslo artiklu nebo dílu z kandidátů, MUSÍŠ jeho artikl číslo přidat do "selected". Pokud žádný nesedí nebo žádní nejsou, vrať "selected": [].
 REFINEMENT: Vrať "refinement": {"terms": ["term1", "term2"], "reason": "důvod"} pokud platí alespoň jedno: (a) kandidáti nesedí na dotaz a jiné hledání by pomohlo, (b) znáš typové označení nebo prefix výrobce který by vrátil přesnější výsledky než klíčová slova — zahrň ho jako term (wildcard ho najde i jako prefix). Maximálně 3 termíny, konkrétní. Pokud jsou výsledky dobré a typový kód neznáš, vrať "refinement": null.
 
 DB VÝSLEDKY — doporučená struktura odpovědi:
 
 Začni jednou větou shrnující co bylo nalezeno.
 
-Pak vybrané artikly jako odrážky. Kandidáti mají formát "[index] artikl | název | výrobce | typ:…" — použij pole artikl (číslo za indexem), NIKDY samotný index jako [47]:
+Pak vybrané artikly jako odrážky. Kandidáti mají formát "artikl | název | výrobce | typ:…" — odkazuj na ně číslem artiklu nebo názvem:
 - **{artikl}** — {název} | {výrobce}
   - typ: {typové označení}
   - {parametry vyčtené z typového označení — průřez, proud, počet pólů, barva, charakteristika, krytí… Preferuj typové označení jako primární zdroj informací, ne název.}
@@ -375,12 +375,12 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
       context += '\n\n' + mfrDocs.join('\n\n---\n\n');
     }
     context += articles.length > 0
-      ? `\n\nKandidáti (${articles.length}) — vyber indexy max 5 nejrelevantnějších:\n` + articles
-          .map((a, i) => {
+      ? `\n\nKandidáti (${articles.length}) — vyber artikl čísla max 5 nejrelevantnějších do "selected":\n` + articles
+          .map(a => {
             const parts = [a.artikl, a.nazev, a.vyrobce];
             if (a.typoveOznaceni) parts.push(`typ:${a.typoveOznaceni}`);
             if (a.cisloDiluVyrobce) parts.push(`díl:${a.cisloDiluVyrobce}`);
-            return `[${i}] ${parts.join(' | ')}`;
+            return parts.join(' | ');
           })
           .join('\n')
       : '\n\nŽádné artikly v databázi nebyly nalezeny.';
@@ -469,6 +469,16 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   const secondaryMfrKey = resolveManufacturerKey(dominantVyrobce);
   const mfrKeys = [...new Set([primaryMfrKey, secondaryMfrKey].filter(Boolean))];
 
+  if (mfrKeys.length > 0) {
+    const MFR_DISPLAY = {
+      wago: 'WAGO', abb: 'ABB', siemens: 'Siemens', phoenix: 'Phoenix Contact',
+      weidmuller: 'Weidmüller', allen_bradley: 'Allen-Bradley', rittal: 'Rittal',
+      eaton: 'Eaton', omron: 'Omron',
+    };
+    const names = mfrKeys.map(k => MFR_DISPLAY[k] ?? k);
+    sendStatus('knowledge', `Načítám znalosti výrobce: ${names.join(', ')}`, { mfr: names });
+  }
+
   let { answer, selected, refinement } = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys, synthModel);
 
   // Two-pass: if SYNTH requests refinement, do a second search and re-synthesize
@@ -497,8 +507,13 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
 
   let pickedArticles;
   if (type === 'search') {
+    const selectedArtikls = new Set(
+      (selected ?? []).filter(s => typeof s === 'string')
+    );
     const autoSelect = new Set(
-      (selected ?? []).filter(i => typeof i === 'number' && i >= 0 && i < candidates.length)
+      [...selectedArtikls]
+        .map(s => candidates.findIndex(c => c.artikl === s))
+        .filter(i => i >= 0)
     );
     // Auto-include candidates whose typoveOznaceni/artikl/cisloDiluVyrobce appear in the answer text
     if (answer) {

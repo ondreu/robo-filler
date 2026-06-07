@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Send, Loader2, Copy, Check, ExternalLink, Settings,
   PenLine, Download, ChevronDown, ChevronUp, MessageCircle, Globe,
-  Search, Sparkles,
+  Search, Sparkles, BookOpen,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
@@ -24,6 +24,7 @@ interface Status {
   terms?: string[];
   webQuery?: boolean;
   refinement?: boolean;
+  mfr?: string[];
 }
 
 interface AiMessage {
@@ -125,10 +126,21 @@ function StatusTrace({ log, isLoading = false }: { log: Status[]; isLoading?: bo
                 ? <Search size={10} />
                 : s.step === 'generating'
                 ? <Sparkles size={10} />
+                : s.step === 'knowledge'
+                ? <BookOpen size={10} />
                 : <span className="inline-block w-2.5 text-center">·</span>
               }
             </span>
-            {hasPills ? (
+            {s.mfr && s.mfr.length > 0 ? (
+              <div className="flex flex-wrap gap-1 items-baseline">
+                <span className="text-overlay0 shrink-0">znalosti:</span>
+                {s.mfr.map((m, mi) => (
+                  <span key={mi} className="bg-surface1 text-green rounded px-1.5 py-0.5 font-mono leading-none">
+                    {m}
+                  </span>
+                ))}
+              </div>
+            ) : hasPills ? (
               <div className="flex flex-wrap gap-1 items-baseline">
                 <span className="text-overlay0 shrink-0">
                   {s.refinement ? 'upřesnění:' : s.webQuery ? 'web:' : 'hledám:'}
