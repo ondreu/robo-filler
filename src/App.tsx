@@ -64,6 +64,7 @@ function App() {
   const [appMode, setAppMode] = useState<AppMode>('single');
   // AI sub-mode: chat = existing Karel Bot, bom = AI BOM builder
   const [aiSubMode, setAiSubMode] = useState<'chat' | 'bom'>('chat');
+  const [showBomWarning, setShowBomWarning] = useState(false);
 
   // ZBOM tabs — persisted in localStorage so they survive page refresh
   type ZbomTab = { id: string; name: string; importData?: ImportResult };
@@ -437,7 +438,7 @@ function App() {
                     Běžný
                   </button>
                   <button
-                    onClick={() => setAiSubMode('bom')}
+                    onClick={() => aiSubMode === 'bom' ? undefined : setShowBomWarning(true)}
                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       aiSubMode === 'bom' ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
                     }`}
@@ -460,6 +461,44 @@ function App() {
                         openNewZbomTab(importData);
                       }}
                     />
+                  </div>
+                )}
+
+                {/* BOM builder cost warning modal */}
+                {showBomWarning && (
+                  <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-crust/70 backdrop-blur-sm"
+                    onClick={() => setShowBomWarning(false)}
+                  >
+                    <div
+                      className="bg-mantle border border-surface1 rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <div className="flex items-start gap-3 mb-4">
+                        <span className="text-yellow text-xl leading-none mt-0.5">⚠</span>
+                        <div>
+                          <h3 className="text-text font-semibold text-base mb-1">Pozor — nákladný režim</h3>
+                          <p className="text-subtext1 text-sm leading-relaxed">
+                            Každé sestavení kusovníku volá AI pro každý řádek zvlášť.
+                            Prosím používejte s rozvahou — zbytečné spouštění zbytečně zatěžuje API.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          onClick={() => setShowBomWarning(false)}
+                          className="px-4 py-1.5 rounded-lg text-sm font-medium text-subtext1 hover:text-text transition-colors"
+                        >
+                          Zrušit
+                        </button>
+                        <button
+                          onClick={() => { setAiSubMode('bom'); setShowBomWarning(false); }}
+                          className="px-4 py-1.5 rounded-lg text-sm font-medium bg-mauve text-crust hover:bg-mauve/90 transition-colors"
+                        >
+                          Rozumím, pokračovat
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
