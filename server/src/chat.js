@@ -410,11 +410,8 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
       Array.isArray(parsed.refinement.terms) &&
       parsed.refinement.terms.length > 0
     ) ? parsed.refinement : null;
-    const rawAnswer = typeof parsed.answer === 'string' ? parsed.answer : '';
-    // Strip leaked candidate indices like "[12] " from the answer text
-    const answer = rawAnswer.replace(/\[(\d+)\]\s*/g, '');
     return {
-      answer,
+      answer: typeof parsed.answer === 'string' ? parsed.answer : '',
       selected: Array.isArray(parsed.selected) ? parsed.selected : null,
       refinement,
     };
