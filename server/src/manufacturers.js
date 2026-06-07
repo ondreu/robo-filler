@@ -1,20 +1,106 @@
-// Normalizes a manufacturer name (from EXPAND or article vyrobce) to an internal key.
+// ---------------------------------------------------------------------------
+// Internal helper — strips diacritics, lowercases. Used for robust matching.
+// ---------------------------------------------------------------------------
+function normalizeForSearch(text) {
+  return (text ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+// ---------------------------------------------------------------------------
+// resolveManufacturerKey
+// Maps a manufacturer name (or product alias) to an internal key.
+// Extended with product-name aliases — only for highly distinctive terms that
+// would never appear as an alias for another manufacturer.
+// ---------------------------------------------------------------------------
 export function resolveManufacturerKey(name) {
   if (!name) return null;
-  const n = name.toLowerCase();
-  if (n.includes('wago')) return 'wago';
+  const n = normalizeForSearch(name);
+
+  // WAGO — distinctive product names: CAGE CLAMP (vynalezli), LEVER-NUT, TOPJOB S
+  if (n.includes('wago') || n.includes('cage clamp') || n.includes('lever-nut') || n.includes('topjob')) return 'wago';
+
+  // ABB — zkratka je exkluzivní, nepotřebuje aliasy
   if (/\babb\b/.test(n)) return 'abb';
-  if (n.includes('siemens')) return 'siemens';
-  if (n.includes('phoenix')) return 'phoenix';
+
+  // Schneider Electric — historické značky a klíčové produktové brandové jméno
+  if (
+    n.includes('schneider') ||
+    n.includes('telemecanique') ||       // Télémécanique — bez diakritiky po normalizaci
+    n.includes('merlin gerin') ||
+    n.includes('merlin gerin') ||
+    n.includes('square d') ||
+    n.includes('acti9') || n.includes('acti 9') ||
+    n.includes('tesys') ||               // TeSys — průmyslový brand Schneider
+    /\blc1d\b/.test(n) ||               // TeSys D kontaktor
+    n.includes('modicon') ||             // PLC řada Schneider
+    n.includes('altivar') ||             // VFD řada Schneider
+    n.includes('altistart') ||
+    n.includes('zelio')                  // logický modul Schneider
+  ) return 'schneider';
+
+  // Siemens — brandová jména SENTRON a SIRIUS jsou exkluzivní
+  if (
+    n.includes('siemens') ||
+    n.includes('sentron') ||             // brand pro LV ochranu
+    /\bsirius\b/.test(n) ||             // brand pro průmyslové řízení motorů
+    n.includes('sinamics') ||            // VFD řada Siemens
+    n.includes('sitop')                  // napájecí zdroje Siemens
+  ) return 'siemens';
+
+  // Phoenix Contact — CLIPLINE je jejich registrovaný systémový brand
+  if (
+    n.includes('phoenix') ||
+    n.includes('clipline') ||            // svorkovnicový systém Phoenix
+    n.includes('trabtech') ||            // přepěťová ochrana Phoenix
+    /\bquint\b/.test(n)                 // napájecí zdroje Phoenix (QUINT)
+  ) return 'phoenix';
+
+  // Weidmüller
   if (n.includes('weidm')) return 'weidmuller';
-  if (n.includes('allen') || n.includes('bradley') || n.includes('rockwell')) return 'allen_bradley';
-  if (n.includes('rittal')) return 'rittal';
-  if (n.includes('eaton') || n.includes('moeller') || n.includes('möller')) return 'eaton';
-  if (n.includes('omron')) return 'omron';
+
+  // Allen-Bradley / Rockwell Automation
+  if (
+    n.includes('allen') ||
+    n.includes('bradley') ||
+    n.includes('rockwell') ||
+    n.includes('powerflex') ||           // VFD řada Allen-Bradley
+    n.includes('controllogix') ||
+    n.includes('compactlogix')
+  ) return 'allen_bradley';
+
+  // Rittal — VX25 a TS8 jsou exkluzivní označení skříňových řad
+  if (
+    n.includes('rittal') ||
+    /\bvx25\b/.test(n) ||
+    n.includes('ts 8') || /\bts8\b/.test(n)
+  ) return 'rittal';
+
+  // Eaton (Moeller) — DILM a PKZM jsou výhradně Eaton/Moeller
+  if (
+    n.includes('eaton') ||
+    n.includes('moeller') ||             // anglická transkripce
+    n.includes('moller') ||              // "möller" po normalizaci → "moller"
+    n.includes('klockner') ||            // "Klöckner" po normalizaci → "klockner"
+    /\bdilm\b/.test(n) ||              // kontaktory Eaton
+    /\bpkzm\b/.test(n)                 // motorové spouštěče Eaton
+  ) return 'eaton';
+
+  // Omron — G2R a MY jsou výhradně Omron designace
+  if (
+    n.includes('omron') ||
+    /\bg2r\b/.test(n) ||
+    /\bmy[24]n?\b/.test(n)              // MY2N, MY4N atd.
+  ) return 'omron';
+
   return null;
 }
 
-// Returns the dominant vyrobce name if ≥50% of articles share it, otherwise null.
+// ---------------------------------------------------------------------------
+// detectDominantManufacturer
+// Returns the dominant vyrobce name if ≥50% of articles share it, else null.
+// ---------------------------------------------------------------------------
 export function detectDominantManufacturer(articles) {
   if (!articles.length) return null;
   const counts = {};
@@ -29,6 +115,95 @@ export function detectDominantManufacturer(articles) {
   return topCount / articles.length >= 0.5 ? topMfr : null;
 }
 
+// ---------------------------------------------------------------------------
+// MANUFACTURER_CATEGORIES
+// Keyword → array of manufacturer keys pro cross-manufacturer injekci.
+// Klíče jsou normalizované (bez diakritiky) — vstupy se normalizují před porovnáním.
+// Zahrnuje pouze výrobce, pro které je daná kategorie primárním produktem.
+// ---------------------------------------------------------------------------
+export const MANUFACTURER_CATEGORIES = {
+
+  // --- Svorky / terminály ---
+  svorka:       ['wago', 'phoenix', 'weidmuller'],
+  svorky:       ['wago', 'phoenix', 'weidmuller'],
+  svorkovnic:   ['wago', 'phoenix', 'weidmuller'],  // svorkovnice, svorkovnicový
+  terminal:     ['wago', 'phoenix', 'weidmuller'],
+  konektor:     ['phoenix', 'weidmuller'],
+  pruchod:      ['phoenix', 'weidmuller', 'rittal'], // průchodka / průchodky
+
+  // --- Jistič / MCB / MCCB ---
+  jistic:       ['abb', 'siemens', 'eaton', 'schneider'], // jistič, jisticí, jistice
+  mcb:          ['abb', 'siemens', 'eaton', 'schneider'],
+  mccb:         ['abb', 'siemens', 'eaton', 'schneider'],
+
+  // --- Stykač / kontaktor ---
+  stykac:       ['abb', 'siemens', 'eaton', 'schneider', 'allen_bradley'], // stykač
+  kontaktor:    ['abb', 'siemens', 'eaton', 'schneider', 'allen_bradley'],
+
+  // --- Motorová ochrana / startér ---
+  motorov:      ['abb', 'siemens', 'eaton', 'schneider'],  // motorová/motorový/motorovém
+  spoustec:     ['abb', 'siemens', 'eaton', 'schneider'],  // spouštěč
+
+  // --- Relé ---
+  rele:         ['omron', 'abb', 'siemens', 'weidmuller', 'phoenix'],  // relé
+
+  // --- Rozváděčové skříně / mechanika ---
+  skrin:        ['rittal'],  // skříň, skříně
+  rozvadec:     ['rittal'],  // rozváděč
+  dvere:        ['rittal'],  // skříňové dveře
+  deska:        ['rittal'],  // montážní deska
+  bocnic:       ['rittal'],  // bočnice, bočnicový
+  mechanika:    ['rittal'],
+  panel:        ['rittal'],
+
+  // --- Softstarter ---
+  softstarter:  ['siemens', 'abb', 'schneider'],
+
+  // --- Frekvenční měnič / pohon ---
+  menic:        ['siemens', 'abb', 'schneider', 'allen_bradley'],  // měnič
+  frekvencni:   ['siemens', 'abb', 'schneider', 'allen_bradley'],  // frekvenční
+  vfd:          ['siemens', 'abb', 'schneider', 'allen_bradley'],
+  pohon:        ['siemens', 'abb', 'schneider', 'allen_bradley'],
+  invertor:     ['siemens', 'abb', 'schneider', 'allen_bradley'],
+
+  // --- PLC / automatizace ---
+  plc:          ['siemens', 'allen_bradley', 'omron', 'wago', 'schneider'],
+  automatizac:  ['siemens', 'allen_bradley', 'omron', 'wago', 'schneider'],  // automatizace/automatizační
+
+  // --- Přepěťová ochrana ---
+  prepetov:     ['abb', 'siemens', 'phoenix', 'schneider'],  // přepěťová/přepěťový
+  spd:          ['abb', 'siemens', 'phoenix', 'schneider'],
+
+  // --- Napájecí zdroje ---
+  napajec:      ['phoenix', 'weidmuller', 'siemens', 'schneider'],  // napájecí/napáječ
+  zdroj:        ['phoenix', 'weidmuller', 'siemens', 'schneider'],
+
+  // --- Proudový chránič / RCD ---
+  chranic:      ['abb', 'siemens', 'schneider'],  // chránič
+  rcd:          ['abb', 'siemens', 'schneider'],
+  rccb:         ['abb', 'siemens', 'schneider'],
+  rcbo:         ['abb', 'siemens', 'schneider'],
+};
+
+// ---------------------------------------------------------------------------
+// resolveManufacturersByCategory
+// Prohledá text zprávy, najde klíčová slova a vrátí pole klíčů výrobců.
+// Umožňuje inject znalostí více výrobců při srovnávacích dotazech.
+// ---------------------------------------------------------------------------
+export function resolveManufacturersByCategory(messageText) {
+  const n = normalizeForSearch(messageText);
+  const found = new Set();
+  for (const [keyword, mfrs] of Object.entries(MANUFACTURER_CATEGORIES)) {
+    if (n.includes(keyword)) {
+      mfrs.forEach(m => found.add(m));
+    }
+  }
+  return [...found];
+}
+
+// ---------------------------------------------------------------------------
+// MANUFACTURER_DOCS
+// ---------------------------------------------------------------------------
 export const MANUFACTURER_DOCS = {
 
   wago: `## WAGO — znalostní přehled
@@ -90,6 +265,44 @@ export const MANUFACTURER_DOCS = {
 
 **Typická kombinace motorového startéru:** 3RV2 (ochrana) + 3RT2 (spínání) přišroubovány k sobě. Přidání 3RU2 = samostatná přetěžová signalizace.`,
 
+  schneider: `## Schneider Electric — znalostní přehled (nízkonapěťové produkty)
+
+**Firma:** Schneider Electric SE, Rueil-Malmaison, Francie. Historické značky: Merlin Gerin (ochranné přístroje), Télémécanique (průmyslové řízení motorů), Square D (USA). Sjednoceno pod Schneider Electric od ~2005.
+
+**Acti9 — modulární DIN lišta (náhrada Multi9 / C60):**
+- **iC60 MCB jistič**: iC60N=6kA, iC60H=10kA, iC60L=15kA (Icu při 400V AC).
+  Typové označení: \`iC60[var] [póly] [char][proud]\` — iC60N 3P C25 = 3pól, 6kA, char. C, 25A.
+  Póly: 1P, 1P+N, 2P, 3P, 4P, 3P+N. Charakteristiky: B=3–5×In, C=5–10×In, D=10–20×In, MA=magnetický (motory).
+  Katalogové číslo: A9F[kód] — A9F74220 = iC60N, 2P, C, 20A.
+- **iID RCCB**: Proudový chránič (bez nadproudové ochrany). Typ AC (sinusový) nebo A (pulzující DC).
+- **iDPN N Vigi RCBO**: MCB + RCD v jednom modulu 1P+N, 6kA — úsporné na šíři DIN.
+- **Vigi iC60**: Přídavný proudový blok add-on na iC60 (oddělený RCD modul).
+- **iACT/iSW**: Stykačové odpínače na DIN lištu pro osvětlení/topení (do 63A, cívka 230VAC).
+
+**TeSys — průmyslové řízení motorů:**
+- **LC1D — TeSys D kontaktor**: Základní 3-pólový průmyslový kontaktor AC-3. LC1D06 až LC1D150 (6–150A). Pro >150A: LC1F řada.
+  Číslování: \`LC1D[kód proudu][kód cívky]\` — LC1D09M7 = 9A, cívka 220VAC; LC1D25BD = 25A, 24VDC.
+  Kódy cívek AC (50/60Hz): B7=24V, E7=48V, F7=110V, G7=120V, M7=220V, P7=230V, Q7=380–415V, U7=240V.
+  Kódy cívek DC: BD=24V, CD=48V, ED=72V.
+  Přímé mechanické spojení s GV2ME — bez propojovacích vodičů.
+- **GV2ME — TeSys motorový spouštěč**: Zkratová + přetěžová, 3-pól, 1–32A. Icu=100kA (se správnou pojistkou).
+  Proudové rozsahy: GV2ME06=1–1.6A, GV2ME07=1.6–2.5A, GV2ME08=2.5–4A, GV2ME10=4–6.3A, GV2ME14=6–10A, GV2ME16=9–14A, GV2ME20=13–18A, GV2ME21=17–23A, GV2ME22=20–25A, GV2ME32=24–32A.
+- **GV3P — motorová ochrana 25–65A**: Pro motory do 30kW/400V.
+- **LRD — TeSys tepelné relé**: Bimetalové přetěžové relé montované na LC1D.
+  LRD12=5.5–8A, LRD14=7–10A, LRD16=9–13A, LRD21=12–18A, LRD22=16–24A, LRD32=23–32A.
+
+**Compact NSX — průmyslové MCCB:**
+- NSX100, NSX160, NSX250, NSX400, NSX630 (číslo = jmenovitý proud).
+  Zkratová schopnost dle suffixu: B=25kA, N=36kA, F=50kA, S=65kA, H=100kA, L=150kA.
+  Příklady: NSX160F = do 160A, Icu=50kA. NSX250N = do 250A, Icu=36kA.
+  Spouštěče: TM-D (termomag., pevný proud) nebo Micrologic (elektronický, LSI/LSIG, nastavitelný).
+
+**Pohony a PLC:**
+- **Altivar VFD**: ATV12 (do 4kW), ATV320 (do 15kW, skalár/vektor), ATV340 (PMSM/synchronní), ATV630/930 (procesní, do MW).
+- **Altistart softstarter**: ATS22 (základní), ATS48 (pokročilý, do 900kW).
+- **Modicon PLC**: M221 (základní), M241/M251 (Motion, CAN), M340 (modulární rack), M580 (ePAC, EtherNet/IP, redundance).
+- **Zelio Logic**: Kompaktní logický modul SR2/SR3 (analogie Siemens LOGO!), do 40 I/O, IEC 61131-3.`,
+
   phoenix: `## Phoenix Contact — znalostní přehled
 
 **Firma:** Phoenix Contact GmbH & Co. KG, Blomberg, Německo. Světová jednička v elektrickém propojení. Systém CLIPLINE complete = modulární DIN lišta s interkompatibilními příslušenstvím.
@@ -108,7 +321,7 @@ Format: \`[Série] [průřez][-přípona][barva]\`
 - Barvy: BU=modrá (N), GY=šedá (výchozí), RD=červená (L), YE=žlutá, GNYE=zelenožlutá (PE)
 - Funkční přípony: -PE = ochranný vodič, -TWIN = 3vodičová, -QUATTRO = 4vodičová, -3L = 3úrovňová
 
-**Ostatní produkty:** Průmyslový Ethernet (FL Switch série), SPD přepěťová ochrana, QUINT/TRIO napájecí zdroje (DIN, 24VDC), PLCnext automatizace.`,
+**Ostatní produkty:** Průmyslový Ethernet (FL Switch série), SPD přepěťová ochrana (Trabtech), QUINT/TRIO napájecí zdroje (DIN, 24VDC), PLCnext automatizace.`,
 
   rittal: `## Rittal — znalostní přehled
 
@@ -200,3 +413,6 @@ Format: \`[Série][funkce] [průřez] [barva/přípona]\`
 
 **Terminologický překlad:** "contactor" = Schütz, "overload relay" = Motorschutzrelais, "push button" = Drucktaster, "pilot light" = Meldeleuchte.`,
 };
+ENDOFFILE
+echo "Done, $(wc -l < /home/claude/manufacturers.js) lines"
+
