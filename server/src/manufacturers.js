@@ -413,6 +413,4 @@ Format: \`[Série][funkce] [průřez] [barva/přípona]\`
 
 **Terminologický překlad:** "contactor" = Schütz, "overload relay" = Motorschutzrelais, "push button" = Drucktaster, "pilot light" = Meldeleuchte.`,
 };
-ENDOFFILE
-echo "Done, $(wc -l < /home/claude/manufacturers.js) lines"
 
