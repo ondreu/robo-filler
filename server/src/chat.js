@@ -20,7 +20,7 @@ Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
    Pokud dotaz obsahuje číslo artiklu nebo kód dílu (formáty jako 2204-1401, 5SY4116, XB4BA31, M20x1.5 apod.), VŽDY ho zahrň do terms přesně jak je.
    VÝROBCE: Pokud je výrobce zmíněn v aktuálním dotazu, extrahuj ho do "manufacturer". Pokud aktuální dotaz je follow-up a v historii byl konkrétní výrobce zmíněn, zachovej ho. Jinak "manufacturer": null.
    Z termínů pro vyhledávání vynech jméno výrobce — hledej jen podle typu/názvu dílu.
-   KOMBINACE: Pokud dotaz obsahuje typ dílu + materiál a/nebo rozměr, přidej kombinace "typ materiál", "typ rozměr", "typ materiál rozměr" — mají vyšší prioritu než samostatné výrazy, ale samostatné výrazy zahrni také.
+   KOMBINACE: Pokud dotaz obsahuje typ dílu + materiál a/nebo rozměr, přidej kombinace "typ materiál", "typ rozměr", "typ materiál rozměr".
    OBECNÝ KOV: "kovová/kov/metal" expanduj na zkratky/označení z DB: nerez, MS, HT, A2, A4 — vždy kombinovaně s typem dílu. Vynech anglické/německé ekvivalenty.
    SPECIFIKA DATABÁZE:
    - "DIN lišta" jako KOMPONENT = "lišta", "NS 35", "TS 35", "Tragschiene", "Hutschiene"
