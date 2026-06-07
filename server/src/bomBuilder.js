@@ -89,6 +89,47 @@ export async function checkClarification(rows, preferences) {
   }
 }
 
+const DERIVE_SYSTEM = `Jsi expert na průmyslové komponenty. Na základě typového označení a přiloženého znalostního přehledu výrobce odvoz stručný, lidsky čitelný popis artiklu.
+
+PRAVIDLA:
+- Max 40 znaků, česky
+- Uveď POUZE parametry, které přímo vyčteš z typového označení dle struktury produktové řady (proud, počet pólů, charakteristika, průřez, barva, počet vodičů apod.)
+- Nepoužívej obecné fráze — jen konkrétní odvozené parametry
+- KRITICKÉ: Pokud si nejsi zcela jistý dekódováním typového označení, nebo typové označení neodpovídá žádnému vzoru ve znalostním přehledu, vrať {"popis": ""}. Raději vrať prázdný popis než hádat nebo vymýšlet parametry.
+
+Příklady kdy vrátit popis:
+- "2002-1201" (WAGO TOPJOB S) → "TOPJOB S, 2.5mm², 2-vodičová, šedá"
+- "2002-1204" (WAGO TOPJOB S) → "TOPJOB S, 2.5mm², 2-vodičová, modrá"
+- "5SY4116-7" (Siemens SENTRON) → "MCB SENTRON 5SY4, 10kA, 1P, 16A, char. C"
+- "5SY6206-7" (Siemens SENTRON) → "MCB SENTRON 5SY6, 6kA, 2P, 6A, char. C"
+- "S201-B16" (ABB) → "MCB S201, 6kA, 1P, 16A, char. B"
+- "S203M-C25" (ABB) → "MCB S203M, 10kA, 3P, 25A, char. C"
+
+Příklady kdy vrátit {"popis": ""}:
+- Typové označení je neznámé nebo nestandardní
+- Parametry nelze spolehlivě odvodit ze struktury označení
+- Výrobce v přehledu toto označení nepokrývá
+
+Vrať JSON: {"popis": "stručný odvozený popis"} nebo {"popis": ""}`;
+
+async function deriveDescription(typoveOznaceni, mfrDoc) {
+  if (!typoveOznaceni || !mfrDoc) return '';
+  try {
+    const resp = await client.chat.complete({
+      model: MODEL,
+      responseFormat: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: DERIVE_SYSTEM },
+        { role: 'user', content: `Znalostní přehled výrobce:\n${mfrDoc}\n\nTypové označení: "${typoveOznaceni}"` },
+      ],
+    });
+    const parsed = JSON.parse(resp.choices[0].message.content);
+    return typeof parsed.popis === 'string' ? parsed.popis.trim() : '';
+  } catch {
+    return '';
+  }
+}
+
 async function pickBestMatch(typoveOznaceni, popis, vyrobce, candidates, preferences, mfrDoc = '') {
   if (candidates.length === 0) return null;
 
@@ -203,17 +244,23 @@ export async function handleBomBuild(rows, preferences, sendProgress, answers = 
       found = await pickBestMatch(round2Query, popis, vyrobce, results2, enrichedPrefs, mfrDoc);
     }
 
+    // Derive description from type designation when popis is empty and manufacturer is known
+    let derivedPopis = '';
+    if (!popis.trim() && mfrDoc) {
+      derivedPopis = await deriveDescription(mainQuery || altQuery, mfrDoc);
+    }
+
     if (found) {
       sendProgress(i, rows.length, mainQuery || altQuery, 'found');
       bomRows.push({
         type: 'L',
         artikl: found.artikl,
-        popis: found.nazev,
+        popis: derivedPopis || found.nazev,
         typoveOznaceni: found.typoveOznaceni,
         mnozstvi: Number(pocet) || 1,
         poznamka1: '',
         poznamka2: oznaceniPristroje,
-        aiFilledPopis: !popis.trim(), // mark when description was empty and AI filled it from DB
+        aiFilledPopis: !popis.trim() && !!(derivedPopis || found.nazev),
       });
     } else {
       sendProgress(i, rows.length, mainQuery || altQuery, 'not_found');
@@ -232,11 +279,12 @@ export async function handleBomBuild(rows, preferences, sendProgress, answers = 
       });
 
       toCreate.push({
-        nazev: popis,
+        nazev: derivedPopis || popis,
         vyrobce,
         typoveOznaceni: mainQuery || altQuery,
         unit,
         oznaceniPristroje,
+        aiFilledPopis: !popis.trim() && !!derivedPopis,
       });
     }
   }

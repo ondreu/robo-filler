@@ -42,6 +42,7 @@ interface ToCreateRow {
   typoveOznaceni: string;
   unit: string;
   oznaceniPristroje: string;
+  aiFilledPopis?: boolean;
 }
 
 interface ClarificationQuestion {
@@ -359,7 +360,14 @@ function KzalozeniTable({
                 key={ri}
                 className={`border-t border-surface1 ${ri % 2 === 0 ? 'bg-base' : 'bg-mantle/40'}`}
               >
-                <td className="border-r border-surface1 px-2 py-1 text-text">{row.nazev || '—'}</td>
+                <td className="border-r border-surface1 px-2 py-1 text-text">
+                  <span className="flex items-center gap-1">
+                    {row.nazev || '—'}
+                    {row.aiFilledPopis && (
+                      <span className="shrink-0 text-[10px] font-medium bg-teal/15 text-teal rounded px-1 py-0.5 leading-none">AI</span>
+                    )}
+                  </span>
+                </td>
                 <td className="border-r border-surface1 px-2 py-1 text-subtext1">{row.vyrobce || '—'}</td>
                 <td className="border-r border-surface1 px-2 py-1 font-mono text-mauve">{row.typoveOznaceni}</td>
                 <td className="border-r border-surface1 px-2 py-1"></td>
