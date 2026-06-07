@@ -30,6 +30,15 @@ BARVY (anglické zkratky):
 - fialová = VT, VI, Violet
 - žlutozelená (ochranný vodič/zemnění) = GN/YE, GNYE, PE
 
+PRŮŘEZ VODIČE:
+- mm², mm2 = obě varianty zápisů průřezu (0,5mm², 1,5mm², 2,5mm², 4mm², 6mm², 10mm²...)
+
+PŘÍSLUŠENSTVÍ KE SVORKÁM:
+- ukončovací destička / end plate = EP, Endplatte, Abschlussplatte
+- separátor / meziplocha = Trennwand, separátor
+- propojka / jumper = bridge, Brücke, Querverbinder
+- zarážka / end stop = Endhalter, end bracket
+
 PRŮCHODKY A ROZMĚRY:
 - průměr = D= (např. "průměr 12 mm" → hledej "D=12")
 - rozsah průměru kabelu v průchodce = formát "12,5-16,0" nebo "4-8" (čísla s pomlčkou)
