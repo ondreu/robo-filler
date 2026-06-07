@@ -208,8 +208,20 @@ export async function handleBomBuild(rows, preferences, sendProgress, answers = 
     }
   });
 
-  // Process all rows in parallel — each row is independent
-  const results = await Promise.all(rows.map(async (row, i) => {
+  // Process rows with bounded concurrency — max 10 rows at a time
+  const CONCURRENCY = 10;
+  const results = new Array(rows.length).fill(null);
+  let nextIdx = 0;
+
+  async function worker() {
+    while (nextIdx < rows.length) {
+      const i = nextIdx++;
+      results[i] = await processRow(rows[i], i);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, rows.length) }, worker));
+
+  async function processRow(row, i) {
     const {
       typoveOznaceni = '',
       altTypoveOznaceni = '',
@@ -289,7 +301,7 @@ export async function handleBomBuild(rows, preferences, sendProgress, answers = 
         },
       };
     }
-  }));
+  }
 
   // Assemble results in original row order
   const bomRows = [];
