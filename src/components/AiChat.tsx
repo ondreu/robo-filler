@@ -373,24 +373,26 @@ export function AiChat() {
                 setCurrentStatusLog(newLog);
               } else if (eventType === 'result') {
                 if (data.allCandidates?.length > 0) setLastAllCandidates(data.allCandidates);
+                const savedLog = statusLogRef.current;
+                statusLogRef.current = [];
+                setCurrentStatusLog([]);
                 setMessages(prev => [...prev, {
                   role: 'assistant',
                   content: data.answer,
                   articles: data.articles,
                   allCandidates: data.allCandidates,
                   expandedTerms: data.expandedTerms,
-                  statusLog: statusLogRef.current,
+                  statusLog: savedLog,
                 }]);
-                setCurrentStatusLog([]);
-                statusLogRef.current = [];
               } else if (eventType === 'error') {
+                const savedLog = statusLogRef.current;
+                statusLogRef.current = [];
+                setCurrentStatusLog([]);
                 setMessages(prev => [...prev, {
                   role: 'assistant',
                   content: `Chyba: ${data.error}`,
-                  statusLog: statusLogRef.current,
+                  statusLog: savedLog,
                 }]);
-                setCurrentStatusLog([]);
-                statusLogRef.current = [];
               }
             } catch { /* malformed JSON */ }
             eventType = '';
@@ -399,13 +401,14 @@ export function AiChat() {
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Neznámá chyba';
+      const savedLog = statusLogRef.current;
+      statusLogRef.current = [];
+      setCurrentStatusLog([]);
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: `Chyba: ${msg}`,
-        statusLog: statusLogRef.current,
+        statusLog: savedLog,
       }]);
-      setCurrentStatusLog([]);
-      statusLogRef.current = [];
     } finally {
       setIsLoading(false);
     }
