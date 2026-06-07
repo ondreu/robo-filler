@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HelpCircle, X, Database, Search, Bot, List, Table2, Globe, ArrowRight, Sparkles } from 'lucide-react';
+import { HelpCircle, X, Database, Search, Bot, List, Table2, Globe, ArrowRight, Sparkles, FlaskConical } from 'lucide-react';
 
 export function HowItWorks() {
   const [open, setOpen] = useState(false);
@@ -137,7 +137,50 @@ export function HowItWorks() {
                 <p className="text-sm text-subtext1 leading-relaxed">
                   Záložka <span className="text-text font-medium">AI mód</span> (nahoře vedle "Jednotlivé" a "Hromadné") je rozšířená verze Karel Bota — stejné funkce, ale přes celou šířku obrazovky.
                   Vhodné pro delší konverzace. Z plovoucího chatu se sem lze přepnout tlačítkem v nastavení (<span className="text-text font-medium">Teleportovat do AI módu</span>) — konverzace se přenese celá.
+                  V AI módu lze přepnout na <span className="text-text font-medium">AI stavbu kusovníku</span> (viz níže).
                 </p>
+              </section>
+
+              {/* AI stavba kusovníku */}
+              <section>
+                <div className="flex items-center gap-2 mb-2">
+                  <FlaskConical size={15} className="text-yellow shrink-0" />
+                  <h3 className="font-semibold text-sm text-text">AI stavba kusovníku <span className="ml-1 text-[10px] font-semibold bg-yellow/20 text-yellow rounded px-1 py-0.5 align-middle">BETA</span></h3>
+                </div>
+                <p className="text-sm text-subtext1 leading-relaxed mb-3">
+                  Experimentální funkce v záložce <span className="text-text font-medium">AI mód → AI stavba kusovníku</span>. Zadáš tabulku typových označení a AI agent každou položku automaticky vyhledá v databázi a sestaví výsledný kusovník.
+                </p>
+                <div className="flex items-stretch gap-1.5 text-xs overflow-x-auto pb-1 mb-3">
+                  {[
+                    { label: 'Vstupní tabulka', sub: 'typ. označení, výrobce, počet…' },
+                    { label: '2× vyhledávání', sub: 'hlavní + alternativní označení' },
+                    { label: 'AI párování', sub: 'Mistral Small vybere shodu' },
+                    { label: 'Kusovník + K-Založení', sub: 'výsledné tabulky', highlight: true },
+                  ].map((step, i, arr) => (
+                    <div key={i} className="flex items-center gap-1.5 shrink-0">
+                      <div className={`${step.highlight ? 'bg-mauve/20' : 'bg-surface0'} rounded-xl px-2.5 py-2 text-center`}>
+                        <p className="font-semibold text-text">{step.label}</p>
+                        <p className="text-overlay1 mt-0.5">{step.sub}</p>
+                      </div>
+                      {i < arr.length - 1 && <ArrowRight size={12} className="text-overlay0 shrink-0" />}
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2 bg-surface0 rounded-xl p-3">
+                    <Sparkles size={13} className="text-teal shrink-0 mt-0.5" />
+                    <p className="text-xs text-subtext1">
+                      <span className="text-text font-medium">Znalosti výrobců</span> — pro známé výrobce (WAGO, Siemens, ABB…) AI odvodí popis artiklu přímo z typového označení, pokud jej uživatel nezadá.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2 bg-surface0 rounded-xl p-3">
+                    <FlaskConical size={13} className="text-yellow shrink-0 mt-0.5" />
+                    <p className="text-xs text-subtext1">
+                      <span className="text-text font-medium">Upřesňující dotazy</span> — po vyhledávání se AI může zeptat na doplňující informace pro nenalezené položky a zkusit je hledat znovu.
+                      Výsledky se ukládají do <span className="text-text font-medium">historie</span> (posledních 5) — opakované vyhledávání stejného kusovníku nevznikají zbytečné náklady.
+                    </p>
+                  </div>
+                </div>
               </section>
 
               {/* Hromadné vyhledávání */}

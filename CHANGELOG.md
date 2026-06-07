@@ -1,5 +1,40 @@
 # Changelog
 
+## v2.1.0 — AI stavba kusovníku BETA (2026-06-07)
+
+Experimentální funkce pro automatické sestavení kusovníku z typových označení pomocí AI.
+
+### Nové funkce
+
+**AI stavba kusovníku (BETA)**
+- Nový sub-mód v záložce AI mód, přepíná se tlačítkem „AI stavba kusovníku"
+- 6-sloupcová vstupní tabulka: Popis, Výrobce, Typové označení *(povinné)*, Alt. typové označení, Počet, Označení přístroje
+- Excel-like výběr buněk (klik/shift+klik = rozsah, mauve highlight), Tab/Enter/Arrow navigace
+- Vkládání z Excelu zachovává prázdné buňky uvnitř rozsahu
+- 2-kolové vyhledávání per řádek (hlavní + alt. označení) + AI párování přes Mistral Small
+- Paralelní zpracování — max 10 řádků zároveň (worker pool), ~10× rychlejší než sekvenční
+- Znalosti výrobců: pro WAGO, Siemens, ABB, Schneider aj. AI odvodí popis z typového označení (max 40 znaků, jen kde si je jistá)
+- Upřesňující dotazy *po* vyhledávání — zobrazí se pouze pokud ≥3 položky nebyly nalezeny a dotaz by mohl pomoci; re-run jen nenalezených řádků
+- Výsledky: tabulka Kusovník (ZBOM L/T formát) + tabulka K-Založení (12 sloupců, CSV export)
+- „Otevřít kusovník v editoru" — přenese výsledek přímo do ZBOM editoru jako novou záložku
+- Historie posledních 5 sestavení v localStorage — okamžité načtení bez opakování AI volání
+- Tlačítko Vyčistit, pole „Pokyny pro AI" (obecný prompt, ne jen preference prefixů)
+- Varování při přepnutí na BOM mód (náročná operace)
+- BETA badge u přepínače sub-módu
+
+### Karel Bot — opravy a vylepšení
+- Oprava diakritiky v kartičkách výsledků (CSV → UTF-8)
+- BM25 full-text index vedle Fuse.js (AND sémantika, lepší přesnost)
+- Dvoukolová validace — AI upřesní dotaz pokud první výsledky nejsou dostatečné
+- Kartičky se přidají automaticky pokud AI je zmíní v textu odpovědi
+- Web vyhledávání preferuje stránky výrobců
+- Wildcard varianty bez diakritiky
+
+### Infrastruktura
+- CSV data součástí Docker image — aktualizace DB přes Watchtower automaticky
+
+---
+
 ## v2.0.0 — Karel Bot AI (2026-06-06)
 
 Velké vydání přidává integrovaného AI asistenta **Karel Bot** pro vyhledávání průmyslových artiklů přirozenou češtinou.

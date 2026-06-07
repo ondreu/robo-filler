@@ -12,7 +12,16 @@ const ENTRIES: ChangelogEntry[] = [
   {
     version: 'V070626',
     date: '7. 6. 2026',
+    major: true,
     changes: [
+      'AI stavba kusovníku (BETA) — nový sub-mód v AI módu pro automatické sestavení kusovníku z typových označení',
+      'AI stavba kusovníku: 6-sloupcová vstupní tabulka s Excel-like výběrem buněk, Tab/Enter navigací a vkládáním z Excelu',
+      'AI stavba kusovníku: 2-kolové vyhledávání per řádek + AI párování (Mistral Small) — zpracování paralelně, max 10 řádků zároveň',
+      'AI stavba kusovníku: znalosti výrobců — pro WAGO, Siemens, ABB, Schneider aj. AI odvodí popis artiklu z typového označení',
+      'AI stavba kusovníku: výsledky ve dvou tabulkách — Kusovník (ZBOM formát) a K-Založení (CSV export)',
+      'AI stavba kusovníku: upřesňující dotazy po vyhledávání — AI se zeptá jen pokud může zlepšit nenalezené položky',
+      'AI stavba kusovníku: historie posledních 5 sestavení v localStorage — opakované vyhledávání nevyžaduje nové AI volání',
+      'AI stavba kusovníku: tlačítko Vyčistit, přejmenované pole "Pokyny pro AI" (obecný prompt)',
       'Karel Bot: oprava diakritiky v kartičkách výsledků (CSV data převedena na UTF-8, „DIN lišta" místo „DIN li?ta")',
       'Karel Bot: přesnější vyhledávání díky BM25 full-text indexu (AND sémantika) vedle Fuse.js',
       'Karel Bot: dvoukolová validace — AI upřesní dotaz pokud první výsledky nejsou dostatečné',
