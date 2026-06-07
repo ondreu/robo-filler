@@ -1,7 +1,7 @@
 import { Mistral } from '@mistralai/mistralai';
 import { searchTerm, articleCount } from './search.js';
 import { ABBREVIATIONS_CONTEXT } from './abbreviations.js';
-import { resolveManufacturerKey, detectDominantManufacturer, MANUFACTURER_DOCS } from './manufacturers.js';
+import { resolveManufacturerKey, detectDominantManufacturer, MANUFACTURER_DOCS, resolveManufacturersByCategory } from './manufacturers.js';
 
 const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
 const MODEL_EXPAND       = 'mistral-small-latest';
@@ -463,17 +463,18 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   sendStatus('generating', 'Formuluji odpověď...');
   let candidates = articles.slice(0, 40);
 
-  // Resolve manufacturer docs: always from explicit mention; from dominant articles only on follow-up
+  // Resolve manufacturer docs: explicit mention, category keywords, dominant articles (follow-up)
   const primaryMfrKey = resolveManufacturerKey(manufacturer);
   const dominantVyrobce = (type === 'search' && history.length > 0) ? detectDominantManufacturer(candidates) : null;
   const secondaryMfrKey = resolveManufacturerKey(dominantVyrobce);
-  const mfrKeys = [...new Set([primaryMfrKey, secondaryMfrKey].filter(Boolean))];
+  const categoryMfrKeys = type === 'search' ? resolveManufacturersByCategory(userMessage) : [];
+  const mfrKeys = [...new Set([primaryMfrKey, secondaryMfrKey, ...categoryMfrKeys].filter(Boolean))];
 
   if (mfrKeys.length > 0) {
     const MFR_DISPLAY = {
       wago: 'WAGO', abb: 'ABB', siemens: 'Siemens', phoenix: 'Phoenix Contact',
       weidmuller: 'Weidmüller', allen_bradley: 'Allen-Bradley', rittal: 'Rittal',
-      eaton: 'Eaton', omron: 'Omron',
+      eaton: 'Eaton', omron: 'Omron', schneider: 'Schneider Electric',
     };
     const names = mfrKeys.map(k => MFR_DISPLAY[k] ?? k);
     sendStatus('knowledge', `Načítám znalosti výrobce: ${names.join(', ')}`, { mfr: names });
