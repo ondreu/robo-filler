@@ -266,7 +266,7 @@ function InputTable({ rows, onChange }: { rows: InputRow[]; onChange: (rows: Inp
       while (updated.length <= ri) updated.push(newRow());
       for (let c = 0; c < grid[r].length; c++) {
         const ci = colIndex + c;
-        if (ci >= cols.length) break;
+        if (ci >= INPUT_COLS.length) break;
         const field = INPUT_COLS[ci];
         const val = grid[r][c];
         (updated[ri] as unknown as Record<string, unknown>)[field] = field === 'pocet' ? (parseFloat(val) || 1) : val;
@@ -655,7 +655,7 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
     await startBuild([]);
   }
 
-  async function runPostCheck(currentBomRows: BomResultRow[], currentToCreate: ToCreateRow[]) {
+  async function runPostCheck(currentBomRows: BomResultRow[], _currentToCreate: ToCreateRow[]) {
     const notFoundRows = rows.filter((_, i) => currentBomRows[i]?.type === 'T');
     if (notFoundRows.length === 0) { setPhase('results'); return; }
     setPhase('post_check');
@@ -732,9 +732,7 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
               } else if (eventType === 'result') {
                 // Merge refined results back into original bomRows/toCreate
                 const newBomRows = [...bomRows];
-                const newToCreate: ToCreateRow[] = [];
                 (data.bomRows as BomResultRow[]).forEach((refined, idx) => { newBomRows[notFoundIndices[idx]] = refined; });
-                newBomRows.forEach(r => { /* toCreate is rebuilt from T rows in results view */ });
                 setBomRows(newBomRows);
                 setToCreate(data.toCreate ?? []);
                 setPhase('results');
