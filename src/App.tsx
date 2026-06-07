@@ -282,7 +282,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-base text-text p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-[1600px] mx-auto space-y-6">
         {/* Header */}
         <header className="text-center space-y-3">
           <h1 className="text-4xl md:text-5xl font-bold text-mauve">
