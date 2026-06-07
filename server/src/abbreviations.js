@@ -12,6 +12,10 @@ MATERIÁLY:
 - hliník, hliníkový = Al, ALU, aluminium
 - pozinkovaný, zinkovaný = Zn, ZN, verzinkt
 - měď, měděný = Cu, copper
+- pozlacený, zlaté = Au, gold-plated, vergoldet
+- postříbřený, stříbrné, stříbřené = Ag, silver-plated, versilbert
+- ocel, ocelový, ocelová = Fe, S235, S355, ST, steel, Stahl
+- pryž / guma = EPDM, NBR, NBR/PVC, silikon, rubber
 
 BARVY (anglické zkratky):
 - černá = BK, Black
@@ -39,6 +43,9 @@ ELEKTRO — JISTIČE:
 - charakteristika B = "B" před proudem (B16A, B16, B10A...)
 - charakteristika C = "C" před proudem (C16A, C16, C25A...)
 - charakteristika D = "D" před proudem
+- válcová = 5x20, 6x32, cylindrical
+- NH pojistka, výkonové pojistky = NH00, NH1, NH2, HRC
+- pouzdro pojistky = fuse holder
 
 ELEKTRO — PROUDY A KONTAKTY:
 - stejnosměrný proud, DC = "=" (rovnítko v názvu)
