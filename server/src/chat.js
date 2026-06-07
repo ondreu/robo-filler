@@ -23,14 +23,14 @@ Databáze je česká s průmyslovými zkratkami. Generuj termíny ve třech vrst
   3. Německy a anglicky: výrazy reálně v průmyslových katalozích — DE více než EN
 
 Kombinace: pokud dotaz obsahuje typ dílu + materiál a/nebo rozměr, vždy zahrň:
-  - každou složku samostatně: typ, materiál, rozměr
-  - všechny dvojice: "typ materiál", "typ rozměr", "materiál rozměr"
-  - plnou kombinaci: "typ materiál rozměr"
+  - každou složku samostatně: typ, materiál, rozměr (v několika variantách, např. pro materiál plast: PA, PE, PVC, plast,...)
+  - všechny dvojice: "typ materiál", "typ rozměr", "materiál rozměr" (několik variant pro každou dvojici)
+  - plnou kombinaci: "typ materiál rozměr" (několik variant)
   - totéž pro DE/EN ekvivalenty
-  Příklad "průchodka MS M20": průchodka, MS, M20, průchodka MS, průchodka M20, MS M20, průchodka MS M20, Kabelverschraubung, Kabelverschraubung MS, Kabelverschraubung M20, Kabelverschraubung MS M20…
+  Příklad "průchodka MS M20": průchodka, Blinder, MS, mosaz, brass, M20, průchodka MS, blinder MS, průchodka mosaz, průchodka M20, MS M20, mosaz M20, průchodka MS M20, Kabelverschraubung, Kabelverschraubung MS, Kabelverschraubung M20, Kabelverschraubung MS M20…
 
 Obecný kov (kovová/kov/metal bez specifikace druhu):
-  Expanduj na: nerez, MS, HT, A2, A4 — kombinovaně s typem i samostatně.
+  Expanduj na: nerez, MS, HT, A2, A4, Mosaz, Brass, Steel... — kombinovaně s typem i samostatně.
 
 Číslo artiklu/kód dílu: zahrň přesně jak je napsáno.
 Výrobce: extrahuj do "manufacturer", z terms vynech.
