@@ -36,7 +36,7 @@ app.post('/api/chat', async (req, res) => {
     const result = await handleChat(
       message.trim(),
       history,
-      (step, label) => send('status', { step, label }),
+      (step, label, meta = {}) => send('status', { step, label, ...meta }),
       !!webSearchEnabled,
       synthModel,
     );

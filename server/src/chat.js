@@ -439,7 +439,7 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   } else if (type === 'search') {
     const preview = terms.slice(0, 3).join(', ') + (terms.length > 3 ? '...' : '');
     const mfrLabel = manufacturer ? ` [výrobce: ${manufacturer}]` : '';
-    sendStatus('searching', `Hledám v databázi: ${preview}${mfrLabel}`);
+    sendStatus('searching', `Hledám v databázi: ${preview}${mfrLabel}`, { terms });
 
     const seen = new Set();
     for (const term of terms) {
@@ -452,7 +452,7 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
     }
   } else if (type === 'web_search') {
     if (process.env.TAVILY_API_KEY) {
-      sendStatus('searching', `Hledám na internetu: ${query}`);
+      sendStatus('searching', `Hledám na internetu: ${query}`, { webQuery: true, terms: [query] });
       webResults = await webSearch(query);
     } else {
       sendStatus('searching', 'Webové vyhledávání není nakonfigurováno (chybí TAVILY_API_KEY).');
@@ -472,8 +472,9 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
 
   // Two-pass: if SYNTH requests refinement, do a second search and re-synthesize
   if (type === 'search' && refinement?.terms?.length > 0) {
-    const preview = refinement.terms.slice(0, 2).join(', ');
-    sendStatus('searching', `Upřesňuji výsledky: ${preview}…`);
+    const refTerms = refinement.terms.slice(0, 3);
+    const preview = refTerms.slice(0, 2).join(', ');
+    sendStatus('searching', `Upřesňuji výsledky: ${preview}…`, { terms: refTerms, refinement: true });
 
     const seenArtikls = new Set(articles.map(a => a.artikl));
     for (const term of refinement.terms.slice(0, 3)) {
