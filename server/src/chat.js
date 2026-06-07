@@ -52,6 +52,7 @@ Pak vybrané artikly jako odrážky. Kandidáti mají formát "artikl | název |
 - **{artikl}** — {název} | {výrobce}
   - typ: {typové označení}
   - {parametry vyčtené z typového označení — průřez, proud, počet pólů, barva, charakteristika, krytí… Preferuj typové označení jako primární zdroj informací, ne název.}
+
 - **{artikl}** — {název} | {výrobce}
   - …
 
