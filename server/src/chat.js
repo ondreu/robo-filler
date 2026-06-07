@@ -12,17 +12,20 @@ const EXPAND_SYSTEM = `Jsi expert na průmyslové díly, elektrotechnické kompo
 Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
 
 1. Pokud jde o vyhledávání průmyslového dílu nebo artiklu v databázi (i follow-up jako "a pro M25?" nebo "zkus to s IP67" nebo "chci na DIN lištu"):
-   Rozšiř hledaný výraz o synonyma a překlady (CS/DE/EN), zachovej rozměry a specifikace.
-   Používej zkratky a konvence z přiložených znalostí databáze.
-   Pokud dotaz obsahuje číslo artiklu nebo kód dílu (formáty jako 2204-1401, 5SY4116, XB4BA31, M20x1.5 apod.), VŽDY ho zahrň do terms přesně jak je — nesmíš ho vynechat ani nahradit popisem.
-   VÝROBCE: Pokud je výrobce zmíněn v aktuálním dotazu, extrahuj ho do "manufacturer". Pokud aktuální dotaz je follow-up (navazuje na předchozí konverzaci) a v historii byl konkrétní výrobce zmíněn, zachovej ho — uživatel stále hledá u stejného výrobce. Jinak "manufacturer": null.
+   Databáze je primárně česká s průmyslovými zkratkami — generuj termíny v tomto pořadí priority:
+   1. ČESKY — přesné i zkrácené formy, česká synonyma, zachovej rozměry a specifikace
+   2. ZKRATKY Z DB — MS, PA, HT, A2, A4, nerez, PE, PP, IP67, IP68 a další zkratky materiálů/krytí které se vyskytují přímo v názvech položek
+   3. NĚMČINA — výrazy reálně používané v českých průmyslových katalozích (Edelstahl, Klemme, Verschraubung…) — méně než čeština
+   4. ANGLIČTINA — jen nejběžnější průmyslové termíny, méně než němčina
+   Pokud dotaz obsahuje číslo artiklu nebo kód dílu (formáty jako 2204-1401, 5SY4116, XB4BA31, M20x1.5 apod.), VŽDY ho zahrň do terms přesně jak je.
+   VÝROBCE: Pokud je výrobce zmíněn v aktuálním dotazu, extrahuj ho do "manufacturer". Pokud aktuální dotaz je follow-up a v historii byl konkrétní výrobce zmíněn, zachovej ho. Jinak "manufacturer": null.
    Z termínů pro vyhledávání vynech jméno výrobce — hledej jen podle typu/názvu dílu.
-   PŘEKLADY PRO DATABÁZI:
-   - "DIN lišta" jako KOMPONENT (hledám lištu samotnou) = "lišta", "lista", "NS 35", "TS 35", "UB 7,5", "Tragschiene", "Hutschiene". Přidej materiál pokud zmíněn: nerez/A2/A4 = "nerez", "Edelstahl", "stainless".
-   - "na DIN lištu" / "pro DIN lištu" / "rail mount" (hledám zařízení montované na lištu) = "řadová" nebo "Durchgang" nebo "Klemme".
-   - "TOPJOB S" = řadová svorka WAGO. "inline" / "instalační" = "Verbindungsklemme" nebo "spojovací".
-   KOMBINOVANÉ VÝRAZY: Pokud dotaz obsahuje materiál + typ dílu, VŽDY přidej kombinované výrazy "materiál typ" — samotný materiál bez kontextu dílu vrací příliš obecné výsledky. Příklad: dotaz "nerezová záslepka M20" → terms musí obsahovat "nerez záslepka", "nerez plug", ne jen "nerez" a "záslepka" zvlášť.
-   OBECNÝ MATERIÁL "kov/kovová/metal": Pokud je materiál nespecifikovaný ("kovová", "kov", "metal", "metallic") bez konkrétního druhu, expanduj na všechny běžné kovy kombinované s typem dílu: nerez, Edelstahl, stainless, MS, mosaz, Messing, brass, ocel, Stahl, steel, hliník, Aluminium, aluminium. Každý jako kombinaci s typem dílu ("nerez záslepka", "mosaz záslepka", "MS záslepka" atd.).
+   KOMBINACE: Pokud dotaz obsahuje typ dílu + materiál a/nebo rozměr, generuj kombinace "typ materiál", "typ rozměr", "typ materiál rozměr". Samotný materiál nebo samotný rozměr bez typu dílu jsou nepoužitelné — kombinace jsou primární výrazy.
+   OBECNÝ KOV: "kovová/kov/metal" expanduj na zkratky/označení z DB: nerez, MS, HT, A2, A4 — vždy kombinovaně s typem dílu. Vynech anglické/německé ekvivalenty.
+   SPECIFIKA DATABÁZE:
+   - "DIN lišta" jako KOMPONENT = "lišta", "NS 35", "TS 35", "Tragschiene", "Hutschiene"
+   - "na DIN lištu" / "rail mount" = "řadová" nebo "Klemme"
+   - "TOPJOB S" = řadová svorka WAGO. "inline" / "instalační" = "Verbindungsklemme" nebo "spojovací"
    Vrať: {"type": "search", "terms": ["term1", "term2", ...], "manufacturer": "WAGO", "query": ""}
 
 2. Pokud uživatel žádá informace z internetu (datasheet, cena, specifikace výrobce, kde koupit, technická dokumentace):
