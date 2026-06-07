@@ -20,7 +20,7 @@ Analyzuj zprávu uživatele v kontextu konverzace a rozhodni:
    Pokud dotaz obsahuje číslo artiklu nebo kód dílu (formáty jako 2204-1401, 5SY4116, XB4BA31, M20x1.5 apod.), VŽDY ho zahrň do terms přesně jak je.
    VÝROBCE: Pokud je výrobce zmíněn v aktuálním dotazu, extrahuj ho do "manufacturer". Pokud aktuální dotaz je follow-up a v historii byl konkrétní výrobce zmíněn, zachovej ho. Jinak "manufacturer": null.
    Z termínů pro vyhledávání vynech jméno výrobce — hledej jen podle typu/názvu dílu.
-   KOMBINACE: Pokud dotaz obsahuje typ dílu + materiál a/nebo rozměr, generuj kombinace "typ materiál", "typ rozměr", "typ materiál rozměr". Samotný materiál nebo samotný rozměr bez typu dílu jsou nepoužitelné — kombinace jsou primární výrazy.
+   KOMBINACE: Pokud dotaz obsahuje typ dílu + materiál a/nebo rozměr, přidej kombinace "typ materiál", "typ rozměr", "typ materiál rozměr".
    OBECNÝ KOV: "kovová/kov/metal" expanduj na zkratky/označení z DB: nerez, MS, HT, A2, A4 — vždy kombinovaně s typem dílu. Vynech anglické/německé ekvivalenty.
    SPECIFIKA DATABÁZE:
    - "DIN lišta" jako KOMPONENT = "lišta", "NS 35", "TS 35", "Tragschiene", "Hutschiene"
@@ -56,7 +56,7 @@ Začni jednou větou shrnující co bylo nalezeno.
 Pak vybrané artikly jako odrážky. Kandidáti mají formát "artikl | název | výrobce | typ:…" — odkazuj na ně číslem artiklu nebo názvem:
 - **{artikl}** — {název} | {výrobce}
   - typ: {typové označení}
-  - {parametry vyčtené z typového označení — průřez, proud, počet pólů, barva, charakteristika, krytí… Preferuj typové označení jako primární zdroj informací, ne název.}
+  - {parametry které jsou EXPLICITNĚ uvedeny v názvu nebo typovém označení — průřez, proud, počet pólů, barva, charakteristika, krytí… Uváděj jen co tam skutečně stojí, nic neodvozuj ani nevymýšlej.}
 
 - **{artikl}** — {název} | {výrobce}
   - …
