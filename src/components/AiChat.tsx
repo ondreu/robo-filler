@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { Article } from '../types';
 
 const BACKEND_URL = ((import.meta.env.VITE_BACKEND_URL as string | undefined) ?? '').trim().replace(/\/$/, '');
@@ -101,25 +102,43 @@ function AiArticleCard({ article, dim = false }: { article: Article; dim?: boole
 const MD_COMPONENTS: Components = {
   p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
   strong: ({ children }) => <strong className="font-semibold text-mauve">{children}</strong>,
-  ul: ({ children }) => <ul className="list-disc list-outside ml-4 space-y-1.5 mt-1.5 [&_ul]:list-none [&_ul]:ml-2 [&_ul]:space-y-0.5 [&_ul]:mt-0.5 [&_ul]:text-subtext1">{children}</ul>,
-  ol: ({ children }) => <ol className="list-decimal list-outside ml-4 space-y-1 mt-1.5">{children}</ol>,
+  em: ({ children }) => <em className="italic text-subtext1">{children}</em>,
+  del: ({ children }) => <del className="line-through text-overlay1">{children}</del>,
+  ul: ({ children }) => <ul className="list-disc list-outside ml-4 space-y-1 mt-1.5 mb-1.5">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal list-outside ml-4 space-y-1 mt-1.5 mb-1.5">{children}</ol>,
   li: ({ children }) => <li className="pl-0.5">{children}</li>,
-  code: ({ children }) => <code className="bg-surface1 rounded px-1.5 py-0.5 font-mono text-sm">{children}</code>,
+  pre: ({ children }) => (
+    <pre className="bg-surface0 border border-surface1 rounded-xl px-4 py-3 overflow-x-auto my-2 text-sm font-mono leading-relaxed">{children}</pre>
+  ),
+  code: ({ children, className }) => {
+    if (className) {
+      // block code — inside <pre>, className = "language-xxx"
+      return <code className="text-teal">{children}</code>;
+    }
+    // inline code
+    return <code className="bg-surface1 rounded px-1.5 py-0.5 font-mono text-sm text-teal">{children}</code>;
+  },
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-2 border-mauve/50 pl-4 my-2 text-subtext1 italic">{children}</blockquote>
+  ),
   a: ({ href, children }) => (
     <a href={href} target="_blank" rel="noopener noreferrer" className="text-mauve underline hover:text-pink">{children}</a>
   ),
+  h1: ({ children }) => <h1 className="text-lg font-bold text-text mt-4 mb-1.5">{children}</h1>,
   h2: ({ children }) => <h2 className="text-base font-bold text-text mt-3 mb-1">{children}</h2>,
   h3: ({ children }) => <h3 className="text-sm font-bold text-subtext1 mt-2 mb-0.5">{children}</h3>,
+  h4: ({ children }) => <h4 className="text-sm font-semibold text-overlay1 mt-2 mb-0.5">{children}</h4>,
+  hr: () => <hr className="border-surface2 my-3" />,
   table: ({ children }) => (
-    <div className="overflow-x-auto my-2">
+    <div className="overflow-x-auto my-2 rounded-xl border border-surface1">
       <table className="text-sm border-collapse w-full">{children}</table>
     </div>
   ),
   thead: ({ children }) => <thead className="bg-surface1">{children}</thead>,
   tbody: ({ children }) => <tbody>{children}</tbody>,
-  tr: ({ children }) => <tr className="border-b border-surface2">{children}</tr>,
+  tr: ({ children }) => <tr className="border-b border-surface2 last:border-b-0">{children}</tr>,
   th: ({ children }) => <th className="px-3 py-1.5 text-left font-semibold text-mauve">{children}</th>,
-  td: ({ children }) => <td className="px-3 py-1.5">{children}</td>,
+  td: ({ children }) => <td className="px-3 py-1.5 text-subtext1">{children}</td>,
 };
 
 function StatusTrace({ log, isLoading = false }: { log: Status[]; isLoading?: boolean }) {
@@ -527,7 +546,7 @@ export function AiChat() {
 
                   {/* Response bubble */}
                   <div className="bg-surface0 text-text rounded-2xl rounded-bl-sm px-4 py-3 leading-relaxed">
-                    <ReactMarkdown components={MD_COMPONENTS}>{msg.content}</ReactMarkdown>
+                    <ReactMarkdown components={MD_COMPONENTS} remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                   </div>
 
                   {/* AI-selected top articles */}
