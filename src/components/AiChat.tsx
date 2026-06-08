@@ -334,6 +334,7 @@ export function AiChat() {
   }, [messages]);
 
   useEffect(() => {
+    if (!messages.length && !currentStatusLog) return;
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, currentStatusLog]);
 

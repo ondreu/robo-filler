@@ -182,6 +182,7 @@ export function GuidedSearch() {
   }, []);
 
   useEffect(() => {
+    if (!answers.length && !result && !isLoading) return;
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [answers, result, isLoading]);
 

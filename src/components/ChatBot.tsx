@@ -149,6 +149,7 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
   }, [messages]);
 
   useEffect(() => {
+    if (!messages.length && !status) return;
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, status]);
 
