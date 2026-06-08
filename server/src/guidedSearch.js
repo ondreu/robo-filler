@@ -391,10 +391,14 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
       const isWire = subtypeAnswer.includes('Jednožilový');
       const type = isWire ? 'vodič' : 'kabel';
 
+      console.log('[guided debug] allAnswers:', JSON.stringify(allAnswers));
+      console.log('[guided debug] isWire:', isWire, '| subtypeAnswer:', subtypeAnswer.slice(0, 40));
+
       sendEvent('status', { label: `Filtruji databázi ${isWire ? 'vodičů' : 'kabelů'}…` });
 
       // Progressive relaxation: if 0 results, drop bonus filters one by one
       let filtered = isWire ? filterWires(allAnswers) : filterCables(allAnswers);
+      console.log('[guided debug] filtered.length after initial filter:', filtered.length);
       const droppedKeys = [];
 
       if (filtered.length === 0) {

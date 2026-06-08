@@ -14,6 +14,7 @@ function loadCables() {
 }
 
 const allCables = loadCables();
+console.log(`[cableSearch] DATA_DIR=${DATA_DIR}`);
 console.log(`[cableSearch] Loaded ${allCables.length} cable articles`);
 
 export const cableArticleCount = allCables.length;
