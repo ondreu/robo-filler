@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HelpCircle, X, Database, Search, Bot, List, Table2, Globe, ArrowRight, Sparkles, FlaskConical, ListOrdered, Zap } from 'lucide-react';
+import { HelpCircle, X, Database, Search, Bot, List, Table2, Globe, ArrowRight, Sparkles, FlaskConical, ListOrdered } from 'lucide-react';
 
 export function HowItWorks() {
   const [open, setOpen] = useState(false);

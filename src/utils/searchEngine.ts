@@ -343,8 +343,9 @@ function getSearchableFields(article: Article, field: SearchField): Record<strin
       cisloDiluVyrobce: article.cisloDiluVyrobce,
     };
   } else {
+    const val = article[field as keyof Article];
     return {
-      [field]: article[field as keyof Article],
+      [field]: val != null ? String(val) : '',
     };
   }
 }
