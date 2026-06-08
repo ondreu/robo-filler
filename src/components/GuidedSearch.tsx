@@ -161,13 +161,25 @@ export function GuidedSearch() {
   const [sessions, setSessions] = useState<GuidedSession[]>(() => loadSessions());
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
+  // Category chips
+  const [categories, setCategories] = useState<{ key: string; label: string }[]>([]);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const requestCounterRef = useRef(0);
+  // Always-current ref so sendRequest (stable identity, empty deps) never captures a stale handleEvent
+  const handleEventRef = useRef<(et: string, d: Record<string, unknown>, ic: () => boolean) => void>(() => {});
 
   useEffect(() => {
     inputRef.current?.focus();
   }, [phase, currentQuestion]);
+
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/guided-categories`)
+      .then(r => r.json())
+      .then((data: { key: string; label: string }[]) => setCategories(data))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -278,7 +290,7 @@ export function GuidedSearch() {
             if (!isCurrent()) return;
             try {
               const data = JSON.parse(line.slice(6));
-              handleEvent(eventType, data, isCurrent);
+              handleEventRef.current(eventType, data, isCurrent);
             } catch { /* ignore parse errors */ }
             eventType = '';
           }
@@ -392,6 +404,8 @@ export function GuidedSearch() {
       return;
     }
   }, [answers, category, categoryLabel, currentSessionId, phase, saveSession]);
+  // Keep ref in sync so sendRequest always calls the latest version
+  handleEventRef.current = handleEvent;
 
   // ---------------------------------------------------------------------------
   // Submit handler
@@ -439,10 +453,26 @@ export function GuidedSearch() {
     }
   };
 
-  const handleOptionClick = (option: string) => {
-    setInput(option);
-    setTimeout(() => handleSubmit(), 0);
-  };
+  const handleOptionClick = useCallback(async (option: string) => {
+    if (isLoading) return;
+
+    if (phase === 'idle') {
+      await sendRequest({ message: option, phase: 'initial', category: null, answers: [] });
+      return;
+    }
+
+    if (phase === 'questioning' && currentQuestion) {
+      const newAnswers = [...answers, { key: '', question: currentQuestion.text, answer: option }];
+      setAnswers(newAnswers);
+      setCurrentQuestion(null);
+      await sendRequest({ message: option, phase: 'questioning', category, answers });
+    }
+  }, [isLoading, phase, currentQuestion, answers, category, sendRequest]);
+
+  const handleCategoryChipClick = useCallback(async (key: string) => {
+    if (isLoading) return;
+    await sendRequest({ message: '', phase: 'initial', categoryKey: key, answers: [] });
+  }, [isLoading, sendRequest]);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -541,7 +571,7 @@ export function GuidedSearch() {
           {/* IDLE — welcome screen                                             */}
           {/* ---------------------------------------------------------------- */}
           {phase === 'idle' && (
-            <div className="flex flex-col items-center justify-center h-full px-8 text-center space-y-6">
+            <div className="flex flex-col items-center justify-center h-full px-8 py-6 text-center space-y-5">
               <div>
                 <h2 className="text-2xl font-bold text-text mb-2">Řízené vyhledávání</h2>
                 <p className="text-subtext1 text-sm max-w-md leading-relaxed">
@@ -549,20 +579,50 @@ export function GuidedSearch() {
                   AI na základě odpovědí vygeneruje desítky vyhledávacích termínů a najde nejlepší shody.
                 </p>
               </div>
-              <div className="text-sm text-overlay0 max-w-xs">
-                <p className="mb-3">Napiš co hledáš — název komponenty:</p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {['Jistič', 'Stykač', 'Svorka', 'Napájecí zdroj', 'Průchodka', 'Relé', 'Frekvenční měnič'].map(ex => (
-                    <button
-                      key={ex}
-                      onClick={() => { setInput(ex); setTimeout(() => inputRef.current?.focus(), 50); }}
-                      className="px-3 py-1.5 rounded-lg bg-surface0 hover:bg-surface1 text-subtext1 text-xs transition-colors"
-                    >
-                      {ex}
-                    </button>
-                  ))}
+
+              {categories.length > 0 && (
+                <div className="w-full max-w-2xl space-y-4 text-left">
+                  {/* Komponenty group */}
+                  {categories.filter(c => !c.key.includes('prislusenstvi')).length > 0 && (
+                    <div>
+                      <p className="text-[11px] text-overlay0 uppercase tracking-wider mb-2 px-1">Komponenty</p>
+                      <div className="flex flex-wrap gap-2">
+                        {categories.filter(c => !c.key.includes('prislusenstvi')).map(cat => (
+                          <button
+                            key={cat.key}
+                            onClick={() => handleCategoryChipClick(cat.key)}
+                            disabled={isLoading}
+                            className="px-3 py-1.5 rounded-xl bg-surface0 hover:bg-teal/20 hover:text-teal border border-surface1 hover:border-teal/40 text-subtext1 text-xs transition-colors disabled:opacity-40"
+                          >
+                            {cat.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Příslušenství group */}
+                  {categories.filter(c => c.key.includes('prislusenstvi')).length > 0 && (
+                    <div>
+                      <p className="text-[11px] text-overlay0 uppercase tracking-wider mb-2 px-1">Příslušenství</p>
+                      <div className="flex flex-wrap gap-2">
+                        {categories.filter(c => c.key.includes('prislusenstvi')).map(cat => (
+                          <button
+                            key={cat.key}
+                            onClick={() => handleCategoryChipClick(cat.key)}
+                            disabled={isLoading}
+                            className="px-3 py-1.5 rounded-xl bg-surface0 hover:bg-mauve/20 hover:text-mauve border border-surface1 hover:border-mauve/40 text-subtext1 text-xs transition-colors disabled:opacity-40"
+                          >
+                            {cat.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
+
+              <p className="text-xs text-overlay0">nebo napiš název komponenty do pole níže</p>
             </div>
           )}
 

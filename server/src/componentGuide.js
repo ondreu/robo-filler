@@ -17,6 +17,101 @@ function normalize(text) {
 // ---------------------------------------------------------------------------
 export const COMPONENT_CATEGORIES = [
   // -------------------------------------------------------------------------
+  // 0a. Příslušenství jističů
+  // -------------------------------------------------------------------------
+  {
+    key: 'prislusenstvi_jistic',
+    label: 'Příslušenství jističů',
+    aliases: [
+      'pomocný kontakt jistič', 'pomocny kontakt jistic', 'signalizační kontakt jistič', 'signalizacni kontakt jistic',
+      'alarm kontakt jistič', 'hilfsschalter jistič', 'auxiliary contact breaker',
+      'dálkové vypnutí', 'dalkove vypnuti', 'shunt trip', 'vypínací cívka jistič', 'vypinaci civka jistic',
+      'podpěťová spoušť', 'podpetova spous', 'undervoltage release', 'undervoltage trip',
+      'motorový pohon jistič', 'motorovy pohon jistic', 'motorový ovladač', 'motor operator',
+      'rozšiřovací modul jistič', 'rozsirujici modul jistic', 'S2C', 'add-on jistič',
+    ],
+    questions: [
+      { key: 'mfr',      text: 'Výrobce jističe?',               options: ['ABB', 'Siemens', 'Eaton', 'Schneider Electric', 'Bez preference'] },
+      { key: 'acc_type', text: 'Jaký typ příslušenství?',        options: ['Pomocný / signalizační kontakt', 'Dálkové vypnutí (shunt trip)', 'Podpěťová spoušť (undervoltage release)', 'Motorový pohon / ovladač', 'Jiné'] },
+      { key: 'breaker',  text: 'Typ nebo řada jističe? (napiš, např. S200, S200M, 5SY6, FAZ, iC60N)' },
+    ],
+    mfrKeys: ['abb', 'siemens', 'eaton', 'schneider'],
+    knowledge: `## Příslušenství jističů — přehled
+
+Jističe MCB/MPCB lze doplnit o: pomocné/signalizační kontakty, dálkové vypnutí (shunt trip), podpěťovou spoušť, motorový pohon. Vždy záleží na řadě a rámu jističe.
+
+---
+### ABB — příslušenství S200 / S200M / S200P:
+**Pomocné kontakty (Auxiliary/Alarm):**
+  S2C-H6R     = 1NO + 1NC, pravý (standardní)
+  S2C-H6L     = 1NO + 1NC, levý
+  S2C-H2R     = 2× pomocný (2NO nebo 2NC), pravý
+  S2C-A1      = 1× pomocný NO nebo NC (volitelný)
+**Signalizační (alarmový) kontakt:**
+  S2C-AL2R    = alarmový (trip signal) kontakt, pravý
+  S2C-AL2L    = alarmový kontakt, levý
+**Dálkové vypnutí (shunt trip):**
+  S2C-ST06T   = shunt trip 6 V AC/DC
+  S2C-ST24T   = shunt trip 24 V AC/DC
+  S2C-ST110T  = shunt trip 110 V AC/DC
+  S2C-ST230T  = shunt trip 230 V AC/DC
+**Podpěťová spoušť:**
+  S2C-UAB12   = undervoltage release 12 V AC/DC
+  S2C-UAB24   = undervoltage release 24 V AC/DC
+  S2C-UA230T  = undervoltage release 230 V AC/DC
+**Motorový pohon:**
+  S2C-MT      = motorový ovladač (remote on/off) pro S200
+  M2C-MT6     = motorový pohon 6A (pro větší rámy)
+
+---
+### Siemens — příslušenství 5SY / 5SL:
+Pomocné a alarmové kontakty se připevňují zboku na DIN jistič.
+**Pomocné kontakty (5ST3 série):**
+  5ST3010     = 1NO + 1NC pomocný kontakt
+  5ST3020     = 2× pomocný
+  5ST3030     = 1× alarmový (trip indicator)
+**Dálkové vypnutí (MX / remote trip):**
+  5ST3040     = dálkový (shunt trip) 24 V DC
+  5ST3041     = dálkový vypínač 230 V AC
+**Podpěťová spoušť:**
+  5ST3050     = undervoltage release 230 V AC
+  5ST3051     = undervoltage release 24 V DC
+**Motorový pohon:**
+  5ST3060     = motorový pohon pro 5SY (24–48 V DC/AC)
+  5ST3070     = motorový pohon 230 V AC
+
+---
+### Eaton — příslušenství FAZ / PL6:
+**Pomocné kontakty (PKZ-M/FAZ serie):**
+  PKZ M-I1    = 1× pomocný kontakt (NO nebo NC) pro PKZM0/FAZ
+  PKZ M-I11   = 1NO + 1NC
+  PKZ-MFAZ    = montážní adapter
+**Dálkové vypnutí:**
+  FAZ-NA-ST   = shunt trip pro FAZ-NA
+  PKZ M-ST    = shunt trip pro PKZM0
+**Podpěťová spoušť:**
+  PKZ M-UVT   = undervoltage trip pro PKZM0
+  FAZ-NA-UA   = undervoltage pro FAZ
+
+---
+### Schneider Electric — příslušenství iC60 / C60N:
+**Pomocné kontakty:**
+  A9A26924    = OF (auxiliary contact) 1NO+1NC pro iC60N
+  A9A26926    = OF 2NO
+  A9A26927    = SD (signal alarm/trip) contact
+**Dálkové vypnutí:**
+  A9A26476    = MX (shunt trip) 12 V DC pro iC60N
+  A9A26477    = MX 24 V DC
+  A9A26479    = MX 230 V AC
+**Podpěťová spoušť:**
+  A9A26485    = MN (undervoltage release) 24 V DC
+  A9A26488    = MN 230 V AC
+**Motorový pohon:**
+  A9A26524    = motorový pohon 24 V DC pro iC60N
+`,
+  },
+
+  // -------------------------------------------------------------------------
   // 1. Jistič
   // -------------------------------------------------------------------------
   {
@@ -149,6 +244,104 @@ Pro MPCB: MS116-10, MS116-16, PKZM0-10, GV2ME14, 3RV2011-4AA10
 **SEKUNDÁRNÍ — obecné fallbacky:**
 jistič [char][proud] [póly], MCB [proud]A [char], Leitungsschutzschalter [char][proud], LS-Schalter [proud]A [char]
 Motorový jistič [proud]A, MPCB [proud]A, circuit breaker [proud]A`,
+  },
+
+  // -------------------------------------------------------------------------
+  // 2a. Příslušenství stykačů
+  // -------------------------------------------------------------------------
+  {
+    key: 'prislusenstvi_stykac',
+    label: 'Příslušenství stykačů',
+    aliases: [
+      'pomocný kontakt', 'pomocne kontakty', 'pomocny kontakt', 'hilfsschalter', 'auxiliary contact',
+      'přídavný kontakt', 'pridavny kontakt', 'blok kontaktů', 'blok kontaktu', 'kontaktní blok',
+      'rc člen', 'rc clen', 'rc článek', 'rc clanek', 'rc prvek',
+      'tlumič cívky', 'tlumíc civky', 'přepěťový člen stykač', 'prepetovy clen stykac',
+      'mechanické blokování stykač', 'mechanicke blokovani stykac', 'vzájemné blokování',
+      'pneumatický časový člen', 'pneumaticky casovy clen', 'časový člen stykač',
+    ],
+    questions: [
+      { key: 'mfr',      text: 'Výrobce stykače?',                           options: ['ABB', 'Siemens', 'Schneider Electric', 'Eaton (Moeller)', 'Bez preference'] },
+      { key: 'acc_type', text: 'Jaký typ příslušenství?',                    options: ['Pomocný kontakt', 'Varistor / RC člen (potlačení napětí cívky)', 'Mechanické blokování', 'Pneumatický / časový člen', 'Jiné'] },
+      { key: 'contactor',text: 'Řada nebo typ stykače? (napiš, např. A9, A16, LC1D09, 3RT2016, DILM7)' },
+    ],
+    mfrKeys: ['abb', 'siemens', 'schneider', 'eaton'],
+    knowledge: `## Příslušenství stykačů — přehled
+
+Příslušenství stykačů: pomocné kontakty (blokové kontakty), varistory/RC členy (potlačení přepětí cívky), mechanická blokování, časové členy.
+
+---
+### ABB — příslušenství stykačů řady A / AF:
+**Pomocné kontakty (blokové):**
+  CA4-01 = 1NC (pro A9–A75)
+  CA4-10 = 1NO (pro A9–A75)
+  CA4-11 = 1NO + 1NC (pro A9–A75)
+  CA4-22 = 2NO + 2NC
+  CA4-31 = 3NO + 1NC
+  CA4-40 = 4NO
+  CA4-04 = 4NC
+Pro větší stykače (AF): CAF4-01, CAF4-10, CAF4-11
+**Varistory / RC členy:**
+  RC4-7    = RC člen, A9–A16 (230 V AC)
+  VA4-3    = varistor, A9–A16 (24–48 V DC)
+  VA4-6    = varistor, A26–A45
+  RC4-6    = RC člen A26–A45
+**Mechanické blokování:**
+  ADP4-2   = mechanické blokování pro 2× stykač A9–A75
+  ADPAF    = pro AF stykače
+
+---
+### Siemens — příslušenství 3RT2:
+**Pomocné kontakty S00 (3RT2015–3RT2018):**
+  3RH2911-1HA01 = 1NO + 1NC, bočně montovaný, S00
+  3RH2911-1FA22 = 2NO + 2NC, S00
+  3RH2911-2HA01 = 1NO + 1NC, čelně montovaný, S00
+**Pomocné kontakty S0 a výše (3RT2025+):**
+  3RH2921-1AA01 = 1NO, S0–S12
+  3RH2921-1AA10 = 1NC, S0–S12
+  3RH2921-1HA01 = 1NO + 1NC, S0–S12
+**Varistory / RC členy:**
+  3RT2916-1CC00 = varistor/RC, S00, 24–48 V DC
+  3RT2916-1BB00 = RC člen, S00, 24–48 V AC/DC
+  3RT2926-1BB00 = RC člen, S0–S3
+  3RT2926-1CC00 = varistor, S0, 24–48 V DC
+**Mechanické blokování:**
+  3RA1924-2A  = blokování 2× 3RT S00
+  3RA1924-1A  = blokování 2× 3RT S0
+
+---
+### Schneider Electric — příslušenství LC1D:
+**Pomocné kontakty:**
+  LADN11   = 1NO + 1NC (LC1D09–LC1D38)
+  LADN20   = 2NO
+  LADN02   = 2NC
+  LADN31   = 3NO + 1NC
+  LADN40   = 4NO
+  LADN04   = 4NC
+  LAD8N11  = 1NO + 1NC, čelní blok
+Pro LC1D40–D65: LADL11, LADL20, LADL02
+**Varistory / RC členy:**
+  LAD7B106 = varistor 230 V AC pro LC1D09–D38
+  LAD7B012 = RC člen 12 V DC
+  LAD7B024 = RC člen 24 V DC
+  LAD8N    = RC/varistor blok
+**Mechanické blokování:**
+  LAD9R    = blokování 2× LC1D09–D38
+
+---
+### Eaton (Moeller) — příslušenství DILM:
+**Pomocné kontakty:**
+  DILA-XHI11  = 1NO + 1NC (DILM7–DILM38)
+  DILA-XHI20  = 2NO
+  DILA-XHI02  = 2NC
+  DILM170-XHI11 = 1NO + 1NC pro větší DILM
+**Varistory / RC členy:**
+  DILA-XHIV11 = 1NO + 1NC + varistor (DILM7–DILM38)
+  DILM-XSPV   = varistor 24 V DC
+  DILM-XSPA   = RC člen 230 V AC
+**Mechanické blokování:**
+  DILM32-XMK32 = blokování 2× DILM7–DILM32
+`,
   },
 
   // -------------------------------------------------------------------------
@@ -307,6 +500,182 @@ Pro každý relevantní výrobce a napětí cívky. Pro S0 (17–32A): 3RT2025, 
 
 **SEKUNDÁRNÍ — obecné fallbacky:**
 stykač [proud]A [napětí_cívky], kontaktor [proud]A, Schütz [proud]A [napětí], contactor [proud]A DC`,
+  },
+
+  // -------------------------------------------------------------------------
+  // 2b. Nadproudová spouště (tepelná / elektronická ochrana motoru)
+  // -------------------------------------------------------------------------
+  {
+    key: 'nadproudova_spoust',
+    label: 'Nadproudová spouště',
+    aliases: [
+      'nadproudová spouště', 'nadproudova spoust', 'tepelná spouště', 'tepelna spoust',
+      'nadproudové relé', 'nadproudove rele', 'motorová tepelná ochrana',
+      'thermal overload', 'overload relay', 'überlastrelais', 'thermisches überlastrelais',
+      '3RU2', 'TA25DU', 'TA42DU', 'TA75DU', 'LRD12', 'LRD16', 'LRD22', 'ZB12', 'ZB32',
+    ],
+    questions: [
+      { key: 'mfr',   text: 'Výrobce?',                                                   options: ['Siemens (3RU2)', 'ABB (TA-DU)', 'Schneider Electric (LRD)', 'Eaton (ZB)', 'Bez preference'] },
+      { key: 'proud', text: 'Jmenovitý proud motoru nebo nastavovací rozsah? (napiš číslo, např. 7.5 nebo 11)' },
+      { key: 'frame', text: 'Velikost stykače (frame), pokud znáš?',                      options: ['S00  — do 16A  (3RT2015–18, A9–A16, LC1D09–D18, DILM7–17)', 'S0   — 17–40A (3RT2025–38, A26–A38, LC1D25–38, DILM25–38)', 'Větší (S2 a výše, nad 40A)', 'Nevím'] },
+    ],
+    mfrKeys: ['siemens', 'abb', 'schneider', 'eaton'],
+    knowledge: `## Nadproudová spouště — tepelná/elektronická ochrana motoru
+
+Nadproudová spouště se montuje na kontaktor nebo vedle něj. Klíčový parametr: rozsah nastavení proudu musí obsahovat jmenovitý proud motoru (In). Frame (S00/S0/S2) musí odpovídat kontaktoru.
+
+---
+### Siemens 3RU2 — tepelné spouště:
+**3RU2116 — pro S00 (k 3RT2016–3RT2018, In do 16 A):**
+  3RU2116-1AB0  = 1.1–1.6 A
+  3RU2116-1BB0  = 1.4–2.0 A
+  3RU2116-1CB0  = 1.8–2.5 A
+  3RU2116-1DB0  = 2.2–3.2 A
+  3RU2116-1EB0  = 2.8–4.0 A
+  3RU2116-1GB0  = 4.5–6.3 A
+  3RU2116-1HB0  = 5.5–8.0 A
+  3RU2116-1JB0  = 7.0–10 A
+  3RU2116-1KB0  = 9.0–12.5 A
+  3RU2116-4AB0  = 11–16 A
+**3RU2126 — pro S0 (k 3RT2025–3RT2038, In 17–40 A):**
+  3RU2126-4CB0  = 17–22 A
+  3RU2126-4DB0  = 22–32 A
+  3RU2126-4EB0  = 28–40 A
+**3RU2136 — pro S2 (k 3RT2045+, In 40–100 A):**
+  3RU2136-4FB0  = 36–45 A
+  3RU2136-4GB0  = 45–63 A
+  3RU2136-4HB0  = 55–80 A
+
+---
+### ABB — TA-DU tepelné spouště:
+**TA25DU — pro A9–A16 (S00), In do 19 A:**
+  TA25DU-1.4  = 1.0–1.4 A
+  TA25DU-2.4  = 1.7–2.4 A
+  TA25DU-4.0  = 2.8–4.0 A
+  TA25DU-6.5  = 4.5–6.5 A
+  TA25DU-8.5  = 6.0–8.5 A
+  TA25DU-11   = 7.5–11 A
+  TA25DU-14   = 10–14 A
+  TA25DU-19   = 13–19 A
+**TA42DU — pro A26–A38 (S0), In do 28 A:**
+  TA42DU-25   = 18–25 A
+  TA42DU-28   = 20–28 A
+**TA75DU — pro A40–A75, In do 80 A:**
+  TA75DU-32   = 22–32 A
+  TA75DU-52   = 36–52 A
+  TA75DU-63   = 45–63 A
+  TA75DU-80   = 55–80 A
+
+---
+### Schneider LRD — pro LC1D:
+**Pro LC1D09–LC1D18 (S00, do 18 A):**
+  LRD06  = 1.0–1.6 A
+  LRD08  = 2.5–4.0 A
+  LRD10  = 4.0–6.0 A
+  LRD12  = 5.5–8.0 A
+  LRD14  = 7.0–10 A
+  LRD16  = 9.0–13 A
+  LRD21  = 12–18 A
+**Pro LC1D25–LC1D38 (S0, do 40 A):**
+  LRD22  = 16–24 A
+  LRD32  = 23–32 A
+  LRD35  = 30–40 A
+
+---
+### Eaton ZB — pro DILM série:
+**ZB12 — pro DILM7–DILM15 (S00, do 12 A):**
+  ZB12-1.6  = 1.0–1.6 A
+  ZB12-2.5  = 1.6–2.5 A
+  ZB12-4    = 2.5–4.0 A
+  ZB12-6    = 4.0–6.0 A
+  ZB12-10   = 6.0–10 A
+  ZB12-12   = 8.0–12 A
+**ZB32 — pro DILM17–DILM32 (S0, do 40 A):**
+  ZB32-20   = 14–20 A
+  ZB32-25   = 18–25 A
+  ZB32-40   = 25–40 A
+`,
+  },
+
+  // -------------------------------------------------------------------------
+  // 3a. Pojistkové spodky, základny a odpínače
+  // -------------------------------------------------------------------------
+  {
+    key: 'pojistkovy_spodek',
+    label: 'Pojistkový spodek / odpínač',
+    aliases: [
+      'pojistkový spodek', 'pojistkovy spodek', 'pojistkový základna', 'pojistkova zakladna',
+      'nh spodek', 'nh základna', 'nh zakladna', 'nh odpínač', 'nh odpinak',
+      'pojistkový odpínač', 'pojistkovy odpinak', 'lasttrennschalter', 'sicherungsunterteil',
+      'válcová základna', 'valcova zakladna', 'válcový pojistkový spodek', 'cylindrical fuse holder',
+      'pojistková základna', 'pojistkova zakladna',
+      'spodek pojistky', 'základna pojistky', 'zakladna pojistky',
+      'fuse holder', 'fuse base', 'fuse disconnect', 'sicherungshalter',
+      'NH00', 'NH0 spodek', 'NH1 spodek', 'NH2 spodek', 'NH3 spodek',
+      '3NP', 'OS63', 'OFAAH', 'INF', 'SNM',
+    ],
+    questions: [
+      { key: 'type',   text: 'Jaký typ pojistky (pro tuto základnu)?',  options: ['NH nožová (silová, průmyslová)', 'Válcová 10×38 (do 32A)', 'Válcová 14×51 (do 63A)', 'Válcová 22×58', 'Nevím'] },
+      { key: 'poles',  text: 'Počet pólů?',                              options: ['1-pólový', '2-pólový', '3-pólový', '4-pólový', 'Nevím'] },
+      { key: 'size',   text: 'Velikost (stupeň) NH pojistky?',           options: ['NH00 (do 100A)', 'NH0 (do 160A)', 'NH1 (do 250A)', 'NH2 (do 400A)', 'NH3 (do 630A)', 'Nevím / válcová'] },
+    ],
+    mfrKeys: ['abb', 'siemens', 'schneider', 'eaton'],
+    knowledge: `## Pojistkové spodky a odpínače — přehled
+
+**NH spodky (Sicherungsunterteil)**: základny pro nožové NH pojistky, montáž na DIN lištu nebo přímá.
+**NH odpínače (Lasttrennschalter)**: jako spodek + bezpečnostní odpojení pod zatížením.
+**Válcové pojistkové základny**: pro 10×38 mm a 14×51 mm válcové pojistky.
+
+---
+### ABB — NH spodky OS série:
+**NH00 (do 100A):**
+  OS63J03   = 3P, 63A, NH00, šroubový
+  OS100J03  = 3P, 100A, NH00
+**NH0 (do 160A):**
+  OS160J03  = 3P, 160A, NH0, šroubový
+**NH odpínače (OS + OT odpínač):**
+  OT63F3    = odpínač 63A, 3P (bez pojistek)
+  OS63J12   = 1P NH00 pojistkový spodek
+
+---
+### Siemens — 3NP pojistkové odpínače:
+**NH00 (do 100A, 3-pólové):**
+  3NP4062-0CA01 = 3P, NH00, 100A, DIN lišta
+  3NP4062-0CA21 = 3P, NH00, 100A, přímá montáž
+**NH0 (do 160A):**
+  3NP4062-0CA51 = 3P, NH0, 160A
+**NH1 (do 250A):**
+  3NP4062-0CB01 = 3P, NH1, 250A
+
+---
+### Schneider Electric — INF / ISFT série:
+**NH válcová základna:**
+  DF101A10     = 1P, 10×38, 10A, DIN
+  DF101A32     = 1P, 10×38, 32A
+  DF201A32     = 2P, 10×38, 32A
+  DF201A63     = 2P, 14×51, 63A
+**NH odpínač (INF základna):**
+  INS80        = odpínač 80A, DIN
+  INS125       = odpínač 125A
+  INS250       = odpínač 250A
+
+---
+### Eaton — NZM NH odpínače:
+  NZMB1-AF100  = 3P, NH00, 100A
+  NZMN1-A100   = 3P, NH0, 100A
+  NZMN2-A250   = 3P, NH1, 250A
+
+---
+### Válcové pojistkové základny (10×38 / 14×51):
+**Phoenix Contact:**
+  UK 5-HESILA 250/1/P = 1P válcová základna 10×38, DIN (do 25A)
+  UK 10-HESILA 500/1/P = 1P válcová základna 10×38, do 63A
+**Weidmüller:**
+  WSI 6/1    = 1P válcová 10×38, 6mm²
+  WSI 16/1   = 1P válcová 14×51, 16mm²
+**ABB:**
+  E91/32     = pojistková základna válcová 1P, 10×38
+`,
   },
 
   // -------------------------------------------------------------------------
@@ -486,6 +855,110 @@ napájecí zdroj 24VDC [proud]A DIN, Netzteil 24V [proud]A, PSU 24VDC, SITOP, QU
   },
 
   // -------------------------------------------------------------------------
+  // 5a. Příslušenství svorek
+  // -------------------------------------------------------------------------
+  {
+    key: 'prislusenstvi_svorka',
+    label: 'Příslušenství svorek',
+    aliases: [
+      'čílko', 'čilko', 'cilko', 'krajní doraz', 'krajni doraz', 'endklammer', 'end bracket',
+      'propojka svorek', 'propojka svorky', 'přemostovač svorek', 'premostovac svorek',
+      'querbrücke', 'querbrucke', 'jumper svorka', 'přemostit svorku', 'přemostění svorky',
+      'nosič popisků', 'nosic popiku', 'nosic popisku', 'popisek svorky', 'štítek svorky',
+      'stitek svorky', 'beschriftungsträger', 'marker svorka',
+      'krycí plech svorky', 'kryci plech svorky', 'krytka svorky', 'cover svorka',
+      'krycí přepážka', 'kryci prepazka',
+    ],
+    questions: [
+      { key: 'mfr',      text: 'Výrobce svorek?',                                           options: ['WAGO', 'Phoenix Contact', 'Weidmüller', 'ABB', 'Bez preference'] },
+      { key: 'acc_type', text: 'Jaký typ příslušenství?',                                   options: ['Čílko / Krajní doraz (end bracket)', 'Propojka / Přemostovač', 'Nosič popisků / Štítek', 'Krycí plech / Krytka / Přepážka', 'Jiné'] },
+      { key: 'series',   text: 'Pro jakou řadu svorek? (napiš, např. PT 2.5, WDU 2.5, 2273, 221-2, TOPJOB S)' },
+    ],
+    mfrKeys: ['wago', 'phoenix', 'weidmuller'],
+    knowledge: `## Příslušenství svorek — přehled
+
+Svorky vyžadují příslušenství: čílka/krajní dorazy (end bracket), propojky/přemostovače (jumper bridges), nosiče popisků, krycí plechy a krytky.
+
+---
+### WAGO — příslušenství svorek:
+**WAGO 221 (LEVER-NUT) — příslušenství:**
+  221-500  = čílko pro 221-xxx (end cover)
+  221-2401 = propojka 2-pólová 24 V (pro montáž PE)
+Série 221: 221-412 (2×do 4mm²), 221-413 (3×), 221-415 (5×)
+
+**WAGO 2273 (PUSH-WIRE, šroubová typ):**
+  2273-499 = čílko pro 2273 řadu (5mm rozteč)
+  2273-XXX = svorky pro vodiče 0.5–2.5 mm²
+
+**WAGO TOPJOB S (2002 / 2004 / 2006 řady):**
+  2002-199 = čílko pro 2002 (2.5mm² / 5mm rozteč)
+  2004-199 = čílko pro 2004 (4mm² / 6mm rozteč)
+  2006-199 = čílko pro 2006 (6mm² / 8mm rozteč)
+  2010-199 = čílko pro 10mm²
+  2002-1281 = propojka 2P pro TOPJOB S 2002
+  2002-1282 = propojka 2P kov (standard)
+  2004-1281 = propojka pro 2004
+  2002-1690 = nosič popisků pro 2002
+
+**WAGO 280 řada (šroubová, 35mm²):**
+  280-999 = čílko pro 280 řadu
+  280-483 = propojka 3P
+
+---
+### Phoenix Contact — příslušenství svorek:
+**Čílka pro PT / UT / MKDS:**
+  3030150 = E/UK — čílko pro UT 2.5, PT 2.5 (3mm rozteč) — nejpoužívanější!
+  3030163 = E/UT 4 — čílko pro UT 4 mm²
+  3030216 = E/UT 6 — čílko pro UT 6 mm²
+  3030229 = E/UT 10 — čílko pro UT 10 mm²
+  3030232 = E/UT 16 — čílko pro UT 16 mm²
+
+**Propojky (jumper bridges):**
+  3030107 = FBS 2-5 — propojka 2-pólová pro PT/UT 2.5 (5mm rozteč)
+  3030085 = FBS 3-5 — propojka 3-pólová PT/UT 2.5
+  3030098 = FBS 10-5 — propojka 10-pólová
+  3030056 = QTC 2,5 — propojka 2P pro PT 2.5
+  1201459 = FBS 2-5 — propojka 2P (jiné balení)
+
+**Nosiče popisků:**
+  0810916 = KMK BIG — nosič štítků
+  1204562 = KMK 3 — nosič pro PT 2.5 série
+  3030026 = MK — označovací svorka
+
+---
+### Weidmüller — příslušenství svorek:
+**Čílka pro WDU / ZDU:**
+  1052500000 = EW — čílko pro WDU 2.5 / ZDU 2.5 (základní, nejpoužívanější)
+  1052600000 = EW 4  — čílko pro WDU 4
+  1052700000 = EW 6  — čílko pro WDU 6
+  1052800000 = EW 10 — čílko pro WDU 10
+  1052900000 = EW 16 — čílko pro WDU 16
+
+**Propojky:**
+  1024340000 = QV 2,5/2 — propojka 2-pólová pro WDU 2.5
+  1024350000 = QV 2,5/3 — propojka 3-pólová
+  1024370000 = QV 2,5/10 — propojka 10-pólová
+  1024380000 = QV 4/2 — propojka 2P pro WDU 4
+
+**Nosiče popisků:**
+  1608510000 = M 2,5/5 — popisek/štítek pro WDU 2.5 (5×5mm)
+  1608530000 = M 4/5 — pro WDU 4
+
+---
+### ABB — příslušenství svorek:
+Řady: TS (šroubová), TNL (průchozí), TPN (PE).
+  4820T = čílko pro TS řadu (2.5 / 4 mm²)
+  BEW10/5 = propojka 10P pro TS
+
+---
+### Obecné typy vyhledávání:
+- Čílko konkrétní: "čílko 2273", "end cover 221", "E/UK 2.5", "EW 2.5"
+- Propojka obecně: "QV 2.5", "FBS 2-5", "querbrücke 2.5"
+- Nosič popisků: "MK 2.5", "KMK", "popisek svorky", "štítek svorky"
+`,
+  },
+
+  // -------------------------------------------------------------------------
   // 5. Svorky a příslušenství
   // -------------------------------------------------------------------------
   {
@@ -599,6 +1072,90 @@ Propojky: 2002-402, FBS 2-5, QV 2/10
 
 **SEKUNDÁRNÍ — obecné fallbacky:**
 svorka [průřez]mm² šedá/modrá/PE, Klemme [průřez]mm², terminal [průřez]mm², push-in terminal, Reihenklemme`,
+  },
+
+  // -------------------------------------------------------------------------
+  // 6a. Příslušenství frekvenčních měničů
+  // -------------------------------------------------------------------------
+  {
+    key: 'prislusenstvi_menic',
+    label: 'Příslušenství frekvenčních měničů',
+    aliases: [
+      'brzdný odpor', 'brzdny odpor', 'braking resistor', 'bremswiderstand', 'dynamické brzdění',
+      'emc filtr měnič', 'emc filtr vfd', 'emc filtr frekvenční', 'vstupní filtr měnič',
+      'tlumivka měnič', 'tlumivka vfd', 'síťová tlumivka', 'sitova tlumivka', 'line reactor', 'netzrosseln', 'netzdrossel',
+      'sinusový filtr', 'sinusovy filtr', 'výstupní filtr měnič', 'du/dt filtr',
+      'rozšiřovací karta měnič', 'io karta měnič', 'komunikační karta měnič',
+      'panel operátora měnič', 'display měnič', 'bop', 'itc', 'sip20',
+      'příslušenství měnič', 'prislusenstvi menic', 'příslušenství vfd',
+      'FSA', 'FSB', 'FSC', 'FSD', 'FSE',
+    ],
+    questions: [
+      { key: 'mfr',      text: 'Výrobce frekvenčního měniče?',                options: ['Siemens (SINAMICS G120 / G120C)', 'ABB (ACS355 / ACS580)', 'Schneider (Altivar)', 'Danfoss (FC302)', 'Bez preference'] },
+      { key: 'acc_type', text: 'Jaký typ příslušenství?',                     options: ['Brzdný odpor', 'EMC filtr (vstupní / síťový)', 'Tlumivka (síťová / výstupní)', 'Sinusový / du/dt filtr', 'Rozšiřovací karta / komunikační modul', 'Operátorský panel / display'] },
+      { key: 'power',    text: 'Výkon měniče nebo motor (napiš, např. 1.5kW nebo 4kW)?',   hint: 'Potřebujeme pro správný výběr příslušenství' },
+    ],
+    mfrKeys: ['siemens', 'abb', 'schneider'],
+    knowledge: `## Příslušenství frekvenčních měničů — přehled
+
+Měniče vyžadují externe příslušenství: brzdné odpory (dynamické brzdění), EMC filtry (omezení rušení), síťové/výstupní tlumivky, sinusové filtry, komunikační a I/O karty.
+
+---
+### Siemens SINAMICS G120 — příslušenství:
+**Brzdné odpory (Power Module PM240):**
+  6SL3201-0BE14-8AA0 = brzdný odpor 0.37 kW PM240
+  6SL3201-0BE15-5AA0 = brzdný odpor 0.55 kW
+  6SL3201-0BE21-0AA0 = brzdný odpor 1.1 kW
+  6SL3201-0BE21-5AA0 = brzdný odpor 1.5 kW
+  6SL3201-0BE22-2AA0 = brzdný odpor 2.2 kW
+  6SL3201-0BE24-0AA0 = brzdný odpor 4.0 kW
+  6SL3201-0BE25-5AA0 = brzdný odpor 5.5 kW
+  6SL3201-0BE27-5AA0 = brzdný odpor 7.5 kW
+  6SL3201-0BE21-1AA0 = brzdný odpor 11 kW
+  6SL3201-0BE21-5AB0 = brzdný odpor 15 kW
+**EMC filtry (vstupní):**
+  6SL3203-0BE13-2AA0 = EMC filtr 3A, FSA
+  6SL3203-0BE15-5AA0 = EMC filtr 5.5A, FSA
+  6SL3203-0BE21-0AA0 = EMC filtr 10A, FSA
+  6SL3203-0BE21-8AA0 = EMC filtr 18A, FSB
+  6SL3203-0BE22-7AA0 = EMC filtr 27A, FSC
+**Operátorské panely:**
+  6SL3255-0AA00-4CA1 = BOP-2 (Basic Operator Panel)
+  6SL3256-0LC00-1JA0 = IOP-2 (Intelligent Operator Panel)
+
+---
+### ABB ACS355 / ACS580 — příslušenství:
+**EMC filtry:**
+  3AXD50000016760 = EMC filtr pro ACS355, 3A
+  3AXD50000195516 = EMC filtr pro ACS355, 8A
+  3AXD50000011678 = EMC filtr pro ACS580-01, 16A
+**Brzdné odpory:**
+  3AUA0000058609  = brzdný odpor ACS355, 0.37–0.75 kW
+  3AUA0000058610  = brzdný odpor ACS355, 1.1–2.2 kW
+  3AUA0000058613  = brzdný odpor ACS355, 4–7.5 kW
+**Komunikační adaptéry:**
+  3AXD10000465138 = FPBA-01 PROFIBUS adaptér pro ACS355/580
+  3AXD10000461788 = FENA-21 Ethernet/PROFINET adaptér
+
+---
+### Schneider Altivar — příslušenství:
+**EMC filtry:**
+  VW3A4420        = EMC filtr pro Altivar 312, 3-fázový
+  VW3A4436        = EMC filtr pro Altivar 320, 18A
+**Brzdné odpory:**
+  VW3A7601        = brzdný odpor Altivar, 72Ω
+  VW3A7606        = brzdný odpor 27Ω
+  VW3A7702        = brzdný odpor 10Ω
+
+---
+### Danfoss FC302 — příslušenství:
+**Brzdné odpory:**
+  175U3375        = brzdný odpor 68Ω pro FC302, 1.5 kW
+  175U3376        = brzdný odpor 47Ω pro FC302, 2.2 kW
+**Komunikační karty:**
+  130B1119        = PROFIBUS MCA101 karta
+  130B1137        = PROFINET MCA120 karta
+`,
   },
 
   // -------------------------------------------------------------------------
@@ -841,6 +1398,221 @@ transformátor [výkon]VA [primár]/[sekundár]V`,
   },
 
   // -------------------------------------------------------------------------
+  // 8a. Časové relé (time delay / timer relays)
+  // -------------------------------------------------------------------------
+  {
+    key: 'casove_rele',
+    label: 'Časové relé',
+    aliases: [
+      'časové relé', 'casove rele', 'časovač', 'casovac', 'timer relé', 'timer relay',
+      'zpožďovací relé', 'zpozd relé', 'zpoždění zapnutí', 'zpozdeni zapnuti',
+      'on-delay', 'off-delay', 'přepínač hvězda trojúhelník časový', 'hvězda trojúhelník timer',
+      'zeitrelais', 'zeitschalter', 'zpoždění vypnutí', 'zpozdeni vypnuti',
+      '8.01', '8.04', '8.30', '88.02', '3RP2', 'CT-AHS', 'CT-ERS', 'CT-MVS',
+    ],
+    questions: [
+      { key: 'mfr',      text: 'Výrobce?',                         options: ['Finder (8.xx / 88.xx)', 'Siemens (3RP2)', 'ABB (CT série)', 'Schneider Electric', 'Bez preference'] },
+      { key: 'func',     text: 'Funkce časování?',                  options: ['Zpoždění zapnutí (on-delay)', 'Zpoždění vypnutí (off-delay)', 'Multifunkční (on + off + blikání…)', 'Hvězda-trojúhelník (star-delta)', 'Zapínací / blikací impulz'] },
+      { key: 'voltage',  text: 'Napájecí napětí cívky / řídící?',  options: ['24 V DC', '24 V AC', '230 V AC', '24–240 V AC/DC  (univerzální)', 'Jiné'] },
+    ],
+    mfrKeys: [],
+    knowledge: `## Časové relé — přehled
+
+Časová relé (timer relays) zajišťují zpoždění zapnutí/vypnutí nebo multifunkční časování. Montáž na DIN lištu nebo do patice. Klíčové parametry: funkce, rozsah časování, napájení.
+
+---
+### Finder — řady 8.xx a 88.xx:
+**8.01 — zpoždění zapnutí (on-delay), 1× přepínací kontakt:**
+  8.01.8.024.0000 = 24 V AC/DC, 0.1 s–10 h
+  8.01.8.230.0000 = 230 V AC, 0.1 s–10 h
+**8.04 — zpoždění zapnutí (on-delay), 1× přepínací:**
+  8.04.8.024.0000 = 24 V AC/DC, rozsah 0.1 s–10 h (DIN lišta)
+  8.04.8.230.0000 = 230 V AC, 0.1 s–10 h
+**8.30 — zpoždění vypnutí (off-delay), 1× přepínací:**
+  8.30.8.024.0000 = 24 V AC/DC
+  8.30.8.230.0000 = 230 V AC
+**88.02 — multifunkční (8 funkcí), 2× přepínací:**
+  88.02.0.240.0000 = 24–240 V AC/DC (nejpoužívanější, univerzální napájení)
+  88.02.0.240.0060 = 24–240 V + potenciometr + displej
+
+---
+### Siemens — 3RP2:
+**3RP2025 — multifunkční (on-delay + off-delay + impulz):**
+  3RP2025-1AP30 = 24–240 V AC/DC, 0.05 s–100 h, 1× přepínací
+  3RP2025-1BB30 = 24 V DC, 0.05 s–100 h
+**3RP2005 — zpoždění zapnutí:**
+  3RP2005-1AW30 = 24–240 V AC/DC, 0.5 s–10 h
+**3RP2574 — hvězda-trojúhelník timer:**
+  3RP2574-1NP30 = 24–240 V AC/DC, nastavitelné zpoždění přepnutí Y→Δ
+
+---
+### ABB — CT série:
+**CT-AHS — on-delay, 1 C/O:**
+  CT-AHS-24DC    = 24 V DC, 0.1 s–10 h
+  CT-AHS-24AC    = 24 V AC
+  CT-AHS-110AC   = 110 V AC
+  CT-AHS-230AC   = 230 V AC
+**CT-ERS — off-delay:**
+  CT-ERS-24DC    = 24 V DC
+  CT-ERS-230AC   = 230 V AC
+**CT-MVS — hvězda-trojúhelník:**
+  CT-MVS-24DC    = 24 V DC
+  CT-MVS-230AC   = 230 V AC
+`,
+  },
+
+  // -------------------------------------------------------------------------
+  // 8b. Monitorovací relé (napěťová a fázová ochrana)
+  // -------------------------------------------------------------------------
+  {
+    key: 'monitorovaci_rele',
+    label: 'Monitorovací relé',
+    aliases: [
+      'monitorovací relé', 'monitorovaci rele', 'fázové relé', 'fazove rele',
+      'sledování fází', 'sledovani fazi', 'fázová ochrana', 'fazova ochrana',
+      'sled fází', 'výpadek fáze', 'vypadek faze', 'nesymetrie fází', 'nesymetrie fazi',
+      'napěťové relé', 'napetove rele', 'podpěťové relé', 'prepetove rele',
+      'phase monitoring', 'phase failure relay', 'phase sequence relay', 'voltage monitoring',
+      'phasenwächter', 'phasenueberwachung', 'spannungsüberwachung',
+      '3UG46', '3UG4615', '3UG4616', 'CM-PFE', 'CM-UFK', 'EMD-FL',
+    ],
+    questions: [
+      { key: 'mfr',     text: 'Výrobce?',                    options: ['Siemens (3UG46)', 'ABB (CM série)', 'Phoenix Contact (EMD-FL)', 'Carlo Gavazzi', 'Bez preference'] },
+      { key: 'func',    text: 'Co má relé hlídat?',          options: ['Výpadek fáze + sled fází (3-fáze)', 'Nesymetrie fází (asymetrie)', 'Podpětí / přepětí (1 nebo 3 fáze)', 'Vše výše (kombinované)'] },
+      { key: 'voltage', text: 'Napájecí (síťové) napětí?',   options: ['3×400 V AC (standard EU)', '3×230 V AC', '3×200–500 V AC (univerzální)', 'Jiné'] },
+    ],
+    mfrKeys: ['siemens', 'abb', 'phoenix'],
+    knowledge: `## Monitorovací relé — fázová a napěťová ochrana
+
+Hlídají 3-fázové napájení: výpadek fáze, špatný sled fází, nesymetrie, podpětí/přepětí. Po detekci chyby rozepnou výstupní kontakt → odstaví zátěž nebo signalizují poruchu.
+
+---
+### Siemens — 3UG4615 / 3UG4616:
+**3UG4615 — výpadek fáze + sled fází + nesymetrie:**
+  3UG4615-1CR20 = 3×160–690 V AC, 1 NO + 1 NC, šroubová svorka, DIN
+  3UG4615-1CW30 = 3×160–690 V AC, 1 NO + 1 NC, pružinová svorka
+**3UG4616 — výpadek fáze + sled fází + nesymetrie + podpětí:**
+  3UG4616-1CR20 = 3×160–690 V AC, 1 NO + 1 NC, DIN lišta
+  3UG4616-1CW30 = 3×160–690 V AC, pružinová svorka
+**3UG4622 — podpětí/přepětí 1-fázové:**
+  3UG4622-1AW30 = 1×24–240 V AC/DC, nastavitelné pásmo
+
+---
+### ABB — CM série:
+**CM-PFE — výpadek fáze + sled fází:**
+  CM-PFE.2   = 3×200–500 V AC, 2× přepínací, DIN lišta (nejpoužívanější)
+  CM-PFS.2   = 3×200–500 V AC, 2× přepínací, s nastavitelnou asymetrií
+**CM-UFK — podpětí/přepětí 1-fázové:**
+  CM-UFK.1   = 1×24–240 V AC/DC, 1× přepínací
+**CM-ENN — univerzální napěťový monitor:**
+  CM-ENN.1   = 3×100–500 V AC, výpadek + sled + nesymetrie, 1× C/O
+
+---
+### Phoenix Contact — EMD-FL:
+**EMD-FL-3V-400 — výpadek fáze + sled fází:**
+  2866067 = EMD-FL-3V-400, 3×400 V AC, 1 NO + 1 NC, DIN
+  2866080 = EMD-FL-3V-500, 3×500 V AC
+**EMD-FL-V-1AC-230V — jednofázové podpětí/přepětí:**
+  2902834 = EMD-FL-V-1AC-230V, nastavitelné, 1× C/O
+
+---
+### Carlo Gavazzi:
+  DP3-CB40 = 3-fázový monitor výpadku fáze + sledu fází, 220–480 V
+  DP3-PB40 = rozšířená verze s nastavením
+`,
+  },
+
+  // -------------------------------------------------------------------------
+  // 9a. Patice relé (relay sockets / bases)
+  // -------------------------------------------------------------------------
+  {
+    key: 'patice_rele',
+    label: 'Patice relé',
+    aliases: [
+      'patice relé', 'patice rele', 'sokl relé', 'sokl rele', 'zásuvka relé', 'zasuvka rele',
+      'patice', 'socket relé', 'relay socket', 'relay base', 'relay holder',
+      'fassung', 'sockel', 'fassung rele', 'sockel rele',
+      'patice my2', 'patice my4', 'patice g2r', 'patice rm85',
+      'p2cf', 'gzt8', 'gzt11', 'gzt14',
+    ],
+    questions: [
+      { key: 'mfr',   text: 'Výrobce relé (pro které hledáš patici)?', options: ['OMRON (MY / G2R)', 'Finder (60 / 62)', 'Relpol (RM85 / R15)', 'Schrack / TE', 'Bez preference'] },
+      { key: 'pins',  text: 'Počet pinů (paty relé)?',                  options: ['8 pinů  — 2P/2CO (MY2, 62.02, RM85)', '11 pinů — 3P/3CO (MY3, 62.03)', '14 pinů — 4P/4CO (MY4, 62.04, R15)', 'Nevím'] },
+      { key: 'mount', text: 'Způsob montáže patice?',                   options: ['DIN lišta (šroubová svorka)', 'DIN lišta (pružinová svorka)', 'Přímá montáž na panel / šroub', 'Nevím'] },
+    ],
+    mfrKeys: [],
+    knowledge: `## Patice relé — přehled
+
+Patice (sokly, zásuvky) jsou nezbytné pro montáž relé na DIN lištu nebo panel. Každé relé má kompatibilní patici od výrobce nebo kompatibilní třetí strany.
+
+---
+### OMRON — patice pro MY a G2R:
+**MY2 (8-pin, 2P):**
+  P2CF-08-E   = DIN lišta, šroubová svorka, pro MY2 / G2R-2
+  P2RF-08-E   = DIN lišta, push-in, pro MY2
+  P2R-08P     = plošný spoj (PCB), pro MY2
+  P7CF-08-E   = patice pro G7J-2A (DIN)
+**MY3 (11-pin, 3P):**
+  P2CF-11-E   = DIN lišta, šroubová, pro MY3 / G2R-3
+  P2R-11P     = PCB, pro MY3
+**MY4 (14-pin, 4P):**
+  P2CF-14-E   = DIN lišta, šroubová, pro MY4 / G2R-4
+  P2RF-14-E   = DIN lišta, push-in, pro MY4
+  P2R-14P     = PCB, pro MY4
+**LED indikátor:**
+  P2RVC-8     = LED indikátor + dioda pro 8-pin patici
+  P2RVC-11    = LED indikátor pro 11-pin
+
+---
+### Finder — patice pro řady 60/62/66:
+**8-pin (2P — pro Finder 62.02 / 60.12):**
+  90.02.3     = DIN lišta, šroubová svorka (nejpoužívanější)
+  90.02.9     = DIN lišta, pružinová svorka
+  94.01.1     = LED indikátor pro 8-pin patici
+  95.85.3     = patice s ochranným varistorem, 8-pin
+**11-pin (3P — pro Finder 62.03 / 60.13):**
+  90.03.3     = DIN lišta, šroubová
+  90.03.9     = DIN lišta, pružinová
+**14-pin (4P — pro Finder 62.04 / 60.14):**
+  90.04.3     = DIN lišta, šroubová
+  90.04.9     = DIN lišta, pružinová
+  95.65.3     = patice s varistorem, 14-pin
+**Příslušenství patic:**
+  99.01       = ochranny modul varistor pro patice 90.02/90.03/90.04
+  99.02.9.024 = LED + dioda modul 24 V DC
+
+---
+### Relpol — patice pro RM85 / R15:
+**RM85 (8-pin, 2P):**
+  GZT8-1      = DIN lišta, šroubová svorka (pro RM85)
+  GZT8-2      = přímá montáž na panel (pro RM85)
+  GZM8-1      = miniaturní patice 8-pin DIN
+**R15 / RM14 (14-pin, 4P):**
+  GZT14-1     = DIN lišta, šroubová (pro R15)
+  GZT14-2     = přímá montáž (pro R15)
+**11-pin (RM11):**
+  GZT11-1     = DIN lišta (pro RM11)
+
+---
+### Schrack / TE Connectivity — patice:
+**8-pin:**
+  SRC010005   = 8-pin DIN, šroubová svorka
+  SRY010005   = 8-pin DIN, pružinová
+**11-pin:**
+  SRC011005   = 11-pin DIN
+**14-pin:**
+  SRC014005   = 14-pin DIN
+
+---
+### Obecné vyhledávání:
+- 8-pin DIN: "patice 8-pin DIN", "P2CF-08", "90.02.3", "GZT8"
+- 11-pin DIN: "patice 11-pin DIN", "P2CF-11", "90.03.3", "GZT11"
+- 14-pin DIN: "patice 14-pin DIN", "P2CF-14", "90.04.3", "GZT14"
+- Pro konkrétní relé: hledej patici dle typu (MY2 → P2CF-08-E, RM85 → GZT8-1)
+`,
+  },
+
+  // -------------------------------------------------------------------------
   // 9. Relé
   // -------------------------------------------------------------------------
   {
@@ -927,6 +1699,68 @@ relé 24VDC 2CO, relay 24VDC DPDT, Relais 24V DC 2 Wechsler, patice, sokl`,
   },
 
   // -------------------------------------------------------------------------
+  // 9c. DIN lišta — dorazy a příchytky
+  // -------------------------------------------------------------------------
+  {
+    key: 'din_lista_prislusenstvi',
+    label: 'DIN lišta — dorazy a příchytky',
+    aliases: [
+      'doraz lišty', 'doraz listy', 'doraz DIN lišty', 'doraz din listy',
+      'end stop DIN', 'end bracket DIN', 'endanschlag', 'abschlusswinkel',
+      'příchytka DIN', 'prychytka DIN', 'prychytka lišty', 'klín lišty', 'klin listy',
+      'upevnění lišty', 'fixátor lišty', 'fixator listy', 'zajištění svorek DIN',
+      'dorazy svorek', 'dorazy na listu', 'zarážka lišty',
+      'E/NS 35', 'D-UK', 'AB35', 'NSYBCH35',
+    ],
+    questions: [
+      { key: 'mfr',   text: 'Výrobce?',                      options: ['Phoenix Contact', 'Weidmüller', 'ABB', 'Schneider Electric', 'Bez preference'] },
+      { key: 'type',  text: 'Typ příslušenství?',            options: ['Doraz / krajní záraz (end stop, zabrání posunutí svorek)', 'Příchytka / klín (fixace lišty nebo svorek)', 'Svorka pro uzemnění lišty (PE klip)'] },
+      { key: 'width', text: 'Šířka DIN lišty?',              options: ['35 mm  (NS35/TS35 — standard)', '15 mm  (NS15)', '75 mm  (NS75)', 'Nevím'] },
+    ],
+    mfrKeys: [],
+    knowledge: `## DIN lišta — dorazy a příchytky
+
+Dorazy (end stops) zabraňují svorkovnicím ve sklouznutí z DIN lišty. Příchytky/klíny fixují svorky nebo DIN lištu v rozváděči.
+
+---
+### Phoenix Contact — dorazy a příchytky NS35:
+**Dorazy pro NS 35:**
+  3030169  = E/NS 35×15 — doraz pro TS35 / NS35 lištu, pás (nejpoužívanější)
+  3030008  = E/NS 35N — doraz s nosem, DIN 35
+  0201528  = D-UK — příchytka/klín pro svorkovnici na NS35
+**Příchytky:**
+  0201535  = D-UK/5 — rozšířená příchytka
+
+---
+### Weidmüller — dorazy NS35:
+  1064400000 = AEK 35 — doraz pro NS35, ocelový (sada)
+  1063200000 = KSW 35 — klín/příchytka pro NS35
+  0517500000 = EW NS35 — doraz s výklopem
+
+---
+### Schneider Electric:
+  NSYBCH35M  = doraz DIN 35 mm (kovový, montáž šroubem)
+  NSYBCH35   = doraz DIN 35 mm (plastový)
+
+---
+### ABB:
+  1SNA011200R0100 = doraz G-profil / TS35, ocelový
+  1SNA011204R0200 = příchytka NS35
+
+---
+### Siemens:
+  8WH9040-1AA00  = doraz / end clamp pro DIN 35 mm lištu
+  8WH9040-6AA00  = příchytka svorek na DIN lištu
+
+---
+### Obecně:
+- Dorazy se objednávají vždy po párech (levý + pravý konec svorkovnice)
+- Pro NS35 hledej: "doraz NS35", "end stop TS35", "E/NS 35", "AEK 35"
+- Příchytky/klíny: "D-UK", "KSW 35", "klín DIN", "fixace svorky"
+`,
+  },
+
+  // -------------------------------------------------------------------------
   // 10. DIN lišta
   // -------------------------------------------------------------------------
   {
@@ -976,6 +1810,84 @@ NS 35/7,5, Hutschiene NS35 1000, TS35 1m, 210-112, DIN lišta 35 1m
 
 **SEKUNDÁRNÍ:**
 DIN rail 35mm, Tragschiene NS35, omega lišta, montážní lišta 35mm`,
+  },
+
+  // -------------------------------------------------------------------------
+  // 10a. Příslušenství Rittal (zámky, závěsy, ventilátory, topení, desky)
+  // -------------------------------------------------------------------------
+  {
+    key: 'prislusenstvi_rittal',
+    label: 'Příslušenství Rittal',
+    aliases: [
+      'zámek skříně', 'zamek skrine', 'zámek rozváděče', 'zamek rozvadece',
+      'závěs skříně', 'zaves skrine', 'závěs rozváděče', 'pantová pánev',
+      'ventilátor skříně', 'ventilator skrine', 'ventilátor rozváděč', 'ventilator rozvadec',
+      'filtr ventilátoru', 'filtr skříně', 'filtrační rohož', 'filtrmatta', 'filtermatte',
+      'montážní deska rittal', 'montazni deska rittal', 'montážní deska skříně', 'montazni deska skrine',
+      'topení skříně', 'topeni skrine', 'ohřívač skříně', 'ohrivac skrine', 'anti-condensation', 'condensation heater',
+      'kabelová průchodka rittal', 'kabelova pruchovka rittal', 'vývodová deska rittal',
+      'příslušenství Rittal', 'prislusenstvi rittal', 'Rittal SK', 'Rittal SZ', 'Rittal SV',
+      'SK 3213', 'SK 3240', 'SK 3241', 'SK 3105', 'SZ 2455', 'SZ 2586',
+    ],
+    questions: [
+      { key: 'acc_type', text: 'Jaký typ příslušenství Rittal?',    options: ['Ventilátor / chladicí jednotka', 'Filtrační rohož / Filtrační jednotka', 'Topení / ohřívač (kondenzace)', 'Zámek / cylindrická vložka', 'Závěs / pant', 'Montážní deska', 'Vývodová deska / kabelová průchodka'] },
+      { key: 'enclosure',text: 'Série rozváděče?',                  options: ['AX (nástěnný, malý)', 'KX (nástěnný, větší)', 'TS 8 (stojatý)', 'VX 25 (stojatý, velký)', 'Nevím / univerzální'] },
+      { key: 'size',     text: 'Rozměr nebo výkon (pokud víš)? (napiš, např. 60W, 200×200mm, 250m³/h)' },
+    ],
+    mfrKeys: [],
+    knowledge: `## Příslušenství Rittal — ventilátory, filtry, topení, zámky, závěsy
+
+---
+### Ventilátory a filtrační jednotky (SK série):
+**Malé ventilátory s filtrem (pro AX/KX skříně):**
+  SK 3213.100 = ventilátor 20 W, 60 m³/h, 230 V AC, 150×150 mm
+  SK 3213.200 = ventilátor 20 W, 60 m³/h, 115 V AC
+  SK 3240.100 = ventilátor 30 W, 105 m³/h, 230 V AC, 150×150 mm
+  SK 3240.200 = ventilátor 30 W, 105 m³/h, 115 V AC
+  SK 3241.100 = ventilátor 35 W, 130 m³/h, 230 V AC, 150×150 mm
+**Větší ventilátory (pro TS8/VX25):**
+  SK 3244.100 = ventilátor 50 W, 230 m³/h, 230 V, 254×254 mm
+  SK 3245.100 = ventilátor 65 W, 300 m³/h, 230 V
+**Výstupní mřížky (pro odtah vzduchu):**
+  SK 3323.100 = výstupní mřížka, 150×150 mm
+  SK 3324.100 = výstupní mřížka, 254×254 mm
+
+---
+### Filtrační rohože (náhradní, SK série):
+  SK 3286.000 = filtrační rohož pro SK 3213/3240/3241, 122×122 mm (balení 10 ks)
+  SK 3287.000 = filtrační rohož pro SK 3244/3245, 220×220 mm (balení 10 ks)
+
+---
+### Topení / ohřívač (kondenzace, SK série):
+  SK 3105.100 = PTC ohřívač 10 W, 130–250 V AC/DC (nástěnná montáž, univerzální)
+  SK 3105.200 = PTC ohřívač 20 W, 130–250 V AC/DC
+  SK 3109.100 = vyhřívací tyč 15 W, 230 V AC (pro TS8/VX25)
+  SK 3109.200 = vyhřívací tyč 30 W, 230 V AC
+
+---
+### Zámky a cylindrické vložky (SZ série):
+  SZ 2586.000 = zámek (vačkový), trojhranný klíč 3 mm, standard Rittal
+  SZ 2587.000 = zámek s cylindrickou vložkou (klíčový)
+  SZ 4315.000 = záchytná vložka pro TS8/VX25
+  SZ 4315.100 = zámek pro TS8 dveře
+
+---
+### Závěsy a panty (SZ série):
+  SZ 2455.000 = závěs (pant) pro AX / KX nástěnné skříně — levý
+  SZ 2455.200 = závěs pravý pro AX / KX
+  SZ 2459.000 = těžký závěs pro TS8 / VX25 dveře
+
+---
+### Montážní desky:
+  AX 2600.000 = montážní deska pro AX skříně (ocel, černá)
+  TS 8600.500 = montážní deska TS8 600×500 mm
+  VX 8617.035 = montážní deska VX25 600×600 mm
+
+---
+### Vývodové desky / kabelové průchodky:
+  SZ 2362.000 = vývodová deska (kabelová), dělená, pro AX/KX
+  SZ 2362.120 = vývodová deska pro TS8 dno
+`,
   },
 
   // -------------------------------------------------------------------------
@@ -1099,6 +2011,107 @@ OT32F3, OT63F3, OT40F3, 3LD2114-0TK51, VCF2GE40
 
 **SEKUNDÁRNÍ:**
 odpínač [proud]A 3P, Hauptschalter [proud]A 3P, Lasttrennschalter [proud]A, hlavní vypínač [proud]A`,
+  },
+
+  // -------------------------------------------------------------------------
+  // 13a. Příslušenství tlačítek a signalizace
+  // -------------------------------------------------------------------------
+  {
+    key: 'prislusenstvi_tlacitko',
+    label: 'Příslušenství tlačítek',
+    aliases: [
+      'kontaktní blok', 'kontaktni blok', 'kontakt blok tlačítko', 'blok kontakt tlačítko',
+      'přídavný kontakt tlačítko', 'pridavny kontakt tlacitko', 'blok tlačítka', 'blok tlacitka',
+      'NO NC blok', 'spínací blok', 'rozpínací blok',
+      'led modul tlačítko', 'led modul tlacitko', 'signálkový modul', 'signalkovy modul',
+      'lampový modul', 'lampovy modul', 'illuminated modul', 'žárovkový modul', 'zarovkovy modul',
+      'montážní rámeček tlačítko', 'montazni ramecek tlacitko', 'rámeček tlačítko',
+      'upevňovací matice tlačítko', 'upevnovaci matice tlacitko',
+      'kontaktní přístroj', 'kontaktni pristroj',
+      'ZB4B', 'M22-K', '3SB14',
+    ],
+    questions: [
+      { key: 'mfr',      text: 'Výrobce tlačítkové sestavy?',           options: ['Schneider Electric (XB4 / XB5)', 'Eaton (M22 / RMQ)', 'Siemens (3SB)', 'ABB (CP / MP série)', 'Bez preference'] },
+      { key: 'acc_type', text: 'Jaký typ příslušenství?',               options: ['Kontaktní blok (NO / NC / NO+NC)', 'LED / signálkový modul', 'Montážní rámeček / základna', 'Upevňovací kroužek / matice', 'Jiné'] },
+      { key: 'diameter', text: 'Průměr otvoru ve dveřích rozváděče?',   options: ['22 mm  (nejběžnější — XB4, M22, 3SB3)', '30 mm  (starší průmysl)', 'Jiný'] },
+    ],
+    mfrKeys: ['schneider', 'eaton', 'siemens', 'abb'],
+    knowledge: `## Příslušenství tlačítek — kontaktní bloky, LED moduly, rámečky
+
+Tlačítka, signálky a selektory se skládají z hlavy (ovládací prvek) a příslušenství: kontaktní bloky, LED/žárovkové moduly, montážní rámečky.
+
+---
+### Schneider Electric — XB4 (kovové, 22 mm):
+**Kontaktní bloky (ZB4BZ série):**
+  ZB4BZ101    = 1NO (spínací kontakt)
+  ZB4BZ102    = 1NC (rozpínací kontakt)
+  ZB4BZ103    = 1NO + 1NC
+  ZB4BZ104    = 2NO
+  ZB4BZ105    = 2NC
+  ZB4BZ201    = 1NO (šroubový, zpomaleně)
+  ZB4BZ209    = 1NO (zlatý, nízké napětí)
+**LED / žárovkové moduly (ZB4BV série):**
+  ZB4BV3      = LED modul, zelená, 24 V AC/DC
+  ZB4BV4      = LED modul, červená, 24 V AC/DC
+  ZB4BV5      = LED modul, oranžová, 24 V
+  ZB4BV6      = LED modul, bílá, 24 V
+  ZB4BV7      = LED modul, modrá, 24 V
+  ZB4BVB3     = LED modul, zelená, 110–120 V AC
+  ZB4BVD3     = LED modul, zelená, 230 V AC
+
+**XB5 (plastové, 22 mm) kontaktní bloky:**
+  ZB5AZ101    = 1NO (spínací)
+  ZB5AZ102    = 1NC (rozpínací)
+  ZB5AZ103    = 1NO + 1NC
+  ZB5AV3      = LED modul zelená 24 V
+  ZB5AV4      = LED modul červená 24 V
+
+---
+### Eaton — M22 série (22 mm):
+**Kontaktní bloky:**
+  M22-K10     = 1NO (spínací)
+  M22-K01     = 1NC (rozpínací)
+  M22-K11     = 1NO + 1NC
+  M22-K20     = 2NO
+  M22-K02     = 2NC
+  M22-KPVS    = 1NO + 1NC (pro zpomalenou funkci)
+**LED moduly:**
+  M22-LEDC-G  = LED modul, zelená, 12–30 V DC
+  M22-LEDC-R  = LED modul, červená
+  M22-LEDC-Y  = LED modul, žlutá
+  M22-LEDC-W  = LED modul, bílá
+  M22-LEDC-B  = LED modul, modrá
+  M22-A-LED-G = LED modul s adaptérem, zelená, 24 V AC/DC
+**Rámečky:**
+  M22-A        = montážní adaptér pro M22
+  M22-TH       = uchycovací matice (panel thickness < 3mm)
+
+---
+### Siemens — 3SB3 série (22 mm):
+**Kontaktní bloky:**
+  3SB3400-0A  = 1NO, šroubová svorka
+  3SB3400-1A  = 1NC, šroubová svorka
+  3SB3400-0B  = 1NO, pružinová svorka
+  3SB3400-0E  = 1NO, zlaté kontakty (nízké napětí)
+  3SB3901-0AV = 1NO + 1NC, šroubová (přídavný blok)
+**LED moduly:**
+  3SB3400-1PA = LED modul, zelená, 24 V AC/DC
+  3SB3400-1QA = LED modul, červená, 24 V AC/DC
+  3SB3400-1RA = LED modul, žlutá/oranžová, 24 V
+  3SB3400-1SA = LED modul, bílá, 24 V
+  3SB3400-1TA = LED modul, modrá, 24 V
+
+---
+### ABB — CP / MP série (22 mm):
+**Kontaktní bloky:**
+  1SFA611600R1001 = 1NO
+  1SFA611600R1002 = 1NC
+  1SFA611600R1003 = 1NO + 1NC
+  MCB-10 = 1NO (záměnný s XB4/M22 v montáži)
+**LED / signálkový modul:**
+  LED-24DC-G  = LED zelená 24 V DC
+  LED-24DC-R  = LED červená 24 V DC
+`,
   },
 
   // -------------------------------------------------------------------------
@@ -1435,21 +2448,11 @@ přepěťová ochrana T2 [kA]kA [póly]P+N, SPD T2 40kA 400V, Überspannungsschu
 // detectCategory — detects component category from user text
 // ---------------------------------------------------------------------------
 export function detectCategory(text) {
-  const n = normalize(text);
-  let best = null;
-  let bestScore = 0;
-  for (const cat of COMPONENT_CATEGORIES) {
-    for (const alias of cat.aliases) {
-      if (n.includes(normalize(alias))) {
-        const score = alias.length; // prefer longer matches
-        if (score > bestScore) {
-          best = cat;
-          bestScore = score;
-        }
-      }
-    }
-  }
-  return best;
+  const norm = normalize(text).trim();
+  return COMPONENT_CATEGORIES.find(cat =>
+    normalize(cat.label) === norm ||
+    cat.aliases.some(alias => normalize(alias) === norm),
+  ) ?? null;
 }
 
 // ---------------------------------------------------------------------------
