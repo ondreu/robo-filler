@@ -170,7 +170,7 @@ export function GuidedSearch() {
   const handleEventRef = useRef<(et: string, d: Record<string, unknown>, ic: () => boolean) => void>(() => {});
 
   useEffect(() => {
-    inputRef.current?.focus();
+    inputRef.current?.focus({ preventScroll: true });
   }, [phase, currentQuestion]);
 
   useEffect(() => {
@@ -244,7 +244,7 @@ export function GuidedSearch() {
       setResult(session.result);
       setSearchTerms(session.result.expandedTerms ?? []);
     }
-    setTimeout(() => inputRef.current?.focus(), 50);
+    setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 50);
   }, [resetState]);
 
   // ---------------------------------------------------------------------------
@@ -332,7 +332,7 @@ export function GuidedSearch() {
         total: Number(data.questionTotal ?? 1),
       });
       setStatusLabel('');
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 50);
       return;
     }
 
@@ -360,7 +360,7 @@ export function GuidedSearch() {
         });
       }
       setStatusLabel('');
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 50);
       return;
     }
 
