@@ -10,6 +10,18 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V100626',
+    date: '10. 6. 2026',
+    major: true,
+    changes: [
+      'Databáze vodičů — nová specializovaná databáze 639 artiklů vodičů (LAPP, Helukabel, HUBER+SUHNER, KABLO VRCHLABÍ, ALPHAWIRE a další) vedle hlavní databáze',
+      'Databáze vodičů: prohledávána automaticky při hledání vodičů v Karel Botu i řízeném režimu; kategorie Vodič / Kabel má v řízeném módu přednost',
+      'Databáze vodičů: výsledky označeny odznakem "Vodič DB" na kartě; karta navíc zobrazuje průřez (mm²) a barvu',
+      'Databáze vodičů: sortiment — H07V-K, H05V-K, H07Z-K (HF), LiY, LiYCY, LiYv, LifY, RADOX 125/155/3GKW/4GKW, ÖLFLEX HEAT 125/180/260, UL-Style, NSGAFÖU, NSHXAFÖ, DESCAFLEX PTFE-200 a další',
+      'Zápatí: počet artiklů nyní zobrazuje hlavní DB a Vodič DB zvlášť (např. "90 000 artiklů + 639 vodičů")',
+    ],
+  },
+  {
     version: 'V090626',
     date: '9. 6. 2026',
     major: true,

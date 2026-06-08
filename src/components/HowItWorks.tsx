@@ -51,11 +51,18 @@ export function HowItWorks() {
                   <Database size={15} className="text-mauve shrink-0" />
                   <h3 className="font-semibold text-sm text-text">Databáze artiklů</h3>
                 </div>
-                <p className="text-sm text-subtext1 leading-relaxed">
+                <p className="text-sm text-subtext1 leading-relaxed mb-2">
                   Aplikace pracuje se dvěma interními databázemi — <span className="text-text font-medium">Ústí nad Orlicí</span> a <span className="text-text font-medium">Effretikon</span> — dohromady přes <span className="text-text font-medium">90 000 artiklů</span>.
                   Každá položka má typové označení, číslo artiklu, výrobce, název a číslo dílu výrobce.
                   Databáze se aktualizuje týdně a načítá se přímo v prohlížeči — vyhledávání nepotřebuje připojení k serveru.
                 </p>
+                <div className="flex items-start gap-2 bg-surface0 rounded-xl p-3">
+                  <span className="text-xs font-semibold px-1.5 py-0.5 bg-teal/15 text-teal rounded-lg shrink-0 mt-0.5">Vodič DB</span>
+                  <p className="text-xs text-subtext1">
+                    <span className="text-text font-medium">Speciální databáze vodičů</span> — přes <span className="text-text font-medium">600 artiklů</span> vodičů (LAPP, Helukabel, HUBER+SUHNER, KABLO VRCHLABÍ a další).
+                    Prohledává se automaticky vedle hlavní databáze — výsledky z Vodič DB jsou označeny zeleným odznakem. V řízeném režimu (kategorie Vodič / Kabel) má Vodič DB přednost.
+                  </p>
+                </div>
               </section>
 
               {/* Klasické vyhledávání */}

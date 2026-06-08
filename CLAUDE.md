@@ -37,6 +37,7 @@ Nástroj pro vyhledávání průmyslových artiklů a sestavení kusovníků. In
 | `server/src/manufacturers.js` | `MANUFACTURER_DOCS`, `resolveManufacturerKey`, `resolveManufacturersByCategory` — zahrnuje LAPP, Helukabel, HUBER+SUHNER, Nexans |
 | `server/src/abbreviations.js` | Průmyslové zkratky pro Karel Bot |
 | `server/src/guidedSearch.js` | Řízený vyhledávač — fáze initial/questioning, generace termínů, synthesize s doporučeními |
+| `server/src/wireSearch.js` | Vyhledávač pro Vodič DB (wires.json) — BM25 + wildcard + fuzzy, exportuje `searchWires` |
 
 ## API endpointy
 
@@ -100,4 +101,5 @@ Po vydání nové verze aktualizuj:
 - **ZbomTab typ** — `{ id, name, importData?: ImportResult, bulkResults?: BulkQueryResult[], bulkSelections?: Record<number, SearchResult | null> }`
 - **Mode switcher** — „AI mód" přejmenován na `✨ AI ✨` s pink sparkles
 - **Vodiče/Kabely** — nová kategorie `vodic_kabel` v `componentGuide.js`; výrobci LAPP, Helukabel, HUBER+SUHNER, Nexans s plnými `MANUFACTURER_DOCS`
+- **Vodič DB** — `public/wires.json` (639 artiklů), načítána frontend i backend; frontend mergeuje do `articles` state (wire artikly nesmí přepsat hlavní DB); backend `wireSearch.js` pro Karel Bot a řízený mód; wire karty mají badge "Vodič DB" + prurez/barva; `Article` type má volitelná pole `prurez`, `barva`, `skupina`
 - **Řízený mód doporučení** — když DB nenajde nic, AI doporučí konkrétní typové označení z knowledge báze kategorie

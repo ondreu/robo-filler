@@ -6,7 +6,7 @@ import { BomWizard } from './components/BomWizard';
 import { Changelog } from './components/Changelog';
 import { HowItWorks } from './components/HowItWorks';
 import { InstallPrompt } from './components/InstallPrompt';
-import { loadCSV, loadCSVMeta } from './utils/csvParser';
+import { loadCSV, loadCSVMeta, loadWires } from './utils/csvParser';
 import { search, getUniqueManufacturers, searchSuggestions } from './utils/searchEngine';
 import { SearchBar } from './components/SearchBar';
 import { ResultCard } from './components/ResultCard';
@@ -200,13 +200,17 @@ function App() {
     Promise.all([
       Promise.all(filenames.map(f => loadCSV(f))),
       loadCSVMeta('master-data-meta.json'),
+      loadWires(),
     ])
-      .then(([results, lastModified]) => {
+      .then(([results, lastModified, wires]) => {
         const merged = results.flatMap(r => r.articles);
         if (merged.length === 0) {
           setError(`Nepodařilo se načíst data`);
         } else {
-          setArticles(merged);
+          // Merge wires DB (wires come last so main DB takes precedence on duplicates)
+          const mainArtikls = new Set(merged.map(a => a.artikl));
+          const newWires = wires.filter(w => !mainArtikls.has(w.artikl));
+          setArticles([...merged, ...newWires]);
           setDbLastModified(lastModified);
         }
       })
@@ -579,7 +583,13 @@ function App() {
                   <p>
                     {customArticles
                       ? `Vlastní databáze: ${activeArticles.length.toLocaleString('cs-CZ')} záznamů`
-                      : `Databáze ${dataSource === 'usti' ? 'Ústí' : dataSource === 'effi' ? 'Effretikon' : 'Ústí + Effretikon'}: ${activeArticles.length.toLocaleString('cs-CZ')} záznamů`}
+                      : (() => {
+                          const wireCount = articles.filter(a => a.skupina).length;
+                          const mainCount = activeArticles.length - activeArticles.filter(a => a.skupina).length;
+                          const label = `Databáze ${dataSource === 'usti' ? 'Ústí' : dataSource === 'effi' ? 'Effretikon' : 'Ústí + Effretikon'}: ${mainCount.toLocaleString('cs-CZ')} artiklů`;
+                          const wireLabel = wireCount > 0 ? ` + ${wireCount.toLocaleString('cs-CZ')} vodičů` : '';
+                          return label + wireLabel;
+                        })()}
                     {!customArticles && dbLastModified && (
                       <span className="ml-2 text-overlay1">
                         • aktualizováno {dbLastModified.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' })}

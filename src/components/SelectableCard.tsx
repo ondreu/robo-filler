@@ -77,6 +77,11 @@ export function SelectableCard({ result, selected, onSelect }: SelectableCardPro
             {result.matchType === 'large' && '(Velký rozdíl)'}
             {result.matchType === 'wildcard' && '(Wildcard)'}
           </span>
+          {result.skupina && (
+            <span className="px-1.5 py-0.5 rounded-lg text-xs font-medium bg-teal/15 text-teal">
+              Vodič DB
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-xs text-subtext0 px-2 py-0.5 bg-surface2 rounded-xl">
@@ -143,6 +148,16 @@ export function SelectableCard({ result, selected, onSelect }: SelectableCardPro
           'Číslo dílu výrobce',
           result.cisloDiluVyrobce,
           result.highlightedFields.cisloDiluVyrobce
+        )}
+        {result.skupina && (
+          <div className="flex items-start gap-2">
+            <span className="text-subtext0 text-xs min-w-[120px]">Průřez / Barva:</span>
+            <span className="text-sm text-text">
+              {result.prurez != null ? `${result.prurez} mm²` : ''}
+              {result.prurez != null && result.barva ? ' · ' : ''}
+              {result.barva ?? ''}
+            </span>
+          </div>
         )}
       </div>
     </div>

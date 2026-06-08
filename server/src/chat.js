@@ -1,5 +1,6 @@
 import { Mistral } from '@mistralai/mistralai';
 import { searchTerm, articleCount } from './search.js';
+import { searchWires } from './wireSearch.js';
 import { ABBREVIATIONS_CONTEXT } from './abbreviations.js';
 import { resolveManufacturerKey, detectDominantManufacturer, MANUFACTURER_DOCS, resolveManufacturersByCategory } from './manufacturers.js';
 import { COMPONENT_CATEGORIES } from './componentGuide.js';
@@ -7,6 +8,15 @@ import { COMPONENT_CATEGORIES } from './componentGuide.js';
 // Normalize for diacritic-insensitive matching
 function normText(t) {
   return (t ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+const WIRE_KEYWORDS = ['vodic', 'vodič', 'kabel', 'liy', 'olflex', 'ölflex', 'radox', 'h05v', 'h07v', 'h07z',
+  'nyy', 'liycy', 'lifey', 'lifý', 'nsgafo', 'nshafo', 'lapp', 'helukabel', 'huber', 'suhner',
+  'nexans', 'alphawire', 'unitronic', 'topflex', 'ceeflex', 'mm2', 'průřez', 'prurez', 'žíla', 'zila'];
+
+function isWireQuery(text) {
+  const n = normText(text);
+  return WIRE_KEYWORDS.some(kw => n.includes(normText(kw)));
 }
 
 // Find up to 3 most relevant component categories from query text
@@ -507,8 +517,17 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
     const mfrLabel = manufacturer ? ` [výrobce: ${manufacturer}]` : '';
     sendStatus('searching', `Hledám v databázi: ${preview}${mfrLabel}`, { terms });
 
+    const wireQuery = isWireQuery(userMessage);
     const seen = new Set();
     for (const term of terms) {
+      if (wireQuery) {
+        for (const article of searchWires(term, 12, manufacturer)) {
+          if (!seen.has(article.artikl)) {
+            seen.add(article.artikl);
+            articles.push(article);
+          }
+        }
+      }
       for (const article of searchTerm(term, 12, manufacturer)) {
         if (!seen.has(article.artikl)) {
           seen.add(article.artikl);
@@ -565,7 +584,16 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
     sendStatus('searching', `Upřesňuji výsledky: ${preview}…`, { terms: refTerms, refinement: true });
 
     const seenArtikls = new Set(articles.map(a => a.artikl));
+    const wireQuery = isWireQuery(userMessage);
     for (const term of refinement.terms.slice(0, 3)) {
+      if (wireQuery) {
+        for (const article of searchWires(term, 12, manufacturer)) {
+          if (!seenArtikls.has(article.artikl)) {
+            seenArtikls.add(article.artikl);
+            articles.push(article);
+          }
+        }
+      }
       for (const article of searchTerm(term, 12, manufacturer)) {
         if (!seenArtikls.has(article.artikl)) {
           seenArtikls.add(article.artikl);

@@ -1,5 +1,6 @@
 import { Mistral } from '@mistralai/mistralai';
 import { searchTerm } from './search.js';
+import { searchWires } from './wireSearch.js';
 import { MANUFACTURER_DOCS } from './manufacturers.js';
 import { COMPONENT_CATEGORIES, detectCategory, getCategoryByKey, listCategoryLabels } from './componentGuide.js';
 
@@ -290,10 +291,20 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
 
     sendEvent('searching', { terms, total: terms.length });
 
+    const isWireCategory = category.key === 'vodic_kabel';
     const seen = new Set();
     const articles = [];
+
     for (const term of terms) {
-      for (const article of searchTerm(term, 12, manufacturer)) {
+      // For wire category: search wires DB first (primary), then main DB as fallback
+      const wireResults = isWireCategory ? searchWires(term, 12, manufacturer) : [];
+      for (const article of wireResults) {
+        if (!seen.has(article.artikl)) {
+          seen.add(article.artikl);
+          articles.push(article);
+        }
+      }
+      for (const article of searchTerm(term, isWireCategory ? 6 : 12, manufacturer)) {
         if (!seen.has(article.artikl)) {
           seen.add(article.artikl);
           articles.push(article);
