@@ -757,6 +757,17 @@ export function AiChat() {
                 ))}
               </div>
             </div>
+            <button
+              onClick={() => { setGuidedOfferDismissed(true); setGuidedSearchActive(true); }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-teal/10 hover:bg-teal/20 border border-teal/20 hover:border-teal/40 transition-colors text-left group"
+            >
+              <Sparkles size={16} className="text-teal shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-teal">Spustit Vyhledávání s průvodcem</p>
+                <p className="text-xs text-overlay0 group-hover:text-subtext0 transition-colors">Průvodce krok za krokem — specifikuj díl otázkami a AI najde nejlepší shody</p>
+              </div>
+              <span className="ml-auto text-teal/60 group-hover:text-teal transition-colors text-lg leading-none">→</span>
+            </button>
           </div>
         )}
 
