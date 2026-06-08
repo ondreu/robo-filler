@@ -621,7 +621,7 @@ export function GuidedSearch({ embedded = false, onBack, onResult }: GuidedSearc
           {onBack && (
             <button
               onClick={onBack}
-              className="flex items-center gap-1 text-xs text-subtext1 hover:text-mauve transition-colors mr-1 shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-surface1 hover:bg-mauve hover:text-crust text-subtext1 transition-colors mr-2 shrink-0 border border-surface2 hover:border-mauve"
             >
               <ArrowRight size={12} className="rotate-180" />
               Zpět do chatu
