@@ -164,6 +164,8 @@ export function GuidedSearch() {
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const requestCounterRef = useRef(0);
+  // Always-current ref so sendRequest (stable identity, empty deps) never captures a stale handleEvent
+  const handleEventRef = useRef<(et: string, d: Record<string, unknown>, ic: () => boolean) => void>(() => {});
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -278,7 +280,7 @@ export function GuidedSearch() {
             if (!isCurrent()) return;
             try {
               const data = JSON.parse(line.slice(6));
-              handleEvent(eventType, data, isCurrent);
+              handleEventRef.current(eventType, data, isCurrent);
             } catch { /* ignore parse errors */ }
             eventType = '';
           }
@@ -392,6 +394,8 @@ export function GuidedSearch() {
       return;
     }
   }, [answers, category, categoryLabel, currentSessionId, phase, saveSession]);
+  // Keep ref in sync so sendRequest always calls the latest version
+  handleEventRef.current = handleEvent;
 
   // ---------------------------------------------------------------------------
   // Submit handler

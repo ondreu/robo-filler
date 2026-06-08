@@ -152,6 +152,104 @@ Motorový jistič [proud]A, MPCB [proud]A, circuit breaker [proud]A`,
   },
 
   // -------------------------------------------------------------------------
+  // 2a. Příslušenství stykačů
+  // -------------------------------------------------------------------------
+  {
+    key: 'prislusenstvi_stykac',
+    label: 'Příslušenství stykačů',
+    aliases: [
+      'pomocný kontakt', 'pomocne kontakty', 'pomocny kontakt', 'hilfsschalter', 'auxiliary contact',
+      'přídavný kontakt', 'pridavny kontakt', 'blok kontaktů', 'blok kontaktu', 'kontaktní blok',
+      'rc člen', 'rc clen', 'rc článek', 'rc clanek', 'rc prvek',
+      'tlumič cívky', 'tlumíc civky', 'přepěťový člen stykač', 'prepetovy clen stykac',
+      'mechanické blokování stykač', 'mechanicke blokovani stykac', 'vzájemné blokování',
+      'pneumatický časový člen', 'pneumaticky casovy clen', 'časový člen stykač',
+    ],
+    questions: [
+      { key: 'mfr',      text: 'Výrobce stykače?',                           options: ['ABB', 'Siemens', 'Schneider Electric', 'Eaton (Moeller)', 'Bez preference'] },
+      { key: 'acc_type', text: 'Jaký typ příslušenství?',                    options: ['Pomocný kontakt', 'Varistor / RC člen (potlačení napětí cívky)', 'Mechanické blokování', 'Pneumatický / časový člen', 'Jiné'] },
+      { key: 'contactor',text: 'Řada nebo typ stykače? (napiš, např. A9, A16, LC1D09, 3RT2016, DILM7)' },
+    ],
+    mfrKeys: ['abb', 'siemens', 'schneider', 'eaton'],
+    knowledge: `## Příslušenství stykačů — přehled
+
+Příslušenství stykačů: pomocné kontakty (blokové kontakty), varistory/RC členy (potlačení přepětí cívky), mechanická blokování, časové členy.
+
+---
+### ABB — příslušenství stykačů řady A / AF:
+**Pomocné kontakty (blokové):**
+  CA4-01 = 1NC (pro A9–A75)
+  CA4-10 = 1NO (pro A9–A75)
+  CA4-11 = 1NO + 1NC (pro A9–A75)
+  CA4-22 = 2NO + 2NC
+  CA4-31 = 3NO + 1NC
+  CA4-40 = 4NO
+  CA4-04 = 4NC
+Pro větší stykače (AF): CAF4-01, CAF4-10, CAF4-11
+**Varistory / RC členy:**
+  RC4-7    = RC člen, A9–A16 (230 V AC)
+  VA4-3    = varistor, A9–A16 (24–48 V DC)
+  VA4-6    = varistor, A26–A45
+  RC4-6    = RC člen A26–A45
+**Mechanické blokování:**
+  ADP4-2   = mechanické blokování pro 2× stykač A9–A75
+  ADPAF    = pro AF stykače
+
+---
+### Siemens — příslušenství 3RT2:
+**Pomocné kontakty S00 (3RT2015–3RT2018):**
+  3RH2911-1HA01 = 1NO + 1NC, bočně montovaný, S00
+  3RH2911-1FA22 = 2NO + 2NC, S00
+  3RH2911-2HA01 = 1NO + 1NC, čelně montovaný, S00
+**Pomocné kontakty S0 a výše (3RT2025+):**
+  3RH2921-1AA01 = 1NO, S0–S12
+  3RH2921-1AA10 = 1NC, S0–S12
+  3RH2921-1HA01 = 1NO + 1NC, S0–S12
+**Varistory / RC členy:**
+  3RT2916-1CC00 = varistor/RC, S00, 24–48 V DC
+  3RT2916-1BB00 = RC člen, S00, 24–48 V AC/DC
+  3RT2926-1BB00 = RC člen, S0–S3
+  3RT2926-1CC00 = varistor, S0, 24–48 V DC
+**Mechanické blokování:**
+  3RA1924-2A  = blokování 2× 3RT S00
+  3RA1924-1A  = blokování 2× 3RT S0
+
+---
+### Schneider Electric — příslušenství LC1D:
+**Pomocné kontakty:**
+  LADN11   = 1NO + 1NC (LC1D09–LC1D38)
+  LADN20   = 2NO
+  LADN02   = 2NC
+  LADN31   = 3NO + 1NC
+  LADN40   = 4NO
+  LADN04   = 4NC
+  LAD8N11  = 1NO + 1NC, čelní blok
+Pro LC1D40–D65: LADL11, LADL20, LADL02
+**Varistory / RC členy:**
+  LAD7B106 = varistor 230 V AC pro LC1D09–D38
+  LAD7B012 = RC člen 12 V DC
+  LAD7B024 = RC člen 24 V DC
+  LAD8N    = RC/varistor blok
+**Mechanické blokování:**
+  LAD9R    = blokování 2× LC1D09–D38
+
+---
+### Eaton (Moeller) — příslušenství DILM:
+**Pomocné kontakty:**
+  DILA-XHI11  = 1NO + 1NC (DILM7–DILM38)
+  DILA-XHI20  = 2NO
+  DILA-XHI02  = 2NC
+  DILM170-XHI11 = 1NO + 1NC pro větší DILM
+**Varistory / RC členy:**
+  DILA-XHIV11 = 1NO + 1NC + varistor (DILM7–DILM38)
+  DILM-XSPV   = varistor 24 V DC
+  DILM-XSPA   = RC člen 230 V AC
+**Mechanické blokování:**
+  DILM32-XMK32 = blokování 2× DILM7–DILM32
+`,
+  },
+
+  // -------------------------------------------------------------------------
   // 2. Stykač
   // -------------------------------------------------------------------------
   {
@@ -483,6 +581,110 @@ QUINT4-PS/1AC/24DC/10, TRIO-PS/1AC/24DC/5, 6EP1333-2BA20, QS10.241, CP10.241, PR
 
 **SEKUNDÁRNÍ — obecné fallbacky:**
 napájecí zdroj 24VDC [proud]A DIN, Netzteil 24V [proud]A, PSU 24VDC, SITOP, QUINT, TRIO, PULS`,
+  },
+
+  // -------------------------------------------------------------------------
+  // 5a. Příslušenství svorek
+  // -------------------------------------------------------------------------
+  {
+    key: 'prislusenstvi_svorka',
+    label: 'Příslušenství svorek',
+    aliases: [
+      'čílko', 'čilko', 'cilko', 'krajní doraz', 'krajni doraz', 'endklammer', 'end bracket',
+      'propojka svorek', 'propojka svorky', 'přemostovač svorek', 'premostovac svorek',
+      'querbrücke', 'querbrucke', 'jumper svorka', 'přemostit svorku', 'přemostění svorky',
+      'nosič popisků', 'nosic popiku', 'nosic popisku', 'popisek svorky', 'štítek svorky',
+      'stitek svorky', 'beschriftungsträger', 'marker svorka',
+      'krycí plech svorky', 'kryci plech svorky', 'krytka svorky', 'cover svorka',
+      'krycí přepážka', 'kryci prepazka',
+    ],
+    questions: [
+      { key: 'mfr',      text: 'Výrobce svorek?',                                           options: ['WAGO', 'Phoenix Contact', 'Weidmüller', 'ABB', 'Bez preference'] },
+      { key: 'acc_type', text: 'Jaký typ příslušenství?',                                   options: ['Čílko / Krajní doraz (end bracket)', 'Propojka / Přemostovač', 'Nosič popisků / Štítek', 'Krycí plech / Krytka / Přepážka', 'Jiné'] },
+      { key: 'series',   text: 'Pro jakou řadu svorek? (napiš, např. PT 2.5, WDU 2.5, 2273, 221-2, TOPJOB S)' },
+    ],
+    mfrKeys: ['wago', 'phoenix', 'weidmuller'],
+    knowledge: `## Příslušenství svorek — přehled
+
+Svorky vyžadují příslušenství: čílka/krajní dorazy (end bracket), propojky/přemostovače (jumper bridges), nosiče popisků, krycí plechy a krytky.
+
+---
+### WAGO — příslušenství svorek:
+**WAGO 221 (LEVER-NUT) — příslušenství:**
+  221-500  = čílko pro 221-xxx (end cover)
+  221-2401 = propojka 2-pólová 24 V (pro montáž PE)
+Série 221: 221-412 (2×do 4mm²), 221-413 (3×), 221-415 (5×)
+
+**WAGO 2273 (PUSH-WIRE, šroubová typ):**
+  2273-499 = čílko pro 2273 řadu (5mm rozteč)
+  2273-XXX = svorky pro vodiče 0.5–2.5 mm²
+
+**WAGO TOPJOB S (2002 / 2004 / 2006 řady):**
+  2002-199 = čílko pro 2002 (2.5mm² / 5mm rozteč)
+  2004-199 = čílko pro 2004 (4mm² / 6mm rozteč)
+  2006-199 = čílko pro 2006 (6mm² / 8mm rozteč)
+  2010-199 = čílko pro 10mm²
+  2002-1281 = propojka 2P pro TOPJOB S 2002
+  2002-1282 = propojka 2P kov (standard)
+  2004-1281 = propojka pro 2004
+  2002-1690 = nosič popisků pro 2002
+
+**WAGO 280 řada (šroubová, 35mm²):**
+  280-999 = čílko pro 280 řadu
+  280-483 = propojka 3P
+
+---
+### Phoenix Contact — příslušenství svorek:
+**Čílka pro PT / UT / MKDS:**
+  3030150 = E/UK — čílko pro UT 2.5, PT 2.5 (3mm rozteč) — nejpoužívanější!
+  3030163 = E/UT 4 — čílko pro UT 4 mm²
+  3030216 = E/UT 6 — čílko pro UT 6 mm²
+  3030229 = E/UT 10 — čílko pro UT 10 mm²
+  3030232 = E/UT 16 — čílko pro UT 16 mm²
+
+**Propojky (jumper bridges):**
+  3030107 = FBS 2-5 — propojka 2-pólová pro PT/UT 2.5 (5mm rozteč)
+  3030085 = FBS 3-5 — propojka 3-pólová PT/UT 2.5
+  3030098 = FBS 10-5 — propojka 10-pólová
+  3030056 = QTC 2,5 — propojka 2P pro PT 2.5
+  1201459 = FBS 2-5 — propojka 2P (jiné balení)
+
+**Nosiče popisků:**
+  0810916 = KMK BIG — nosič štítků
+  1204562 = KMK 3 — nosič pro PT 2.5 série
+  3030026 = MK — označovací svorka
+
+---
+### Weidmüller — příslušenství svorek:
+**Čílka pro WDU / ZDU:**
+  1052500000 = EW — čílko pro WDU 2.5 / ZDU 2.5 (základní, nejpoužívanější)
+  1052600000 = EW 4  — čílko pro WDU 4
+  1052700000 = EW 6  — čílko pro WDU 6
+  1052800000 = EW 10 — čílko pro WDU 10
+  1052900000 = EW 16 — čílko pro WDU 16
+
+**Propojky:**
+  1024340000 = QV 2,5/2 — propojka 2-pólová pro WDU 2.5
+  1024350000 = QV 2,5/3 — propojka 3-pólová
+  1024370000 = QV 2,5/10 — propojka 10-pólová
+  1024380000 = QV 4/2 — propojka 2P pro WDU 4
+
+**Nosiče popisků:**
+  1608510000 = M 2,5/5 — popisek/štítek pro WDU 2.5 (5×5mm)
+  1608530000 = M 4/5 — pro WDU 4
+
+---
+### ABB — příslušenství svorek:
+Řady: TS (šroubová), TNL (průchozí), TPN (PE).
+  4820T = čílko pro TS řadu (2.5 / 4 mm²)
+  BEW10/5 = propojka 10P pro TS
+
+---
+### Obecné typy vyhledávání:
+- Čílko konkrétní: "čílko 2273", "end cover 221", "E/UK 2.5", "EW 2.5"
+- Propojka obecně: "QV 2.5", "FBS 2-5", "querbrücke 2.5"
+- Nosič popisků: "MK 2.5", "KMK", "popisek svorky", "štítek svorky"
+`,
   },
 
   // -------------------------------------------------------------------------
