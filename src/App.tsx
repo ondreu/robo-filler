@@ -103,7 +103,6 @@ function App() {
   const [zbomDropdownOpen, setZbomDropdownOpen] = useState(false);
   const zbomInputRef = useRef<HTMLInputElement>(null);
   const zbomDropdownRef = useRef<HTMLDivElement>(null);
-  const aiModeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     localStorage.setItem(ZBOM_TABS_KEY, JSON.stringify(zbomTabs.map(t => ({ id: t.id, name: t.name }))));
@@ -114,11 +113,6 @@ function App() {
     else localStorage.removeItem(ZBOM_ACTIVE_KEY);
   }, [activeZbomTabId]);
 
-  useEffect(() => {
-    if (appMode === 'ai') {
-      setTimeout(() => aiModeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-    }
-  }, [appMode]);
 
   useEffect(() => {
     if (!zbomDropdownOpen) return;
@@ -445,7 +439,7 @@ function App() {
         {!isLoading && !error && activeArticles.length > 0 && (
           <>
             {appMode === 'ai' && (
-              <div ref={aiModeRef} className="space-y-4">
+              <div className="space-y-4">
                 {/* AI sub-mode toggle */}
                 <div className="flex bg-surface0 rounded-xl p-1 gap-1 w-fit">
                   <button
