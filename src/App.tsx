@@ -18,6 +18,7 @@ import { ChatBot } from './components/ChatBot';
 import { AiChat } from './components/AiChat';
 import { AiBomBuilder } from './components/AiBomBuilder';
 import { GuidedSearch } from './components/GuidedSearch';
+import { AiOnboarding } from './components/AiOnboarding';
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -432,6 +433,7 @@ function App() {
                 {/* AI sub-mode toggle */}
                 <div className="flex bg-surface0 rounded-xl p-1 gap-1 w-fit">
                   <button
+                    id="onb-chat"
                     onClick={() => setAiSubMode('chat')}
                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       aiSubMode === 'chat' ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
@@ -440,6 +442,7 @@ function App() {
                     Běžný
                   </button>
                   <button
+                    id="onb-guided"
                     onClick={() => aiSubMode === 'guided' ? undefined : setShowGuidedWarning(true)}
                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       aiSubMode === 'guided' ? 'bg-teal text-crust shadow' : 'text-subtext1 hover:text-text'
@@ -449,6 +452,7 @@ function App() {
                     <span className="ml-1.5 text-[10px] font-semibold bg-teal/20 text-teal rounded px-1 py-0.5 leading-none align-middle">BETA</span>
                   </button>
                   <button
+                    id="onb-bom"
                     onClick={() => aiSubMode === 'bom' ? undefined : setShowBomWarning(true)}
                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       aiSubMode === 'bom' ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
@@ -459,6 +463,7 @@ function App() {
                   </button>
                 </div>
 
+                <AiOnboarding />
                 {aiSubMode === 'chat' && <AiChat />}
                 {aiSubMode === 'guided' && <GuidedSearch />}
                 {aiSubMode === 'bom' && (
