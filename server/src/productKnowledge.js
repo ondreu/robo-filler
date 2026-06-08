@@ -1661,6 +1661,1020 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
     }, // end nadproudova_spoust.manufacturers
   }, // end nadproudova_spoust
 
+  // ─── Relé ─────────────────────────────────────────────────────────────────
+  rele: {
+    label: 'Relé',
+    aliases: [
+      'relé', 'rele', 'relay', 'řídicí relé', 'miniaturní relé',
+      'průmyslové relé', 'elektromagnetické relé',
+    ],
+    questions: [
+      'Kolik kontaktů a jaký typ? (1CO = SPDT, 2CO = DPDT)',
+      'Napětí cívky? (24VDC, 24VAC, 230VAC)',
+      'Jmenovitý proud kontaktů? (6A, 10A)',
+      'Způsob montáže? (patice na DIN lištu, přímý DIN rail, PCB)',
+    ],
+    manufacturers: {
+      omron: {
+        label: 'Omron',
+        doc: `## Omron – Miniaturní relé G2R
+
+### Schéma: G2R-[póly]-[varianta] [napětí_cívky]
+
+  Počet pólů: 1 = 1CO (SPDT, 10 A), 2 = 2CO (DPDT, 5 A)
+  Varianta: E = PCB montáž, SN = pro patici + LED + testovací tlačítko
+
+### PCB montáž (varianta E)
+
+  G2R-1-E DC24  = 1CO, 24 VDC, PCB, 10 A / 250 VAC
+  G2R-1-E DC12  = 1CO, 12 VDC, PCB, 10 A / 250 VAC
+  G2R-1-E AC230 = 1CO, 230 VAC, PCB, 10 A / 250 VAC
+  G2R-2-E DC24  = 2CO, 24 VDC, PCB, 5 A / 250 VAC
+  G2R-2-E DC12  = 2CO, 12 VDC, PCB, 5 A / 250 VAC
+  G2R-2-E AC230 = 2CO, 230 VAC, PCB, 5 A / 250 VAC
+
+### Patice montáž (varianta SN, pro DIN lištu)
+
+  G2R-1-SN DC24  = 1CO, 24 VDC, patice P2CF-08, LED + test button
+  G2R-1-SN DC12  = 1CO, 12 VDC, patice P2CF-08
+  G2R-1-SN AC230 = 1CO, 230 VAC, patice P2CF-08
+  G2R-2-SN DC24  = 2CO, 24 VDC, patice P2CF-08
+  G2R-2-SN DC12  = 2CO, 12 VDC, patice P2CF-08
+  G2R-2-SN AC230 = 2CO, 230 VAC, patice P2CF-08
+
+### Parametry kontaktů
+
+  G2R-1 (1CO): Ith = 10 A, 250 VAC / 30 VDC
+  G2R-2 (2CO): Ith = 5 A, 250 VAC / 30 VDC
+  Mechanická životnost: 10 × 10⁶ cyklů
+  Elektrická životnost: 100 × 10³ cyklů (jmenovité zatížení)
+
+### Patice (příslušenství)
+
+  P2CF-08 = 8-pin oktalová patice pro G2R-1-SN / G2R-2-SN, DIN 35 mm, šroubové svorky
+`,
+      },
+      phoenix_contact: {
+        label: 'Phoenix Contact',
+        doc: `## Phoenix Contact – Relé PLC-RSC / PLC-RPT
+
+### PLC-RSC (šroubové svorky, přímá DIN montáž)
+
+  PLC-RSC-24DC/21-AU (2966171) = 1CO, 24 VDC, šroubové svorky, 6 A / 250 VAC
+  PLC-RSC-24DC/21    (2966011) = 1CO, 24 VDC, šroubové svorky, 6 A / 250 VAC
+  PLC-RSC-24DC/21-21 (2966024) = 2CO, 24 VDC, šroubové svorky, 6 A / 250 VAC
+  PLC-RSC-230AC/21   (2966168) = 1CO, 230 VAC, šroubové svorky, 6 A
+
+### PLC-RPT (push-in svorky, přímá DIN montáž)
+
+  PLC-RPT-24DC/21    (2900299) = 1CO, 24 VDC, push-in svorky, 6 A / 250 VAC
+  PLC-RPT-24DC/21-21 (2900302) = 2CO, 24 VDC, push-in svorky, 6 A / 250 VAC
+  PLC-RPT-230AC/21   (2900328) = 1CO, 230 VAC, push-in svorky, 6 A
+
+### Parametry
+
+  Montáž: přímo na DIN 35 mm lištu (integrovaná základna)
+  Kontakty: AgNi, 6 A / 250 VAC
+  LED indikace cívky: ano (standardní varianty)
+  Pracovní teplota: –25 °C … +70 °C
+  Číslo v závorce = objednací číslo Phoenix Contact (7místné)
+`,
+      },
+      finder: {
+        label: 'Finder',
+        doc: `## Finder – Relé série 40, 55
+
+### Série 40 – Miniaturní relé do patice (oktal 8-pin)
+
+  Schéma: 40.[konfigurace].[napájení].[napětí_cívky].[verze]
+  Napájení kódy: 7 = DC (low-power cívka), 9 = AC
+
+  40.51.7.012.0000 = 1CO, 12 VDC, 8 A, pro patici série 94
+  40.51.7.024.0000 = 1CO, 24 VDC, 8 A, pro patici série 94
+  40.51.9.230.0000 = 1CO, 230 VAC, 8 A, pro patici série 94
+  40.52.7.024.0000 = 2CO, 24 VDC, 8 A, pro patici série 94
+  40.52.9.230.0000 = 2CO, 230 VAC, 8 A, pro patici série 94
+
+  Kontakty: Ith = 8 A / 250 VAC
+  Pin konfigurace: 8-pin oktal
+
+### Série 55 – Řídicí relé 4CO
+
+  55.34.9.024.0040 = 4CO, 24 VDC, 7 A, pro patici série 95
+  55.34.9.230.0040 = 4CO, 230 VAC, 7 A, pro patici série 95
+
+  Pin konfigurace: 14-pin (pro patici 95.05)
+`,
+      },
+      weidmuller: {
+        label: 'Weidmüller',
+        doc: `## Weidmüller – Relé TRS
+
+### TRS – miniaturní relé pro přímou DIN montáž
+
+  TRS 24VDC 1CO (1122770000) = 1CO, 24 VDC, 6 A / 250 VAC, DIN 35 mm
+  TRS 24VDC 2CO (1122780000) = 2CO, 24 VDC, 6 A / 250 VAC, DIN 35 mm
+  TRS 230VAC 1CO              = 1CO, 230 VAC, 6 A / 250 VAC, DIN 35 mm
+
+### Parametry
+
+  Kontakty: 6 A / 250 VAC
+  LED indikace: ano
+  Pracovní teplota: –25 °C … +55 °C
+  Číslo v závorce = objednací číslo Weidmüller
+`,
+      },
+    },
+  }, // end rele
+
+  // ─── Příslušenství relé ────────────────────────────────────────────────────
+  prislusenstvi_rele: {
+    label: 'Příslušenství relé',
+    aliases: [
+      'patice relé', 'patice', 'podnožka relé', 'relay socket', 'relay base',
+      'příslušenství relé', 'prislusenstvi rele', 'socket pro relé',
+    ],
+    questions: [
+      'Pro jaký typ relé? (Omron G2R, Finder 40, Finder 55)',
+      'Počet pinů? (8-pin oktal, 14-pin)',
+      'Způsob připojení? (šroubové svorky, push-in)',
+    ],
+    manufacturers: {
+      omron: {
+        label: 'Omron',
+        doc: `## Omron – Patice série P2CF pro relé G2R
+
+  P2CF-08  = 8-pin oktalová patice, DIN 35 mm, šroubové svorky
+             Pro relé: G2R-1-SN, G2R-2-SN
+             Rozměry: 27,5 × 33 × 36,2 mm
+
+  P2RF-08  = 8-pin oktalová patice, PCB montáž (plošný spoj)
+
+### Kompatibilita
+
+  G2R-1-SN → P2CF-08 (8-pin oktal)
+  G2R-2-SN → P2CF-08 (8-pin oktal)
+  G2R-1-E / G2R-2-E → PCB přímá montáž (bez patice)
+`,
+      },
+      finder: {
+        label: 'Finder',
+        doc: `## Finder – Patice série 94 (8-pin) a 95 (14-pin)
+
+### Série 94 – pro relé Finder 40 (8-pin oktal)
+
+  94.72   = 8-pin, DIN 35 mm, šroubové svorky
+  94.72.2 = 8-pin, DIN 35 mm, šroubové svorky + aretace relé
+  94.02.1 = 8-pin, PCB montáž
+
+### Série 95 – pro relé Finder 55 (14-pin)
+
+  95.05   = 14-pin, DIN 35 mm, šroubové svorky
+  95.05.2 = 14-pin, DIN 35 mm + aretace relé
+
+### Kompatibilita
+
+  Finder 40.51 / 40.52 (1CO / 2CO, 8-pin) → patice série 94
+  Finder 55.34 (4CO, 14-pin)               → patice série 95
+`,
+      },
+    },
+  }, // end prislusenstvi_rele
+
+  // ─── Časové relé ──────────────────────────────────────────────────────────
+  casove_rele: {
+    label: 'Časové relé',
+    aliases: [
+      'časové relé', 'casove rele', 'timer relay', 'časovač',
+      'zpožďovací relé', 'multifunkční časovač', 'on-delay', 'off-delay',
+    ],
+    questions: [
+      'Jaká časovací funkce? (zapínací prodleva, vypínací prodleva, blikač, multifunkční)',
+      'Jaký časový rozsah? (sekundy, minuty, hodiny)',
+      'Napájecí napětí? (24VDC, 230VAC, univerzální 12–240V)',
+      'Kolik výstupních kontaktů? (1CO, 2CO)',
+    ],
+    manufacturers: {
+      siemens: {
+        label: 'Siemens',
+        doc: `## Siemens – Časové relé 3RP2505
+
+### 3RP2505-1AW30 – Multifunkční časové relé
+
+  3RP2505-1AW30 = 27 časovacích funkcí, 12–240 V AC/DC, 2CO, 5 A / 250 VAC
+
+### Parametry
+
+  Napájení: 12–240 V AC/DC (univerzální vstup)
+  Počet funkcí: 27 (zapínací prodleva, vypínací prodleva, blikač,
+                 hvězda-trojúhelník, jednorázový impuls a další)
+  Časový rozsah: 0,05 s … 360 000 s (= 100 hod), 7 rozsahů přepínačem
+  Výstupní kontakty: 2CO (2× přepínací), 5 A / 250 VAC
+  Montáž: DIN 35 mm lišta, šířka 35 mm (2 TE)
+  Pracovní teplota: –25 °C … +60 °C
+  LED indikace: stav výstupu + napájení
+`,
+      },
+      abb: {
+        label: 'ABB',
+        doc: `## ABB – Časové relé CT-MFD.21
+
+### CT-MFD.21S (1SVR500012R2100) – Multifunkční časové relé
+
+  CT-MFD.21S = 7 časovacích funkcí, 12–240 V AC/DC, 2CO, 5 A / 250 VAC
+
+### Parametry
+
+  Napájení: 12–240 V AC/DC (univerzální)
+  Počet funkcí: 7 (zapínací prodleva, vypínací prodleva, blikač start/stop,
+                 hvězda-trojúhelník, jednorázový impuls)
+  Časový rozsah: 0,05 s … 100 hod (7 rozsahů)
+  Výstupní kontakty: 2CO (2× přepínací), 5 A / 250 VAC
+  Montáž: DIN 35 mm lišta, šířka 35 mm
+  Pracovní teplota: –20 °C … +55 °C
+  Objednací číslo v závorce = ABB číslo
+`,
+      },
+    },
+  }, // end casove_rele
+
+  // ─── Fázové relé ──────────────────────────────────────────────────────────
+  fazove_rele: {
+    label: 'Fázové relé',
+    aliases: [
+      'fázové relé', 'fazove rele', 'monitorovací relé', 'phase monitoring',
+      'asymetrie', 'sled fází', 'výpadek fáze', 'kontrola fáze',
+      'podpětí', 'přepětí sítě',
+    ],
+    questions: [
+      'Monitorované napětí sítě? (3×320–500 V, 3×160–690 V)',
+      'Které poruchy sledovat? (výpadek fáze, sled fází, asymetrie, podpětí)',
+      'Nastavitelné prahy nebo pevné?',
+      'Počet výstupních kontaktů? (1CO, 2CO)',
+    ],
+    manufacturers: {
+      siemens: {
+        label: 'Siemens',
+        doc: `## Siemens – Monitorovací relé 3UG45xx
+
+### 3UG4511-1AN20 – Základní fázové relé (pevné prahy)
+
+  3UG4511-1AN20 = 3× 320–500 V AC, 1CO, pevná asymetrie 10 %, auto reset
+
+  Funkce: sledování sledu fází, výpadku fáze
+  Výstup: 1CO (přepínací), 3 A / 240 VAC
+  Reakce: výpad < 150 ms
+  Montáž: DIN 35 mm, šířka 22,5 mm
+
+### 3UG4512-1AR20 – Rozšířené fázové relé (nastavitelné prahy)
+
+  3UG4512-1AR20 = 3× 160–690 V AC, 1CO, nastavitelná asymetrie + podpětí, auto/ruční reset
+
+  Funkce: sled fází, výpadek fáze, nastavitelná asymetrie (2–15 %),
+          nastavitelné podpětí
+  Vstupní napětí: 160–690 V AC (50/60 Hz)
+  Výstup: 1CO, 3 A / 240 VAC
+  Montáž: DIN 35 mm, šířka 22,5 mm
+
+### 3UG4513-1BR20 – Digitálně nastavitelné fázové relé
+
+  3UG4513-1BR20 = 3× 160–690 V AC, 2CO, digitální nastavení, LED displej, auto/ruční reset
+
+  Funkce: vše jako 3UG4512 + digitální zobrazení napětí a asymetrie
+  Výstup: 2CO (2× přepínací), 3 A / 240 VAC
+  Nastavení: rotační kodér + LED displej
+  Montáž: DIN 35 mm, šířka 22,5 mm
+
+### Kódování sufixu 3UG45xx
+
+  3UG4511: základní (1CO, pevné prahy)
+  3UG4512: rozšířené (1CO, nastavitelné)
+  3UG4513: digitální (2CO, displej)
+  N = vstup 320–500 V, R = vstup 160–690 V
+  A = auto reset, B = auto + ruční reset
+`,
+      },
+    },
+  }, // end fazove_rele
+
+  // ─── Tlačítka ─────────────────────────────────────────────────────────────
+  tlacitko: {
+    label: 'Tlačítka',
+    aliases: [
+      'tlačítko', 'tlacitko', 'ovladač', 'pushbutton', 'spínač tlačítkový',
+      'signálka', 'kontrolka', 'startovací tlačítko', 'stop tlačítko',
+    ],
+    questions: [
+      'Průměr montáže? (Ø22 mm = standard)',
+      'Barva? (černá, zelená, červená, žlutá)',
+      'Typ operace? (momentální/impulsní, aretované/fixační)',
+      'Typ kontaktu? (1NO, 1NC)',
+      'Materiál čelní desky? (kovový = XB4, plastový = XB5)',
+    ],
+    manufacturers: {
+      schneider: {
+        label: 'Schneider Electric',
+        doc: `## Schneider Electric – Tlačítka Harmony XB4 / XB5
+
+### Harmony XB4 – kovová (zinkový slitinový) čelní deska, IP65, Ø22 mm
+
+  XB4BA21 = černé, Ø22 mm, momentální, 1NO, IP65, kovová deska
+  XB4BD21 = zelené, Ø22 mm, momentální, 1NO, IP65, kovová deska (START)
+  XB4BA42 = červené, Ø22 mm, momentální, 1NC, IP65, kovová deska (STOP)
+
+  Ø montážního výřezu: 22,3 mm
+  Proud kontaktu: 10 A / 240 VAC (AC-15: 4 A / 240 VAC)
+  Norma: IEC 60947-5-1
+
+### Harmony XB5 – plastová (polyamidová) čelní deska, IP66, Ø22 mm
+
+  XB5AA21 = černé, Ø22 mm, momentální, 1NO, IP66
+  XB5AD21 = zelené, Ø22 mm, momentální, 1NO, IP66
+  XB5AA42 = červené, Ø22 mm, momentální, 1NC, IP66
+
+  Ø montážního výřezu: 22,3 mm
+  Proud kontaktu: 10 A / 240 VAC
+
+### Kontaktní bloky (příslušenství, objednávány zvlášť u modulárních verzí)
+
+  ZB4BZ101 = 1NO kontaktní blok pro XB4
+  ZB4BZ102 = 1NC kontaktní blok pro XB4
+  ZB4BZ103 = 1NO + 1NC kontaktní blok pro XB4
+  ZB5AZ101 = 1NO kontaktní blok pro XB5
+  ZB5AZ102 = 1NC kontaktní blok pro XB5
+
+### XB4 vs. XB5
+
+  XB4: kovová deska, IP65, vyšší mechanická odolnost, průmyslové prostředí
+  XB5: plastová deska, IP66 (lepší těsnost), lehčí, ekonomičtější
+  Kontaktní bloky XB4 a XB5 nejsou vzájemně zaměnitelné
+`,
+      },
+    },
+  }, // end tlacitko
+
+  // ─── Nouzové tlačítko ─────────────────────────────────────────────────────
+  nouzove_tlacitko: {
+    label: 'Nouzové tlačítko',
+    aliases: [
+      'nouzové tlačítko', 'nouzove tlacitko', 'E-stop', 'emergency stop',
+      'hřibové tlačítko', 'hribove tlacitko', 'nouzový stop',
+      'nouzový vypínač', 'bezpečnostní tlačítko',
+    ],
+    questions: [
+      'Průměr hřibu? (Ø40 mm = standard, Ø60 mm = velký)',
+      'Způsob odjištění? (otočení = twist-release, klíč = key-release, tah = pull-release)',
+      'Průměr montáže? (Ø22 mm = standard)',
+      'Typ kontaktu? (1NC, 2NC, 1NC+1NO)',
+    ],
+    manufacturers: {
+      schneider: {
+        label: 'Schneider Electric',
+        doc: `## Schneider Electric – Nouzový stop Harmony XB4 / XB5
+
+### Harmony XB4 – kovová deska, Ø22 mm
+
+  ZB4BS54 = Ø40 mm červený hřib, Ø22 mm výřez, twist-release aretace, žlutá deska
+            → HLAVA POUZE – nutno přidat tělo (ZB4BZ009) + kontaktní blok
+
+  Kompletní jednotky (hlava + tělo + kontakty):
+    XB4BS54441  = Ø40 mm hřib, twist-release, 1NC + 1NO
+    XB4BS8444   = Ø40 mm hřib, key-release (klíčové odjištění), 1NC + 1NO
+
+  Dílčí komponenty XB4:
+    ZB4BS54    = Ø40 mm červený hřib, twist-release (hlava)
+    ZB4BZ009   = tělo Ø22 mm (base)
+    ZB4BZ102   = 1NC kontaktní blok
+    ZB4BZ101   = 1NO kontaktní blok
+    ZB4BZ103   = 1NO + 1NC kontaktní blok
+
+### Harmony XB5 – plastová deska, Ø22 mm
+
+  ZB5AS844    = Ø40 mm červený hřib, twist-release, IP66 (nástupce ZB5AS54)
+
+  Kompletní:
+    XB5AS54442  = Ø40 mm, twist-release, 1NC + 1NO
+
+### Parametry
+
+  Ø montážního výřezu: 22,3 mm
+  NC kontakty: přímo-rozepínací princip (direct opening action) dle IEC 60947-5-5
+  Proud NC kontaktu: 10 A / 240 VAC (AC-15)
+  Barva hřibu: červená, deska žlutá (dle ISO 13850)
+  Krytí: IP65 (XB4), IP66 (XB5)
+  Aretace: twist nebo key – nikdy ne samočinně resetovatelné
+  Normy: IEC 60947-5-5, ISO 13850
+`,
+      },
+    },
+  }, // end nouzove_tlacitko
+
+  // ─── Hlavní vypínač ───────────────────────────────────────────────────────
+  hlavni_vypinac: {
+    label: 'Hlavní vypínač',
+    aliases: [
+      'hlavní vypínač', 'hlavni vypinac', 'odpínač', 'odpinac',
+      'odpojovač', 'isolator switch', 'bezpečnostní odpínač',
+      'servisní spínač', 'load break switch',
+    ],
+    questions: [
+      'Počet pólů? (3P = třífázový, 4P = třífázový + N)',
+      'Jmenovitý proud? (16A, 25A, 40A, 63A, 100A)',
+      'Způsob montáže? (DIN lišta, přímá montáž na panel/dveře)',
+      'Ovládání? (přímé rukojetí, prodloužená hřídel na dveře)',
+    ],
+    manufacturers: {
+      abb: {
+        label: 'ABB',
+        doc: `## ABB – Odpínač OT série (Safety switch / Load break switch)
+
+### OTxF3 – 3-pólové odpínače
+
+  OT16F3  (1SCA104811R1001) = 3P, 20 A / 600 VAC, DIN 35 mm nebo přímá montáž
+  OT25F3  (1SCA104857R1001) = 3P, 25 A / 600 VAC
+  OT40F3  (1SCA104902R1001) = 3P, 40 A / 600 VAC
+  OT63F3  (1SCA104945R1001) = 3P, 63 A / 600 VAC
+  OT100F3 (1SCA104988R1001) = 3P, 100 A / 600 VAC
+
+  Poznámka: OT16F3 má Ith = 20 A dle IEC 60947-3 přestože kód série je „16".
+            Vždy ověřit v datovém listu ABB.
+
+### OTxF4 – 4-pólové odpínače (3P+N)
+
+  OT16F4  = 4P, 20 A / 600 VAC
+  OT25F4  = 4P, 25 A / 600 VAC
+  OT40F4  = 4P, 40 A / 600 VAC
+  OT63F4  = 4P, 63 A / 600 VAC
+
+### Parametry OT série
+
+  Napětí: do 600 V AC / 250 V DC
+  Spínací kategorie: AC-23A (motorové zátěže), AC-22A (odporové + smíšené)
+  Krytí: IP65 s krytem, IP20 na svorkách
+  Montáž: DIN 35 mm nebo šrouby do výřezu panelu
+  Normy: IEC 60947-3, UL 508
+  Vhodné jako hlavní vypínač rozvaděče dle IEC 61439
+  Objednací číslo v závorce = ABB číslo
+`,
+      },
+    },
+  }, // end hlavni_vypinac
+
+  // ─── Průchodka ────────────────────────────────────────────────────────────
+  pruchovka: {
+    label: 'Průchodka',
+    aliases: [
+      'průchodka', 'pruchovka', 'kabelová průchodka', 'cable gland',
+      'vývodka', 'kabelová vývodka', 'PG průchodka', 'metrická průchodka',
+      'SKINTOP', 'kabelová průchodnice',
+    ],
+    questions: [
+      'Závit? (M16, M20, M25, M32, M40, M50, M63 nebo PG7, PG9, PG11, PG16)',
+      'Průměr kabelu?',
+      'Materiál? (polyamid = plast, niklovaná mosaz)',
+      'Krytí? (IP68, IP69K)',
+    ],
+    manufacturers: {
+      lapp: {
+        label: 'Lapp',
+        doc: `## Lapp – Průchodky SKINTOP
+
+### SKINTOP ST-M – plastové (polyamid PA6), metrický závit, IP68/IP69K
+
+  SKINTOP ST-M16×1,5  = M16, kabel Ø4–10 mm,  IP68/IP69K, černá
+  SKINTOP ST-M20×1,5  = M20, kabel Ø7–13 mm,  IP68/IP69K, černá
+  SKINTOP ST-M25×1,5  = M25, kabel Ø13–18 mm, IP68/IP69K, černá
+  SKINTOP ST-M32×1,5  = M32, kabel Ø18–25 mm, IP68/IP69K, černá
+  SKINTOP ST-M40×1,5  = M40, kabel Ø22–32 mm, IP68/IP69K, černá
+  SKINTOP ST-M50×1,5  = M50, kabel Ø28–38 mm, IP68/IP69K, černá
+  SKINTOP ST-M63×1,5  = M63, kabel Ø34–48 mm, IP68/IP69K, černá
+
+  Specifická varianta: SKINTOP STR-M25B (53111330) = M25, PA6, IP68/IP69K, černá
+
+### SKINTOP MS-M – niklovaná mosaz, metrický závit, IP68
+
+  SKINTOP MS-M16×1,5  = M16, niklovaná mosaz, kabel Ø4–10 mm,  IP68
+  SKINTOP MS-M20×1,5  = M20, niklovaná mosaz, kabel Ø7–13 mm,  IP68
+  SKINTOP MS-M25×1,5  = M25, niklovaná mosaz, kabel Ø13–18 mm, IP68
+  SKINTOP MS-M32×1,5  = M32, niklovaná mosaz, kabel Ø18–25 mm, IP68
+  SKINTOP MS-M40×1,5  = M40, niklovaná mosaz, kabel Ø22–32 mm, IP68
+  SKINTOP MS-M50×1,5  = M50, niklovaná mosaz, kabel Ø28–38 mm, IP68
+
+### SKINTOP ST-PG – plastové, PG závit (starší norma)
+
+  SKINTOP ST-PG7    = PG7,   kabel Ø3–6,5 mm, IP68
+  SKINTOP ST-PG9    = PG9,   kabel Ø4–8 mm,   IP68
+  SKINTOP ST-PG11   = PG11,  kabel Ø5–10 mm,  IP68
+  SKINTOP ST-PG13,5 = PG13,5 kabel Ø6–12 mm,  IP68
+  SKINTOP ST-PG16   = PG16,  kabel Ø10–14 mm, IP68
+  SKINTOP ST-PG21   = PG21,  kabel Ø13–18 mm, IP68
+
+### Obecné parametry SKINTOP
+
+  Krytí ST-M: IP68 (ponoření) + IP69K (vysokotlaký oplach)
+  Krytí MS-M: IP68
+  Materiál těsnění: NBR (standard)
+  Teplota: –20 °C … +80 °C (PA6), –40 °C … +100 °C (mosaz)
+  Norma: IEC 60529, EN 50262
+`,
+      },
+    },
+  }, // end pruchovka
+
+  // ─── Záslepka ─────────────────────────────────────────────────────────────
+  zaslepka: {
+    label: 'Záslepka',
+    aliases: [
+      'záslepka', 'zaslepka', 'blanking plug', 'záslepný kryt',
+      'výplňový dílec', 'panel plug', 'záslepné víčko',
+    ],
+    questions: [
+      'Pro jaký otvor? (Ø22 mm výřez pro tlačítko, metrický závit M16/M20/M25)',
+      'Materiál? (plast, kov)',
+      'Požadované krytí? (IP40, IP68)',
+    ],
+    manufacturers: {
+      schneider: {
+        label: 'Schneider Electric',
+        doc: `## Schneider Electric – Záslepky panelových výřezů Harmony
+
+### Záslepky pro Ø22 mm výřezy (série XB2/XB4/XB5)
+
+  XB2EZ09 = plastová záslepka pro Ø22,3 mm výřez, IP40
+            Materiál: ABS plast
+            Barva: šedá/černá
+            Kompatibilní s XB2, XB4, XB5 řadou (stejný Ø22 mm výřez)
+
+### Použití
+
+  Zakrytí nevyužitých výřezů Ø22 mm v čelní desce rozvaděče.
+  Krytí IP40 při použití záslepky (bez tlačítka).
+`,
+      },
+      lapp: {
+        label: 'Lapp',
+        doc: `## Lapp – Záslepky pro průchodkové otvory SKINTOP BLIND
+
+### Záslepky pro metrické závity
+
+  SKINTOP BLIND M16×1,5 = záslepka pro M16 otvor, polyamid PA6, IP68
+  SKINTOP BLIND M20×1,5 = záslepka pro M20 otvor, polyamid PA6, IP68
+  SKINTOP BLIND M25×1,5 = záslepka pro M25 otvor, polyamid PA6, IP68
+  SKINTOP BLIND M32×1,5 = záslepka pro M32 otvor, polyamid PA6, IP68
+  SKINTOP BLIND M40×1,5 = záslepka pro M40 otvor, polyamid PA6, IP68
+  SKINTOP BLIND M50×1,5 = záslepka pro M50 otvor, polyamid PA6, IP68
+  SKINTOP BLIND M63×1,5 = záslepka pro M63 otvor, polyamid PA6, IP68
+
+### Použití
+
+  Zakrytí nevyužitých průchodkových otvorů s metrickým závitem v rozvaděčové skříni.
+  Udržuje IP68 krytí skříně i bez průchodky.
+  Materiál: polyamid PA6, černá.
+`,
+      },
+    },
+  }, // end zaslepka
+
+  // ─── Proudový chránič ─────────────────────────────────────────────────────
+  chranic: {
+    label: 'Proudový chránič',
+    aliases: [
+      'proudový chránič', 'proudovy chranic', 'RCD', 'RCCB',
+      'chránič', 'chranic', 'diferenciální spínač', 'reziduální chránič',
+      'FI chránič', 'FI spínač',
+    ],
+    questions: [
+      'Počet pólů? (2P = jednofázový, 4P = třífázový)',
+      'Jmenovitý proud? (16A, 25A, 40A, 63A, 100A)',
+      'Reziduální proud (citlivost)? (10mA, 30mA, 100mA, 300mA, 500mA)',
+      'Typ? (AC = pouze sinusový, A = AC + pulsující DC, B = AC + pulsující + hladký DC)',
+    ],
+    manufacturers: {
+      abb: {
+        label: 'ABB',
+        doc: `## ABB – Proudové chrániče F202 / F204
+
+### Schéma: F2[póly][typ]-[In]/[IΔn]
+
+  F202 = 2-pólové (jednofázové obvody)
+  F204 = 4-pólové (třífázové obvody)
+  Typy: AC = pouze sinusový AC, A = AC + pulsující DC
+
+### F202 – 2-pólové
+
+  F202AC-25/0.03  (2CSF202001R1250) = 2P, 25 A, 30 mA, typ AC
+  F202AC-40/0.03  (2CSF202001R1400) = 2P, 40 A, 30 mA, typ AC
+  F202AC-63/0.03  (2CSF202001R1630) = 2P, 63 A, 30 mA, typ AC
+  F202AC-63/0.1                     = 2P, 63 A, 100 mA, typ AC
+  F202AC-63/0.3                     = 2P, 63 A, 300 mA, typ AC
+  F202AC-100/0.5                    = 2P, 100 A, 500 mA, typ AC
+  F202A-25/0.03   (2CSF202003R1250) = 2P, 25 A, 30 mA, typ A
+  F202A-40/0.03   (2CSF202003R1400) = 2P, 40 A, 30 mA, typ A
+  F202A-63/0.03   (2CSF202003R1630) = 2P, 63 A, 30 mA, typ A
+
+### F204 – 4-pólové
+
+  F204AC-25/0.03  = 4P, 25 A, 30 mA, typ AC
+  F204AC-40/0.03  = 4P, 40 A, 30 mA, typ AC
+  F204AC-63/0.03  = 4P, 63 A, 30 mA, typ AC
+  F204AC-63/0.1   = 4P, 63 A, 100 mA, typ AC
+  F204AC-63/0.3   = 4P, 63 A, 300 mA, typ AC
+  F204AC-100/0.5  = 4P, 100 A, 500 mA, typ AC
+  F204A-40/0.03   = 4P, 40 A, 30 mA, typ A
+  F204A-63/0.03   = 4P, 63 A, 30 mA, typ A
+
+### Parametry F202/F204
+
+  Napětí: 230/400 V AC (50/60 Hz)
+  Montáž: DIN 35 mm lišta
+  Šířka: F202 = 2 TE (36 mm), F204 = 4 TE (72 mm)
+  Norma: IEC/EN 61008-1 (RCCB)
+  Objednací čísla v závorce = ABB čísla
+
+### Typy reziduálního proudu (přehled)
+
+  AC = sinusový střídavý (50/60 Hz) – základní ochrana
+  A  = AC + pulsující stejnosměrný – doporučeno pro SMPS, invertory
+  B  = AC + pulsující + hladký DC – pro frekvenční měniče, UPS, solární
+  F  = jako typ A, odolný 150 Hz – pro frekvenční měniče s filtrací
+`,
+      },
+      siemens: {
+        label: 'Siemens',
+        doc: `## Siemens – Proudové chrániče 5SV3 série
+
+### Příklady 2-pólových (ověřeno z více zdrojů)
+
+  5SV3111-6 = 2P, 16 A, 10 mA, typ A, DIN 35 mm
+  5SV3314-6 = 2P, 40 A, 30 mA, typ A, DIN 35 mm
+
+### Parametry 5SV3
+
+  Napětí: 230/400 V AC (50/60 Hz)
+  Montáž: DIN 35 mm lišta
+  Norma: IEC/EN 61008-1
+  Typ A: citlivý na AC + pulsující DC
+
+  Poznámka: Pro přesné katalogové číslo dle In a IΔn vždy ověřit
+            v aktuálním katalogu Siemens (5SV3 produktová stránka).
+`,
+      },
+    },
+  }, // end chranic
+
+  // ─── Přepěťová ochrana ────────────────────────────────────────────────────
+  prepetova_ochrana: {
+    label: 'Přepěťová ochrana',
+    aliases: [
+      'přepěťová ochrana', 'prepetova ochrana', 'svodič přepětí', 'SPD',
+      'surge protection', 'přepěťový svodič', 'bleskojistka',
+      'Type 1', 'Type 2', 'Typ 1', 'Typ 2', 'ochrana před bleskem',
+    ],
+    questions: [
+      'Třída SPD? (Type 1 = hlavní přívod/bleskosvodná zóna, Type 2 = rozvodnice, Type 1+2 = kombinovaný)',
+      'Napětí sítě? (230/400 V AC, DC fotovoltaika 600/1000 V)',
+      'Topologie? (3+0, 3+1, 1+1)',
+    ],
+    manufacturers: {
+      phoenix_contact: {
+        label: 'Phoenix Contact',
+        doc: `## Phoenix Contact – Přepěťové ochrany VAL-MS
+
+### VAL-MS – Type 2 SPD pro AC sítě 230/400 V
+
+  VAL-MS 320/3+1/FM    (2859160) = Type 2, 3+1 topologie, 320 V AC, DIN lišta
+  VAL-MS 320/3+1/FM-UD           = Type 2, 3+1, 320 V AC, + dálková signalizace
+
+  Parametry:
+    Topologie 3+1: ochrana L1, L2, L3 vůči PE + N vůči PE
+    Maximální výbojový proud Imax: 40 kA (8/20 µs) na pól
+    Ochranná hladina Up: ≤ 1,5 kV
+    Jmenovité napětí Uc: 320 V AC (vhodné pro TN-C-S, TN-S, TT sítě 230/400 V)
+
+### VAL-MS – Type 2 SPD pro DC fotovoltaické systémy
+
+  VAL-MS 600DC-PV/2+V  (2800642) = Type 2, 600 V DC, 2+V topologie, DIN lišta
+  VAL-MS 1000DC-PV/2+V (2800628) = Type 2, 1000 V DC, 2+V topologie, DIN lišta
+
+  Parametry:
+    Imax: 40 kA
+    Pro FV systémy s max. napětím stringu 600 V resp. 1000 V DC
+
+### Obecné parametry VAL-MS
+
+  Montáž: DIN 35 mm lišta
+  Indikace závady: vizuální okénko (zelená = OK, červená = vyměnit)
+  Výměnné kartridže: ano (bezšroubová výměna)
+  Norma: IEC 61643-11, EN 61643-11
+  Čísla v závorce = objednací číslo Phoenix Contact
+
+### Třídy SPD (přehled dle IEC 61643-11)
+
+  Type 1 (třída I):  Iimp ≥ 12,5 kA (10/350 µs), pro bleskosvodná zóny 0/1
+  Type 2 (třída II): Imax ≥ 40 kA (8/20 µs), pro hlavní a dílčí rozvodnice
+  Type 3 (třída III): Up ≤ 1,5 kV, terminálová ochrana u citlivých zátěží
+`,
+      },
+    },
+  }, // end prepetova_ochrana
+
+  // ─── Frekvenční měniče ────────────────────────────────────────────────────
+  frekvencni_menic: {
+    label: 'Frekvenční měniče',
+    aliases: [
+      'frekvenční měnič', 'frekvencni menic', 'frekvenční měniče',
+      'VFD', 'inverter', 'pohon', 'frekvenčák', 'variátor',
+      'SINAMICS', 'Altivar', 'ATV', 'ACS', 'měnič',
+    ],
+    questions: [
+      'Výkon motoru? (kW)',
+      'Napájecí napětí? (1×230 V, 3×400 V)',
+      'Preferovaný výrobce? (Siemens, Schneider, ABB)',
+      'Komunikační protokol? (Modbus RTU, PROFIBUS, PROFINET)',
+    ],
+    manufacturers: {
+      siemens: {
+        label: 'Siemens',
+        doc: `## Siemens – SINAMICS G120C (kompaktní VFD)
+
+### Schéma: 6SL3210-1KE[xx]-[xxx]
+
+  6SL3210 = SINAMICS produktová řada
+  1KE     = G120C (kompaktní)
+  [xx]    = kód výkonu
+  Suffix U = USS/Modbus, B = PROFIBUS DP
+
+### Katalogová čísla G120C (3× 380–480 V AC)
+
+  6SL3210-1KE11-8AP0 = 0,55 kW, IP20
+  6SL3210-1KE13-2AP0 = 1,1 kW,  IP20
+  6SL3210-1KE14-3UF1 = 1,5 kW,  IP20, USS/Modbus
+  6SL3210-1KE17-5UF1 = 3,0 kW,  IP20, USS/Modbus
+  6SL3210-1KE18-8UB1 = 4,0 kW,  IP20, PROFIBUS DP
+  6SL3210-1KE21-3UF1 = 5,5 kW,  IP20, USS/Modbus
+  6SL3210-1KE22-6UB0 = 11 kW,   IP20
+  6SL3210-1KE24-3UF0 = 18,5 kW, IP20
+
+### Parametry G120C
+
+  Výkonový rozsah: 0,55–18,5 kW
+  Vstupní napětí: 3× 380–480 V AC (±10 %), 50/60 Hz
+  Výstupní frekvence: 0–550 Hz
+  Přetížitelnost: 150 % / 60 s, 200 % / 3 s
+  Krytí: IP20 (základní), IP55 (Push-through varianta)
+  Komunikace: dle sufixu – USS/Modbus RTU, PROFIBUS DP, PROFINET
+  Montáž: DIN 35 mm lišta nebo šrouby
+
+### Příslušenství G120C
+
+  BOP-2 (6SL3255-0AA00-4CA1) = základní ovládací panel
+  IOP-2                       = inteligentní panel s displejem
+`,
+      },
+      schneider: {
+        label: 'Schneider Electric',
+        doc: `## Schneider Electric – Altivar ATV320
+
+### Schéma: ATV320[U/D][kód_výkonu][kód_napětí][topologie]
+
+  U = standard IP20, D = duální zásobník (IP20)
+  Kód napětí: M2 = 200–240 V 1F, M3 = 200–240 V 3F, N4 = 380–500 V 3F
+  Topologie: C = kompakt, B = book (tenký, 35 mm šířka)
+
+### Katalogová čísla ATV320
+
+  ATV320U07M2C = 0,75 kW, 200–240 V 1F, kompaktní
+  ATV320U11M2C = 1,1 kW,  200–240 V 1F, kompaktní
+  ATV320U15N4C = 1,5 kW,  380–500 V 3F, kompaktní
+  ATV320U22N4C = 2,2 kW,  380–500 V 3F, kompaktní
+  ATV320U30N4C = 3,0 kW,  380–500 V 3F, kompaktní
+  ATV320U40N4C = 4,0 kW,  380–500 V 3F, kompaktní
+  ATV320U55N4C = 5,5 kW,  380–500 V 3F, kompaktní
+  ATV320U75N4C = 7,5 kW,  380–500 V 3F, kompaktní
+  ATV320D11N4C = 11 kW,   380–500 V 3F, kompaktní
+  ATV320D15N4C = 15 kW,   380–500 V 3F, kompaktní
+  ATV320D22N4C = 22 kW,   380–500 V 3F, kompaktní
+
+### Book (tenká) varianta – pro úsporu místa v skříni
+
+  ATV320U07M2B = 0,75 kW, 200–240 V 1F, book (šířka 35 mm)
+  ATV320U15N4B = 1,5 kW,  380–500 V 3F, book
+  ATV320U22N4B = 2,2 kW,  380–500 V 3F, book
+
+### Parametry ATV320
+
+  Výkonový rozsah: 0,18–22 kW
+  Přetížitelnost: 150 % / 60 s
+  Krytí: IP20 (kompakt), IP65/IP66 s krytem
+  Komunikace: Modbus RTU (standard), PROFIBUS/CANopen/EtherNet (přídavná karta)
+  Montáž: DIN 35 mm nebo šrouby
+`,
+      },
+      abb: {
+        label: 'ABB',
+        doc: `## ABB – Frekvenční měniče ACS355 / ACS580
+
+### ACS355 – kompaktní série (0,37–22 kW, 3× 380–480 V)
+
+  Schéma: ACS355-03E-[proud_kód]-4
+  03E = 3F vstup, evropský trh; 4 = 400 V třída
+
+  ACS355-03E-01A2-4 = 0,37 kW, 1,2 A
+  ACS355-03E-01A9-4 = 0,55 kW, 1,9 A
+  ACS355-03E-02A4-4 = 0,75 kW, 2,4 A
+  ACS355-03E-03A3-4 = 1,1 kW,  3,3 A
+  ACS355-03E-04A1-4 = 1,5 kW,  4,1 A
+  ACS355-03E-05A6-4 = 2,2 kW,  5,6 A
+  ACS355-03E-07A3-4 = 3,0 kW,  7,3 A
+  ACS355-03E-08A8-4 = 4,0 kW,  8,8 A
+  ACS355-03E-12A5-4 = 5,5 kW,  12,5 A
+  ACS355-03E-15A6-4 = 7,5 kW,  15,6 A
+  ACS355-03E-23A1-4 = 11 kW,   23,1 A
+
+### ACS580 – střední série (0,75–500 kW)
+
+  ACS580-01-02A7-4 = 0,75 kW, 3× 380–480 V
+  ACS580-01-03A4-4 = 1,1 kW
+  ACS580-01-04A8-4 = 1,5 kW
+  ACS580-01-07A2-4 = 2,2 kW
+  ACS580-01-09A5-4 = 3,0 kW
+
+### Parametry ACS355
+
+  Vstupní napětí: 3× 380–480 V AC (ACS355-03E), nebo 1× 200–240 V (ACS355-01)
+  Krytí: IP20 základní, IP66 varianta s krytem (R1–R4)
+  Komunikace: Modbus RTU (standard), PROFIBUS/EtherNet/IP (rozšiřující modul)
+  Montáž: DIN 35 mm (malé výkony) nebo šrouby
+`,
+      },
+    },
+  }, // end frekvencni_menic
+
+  // ─── Rittal ───────────────────────────────────────────────────────────────
+  rittal: {
+    label: 'Rittal',
+    aliases: [
+      'rittal', 'Rittal', 'rozvaděčová skříň', 'rozvadecka skrin',
+      'skříň', 'skrin', 'TS8', 'VX25', 'AX', 'KX',
+      'rittal skříň', 'rittal příslušenství', 'RiLine',
+    ],
+    questions: [
+      'Typ skříně? (stojaté TS8/VX25, nástěnné AX/KX)',
+      'Rozměry? (výška × šířka × hloubka v mm)',
+      'Materiál? (ocelový plech RAL 7035, nerezová ocel AISI 304)',
+      'Stupeň krytí? (IP54, IP55, IP66)',
+    ],
+    manufacturers: {
+      rittal: {
+        label: 'Rittal',
+        doc: `## Rittal – Rozvaděčové skříně a příslušenství
+
+### TS 8 – stojaté baying skříně (série 8606/8604)
+
+  8606.500 = TS8, H2000 × W600 × D600 mm, ocel, RAL 7035, IP55
+  8606.510 = TS8, H2000 × W600 × D400 mm, ocel, RAL 7035, IP55
+  8606.520 = TS8, H2000 × W800 × D600 mm, ocel, RAL 7035, IP55
+  8606.530 = TS8, H2000 × W1000 × D600 mm, ocel, RAL 7035, IP55
+  8604.500 = TS8, H1800 × W600 × D600 mm, ocel, RAL 7035, IP55
+  8604.510 = TS8, H1800 × W600 × D400 mm, ocel, RAL 7035, IP55
+
+  Krytí: IP55 (standard), IP54 s ventilací
+  Montáž DIN lišt: SZ příslušenství nebo DK řada
+  Přívod kabelů: zdola nebo shora
+
+### AX – kompaktní nástěnné skříně (série 1xxx, ocel, IP66)
+
+  AX 1030.100 = H300 × W300 × D150 mm, ocel, IP66
+  AX 1040.200 = H400 × W300 × D200 mm, ocel, IP66
+  AX 1050.200 = H500 × W400 × D200 mm, ocel, IP66
+  AX 1060.300 = H600 × W600 × D250 mm, ocel, IP66
+
+### KX – kompaktní nástěnné skříně z nerezové oceli
+
+  KX = jako AX série, ale z nerezové oceli AISI 304
+  Vhodné pro potravinářský, farmaceutický průmysl
+
+### SZ – příslušenství pro skříně
+
+  SZ2309.000 = konzola pro DIN 35 mm lištu (clip, snap-on)
+  SZ2471.000 = vnitřní montážní panel (montageplatte pro TS8)
+  SZ2482.600 = průchodkový otvor / interface flap
+  SZ2561.500 = plastová deska pro průchodky (kabelové pole)
+  SZ2584.000 = vnitřní osvětlení LED
+
+### DK – DIN lišty a kabelové žlaby
+
+  DK7100.100 = DIN 35 mm lišta perforovaná, délka 1000 mm
+  DK7101.100 = DIN 35 mm lišta hladká, délka 1000 mm
+  DK7110.100 = kabelový žlab perforovaný 60 × 60 mm, délka 1000 mm
+
+### Poznámky
+
+  TS 8 katalogová čísla: formát 8xxx.xxx (6místné s tečkou)
+  AX / KX katalogová čísla: formát 1xxx.xxx
+  Vždy ověřovat aktuální katalog na rittal.com (produktová řada VX25 nahrazuje TS 8)
+`,
+      },
+    },
+  }, // end rittal
+
+  // ─── Pojistky ─────────────────────────────────────────────────────────────
+  pojistka: {
+    label: 'Pojistky',
+    aliases: [
+      'pojistka', 'pojistky', 'NH pojistka', 'nožová pojistka',
+      'tavná pojistka', 'vložka pojistky', 'fuse link', 'gG pojistka',
+      'silová pojistka', 'pojistková vložka', 'pojistkový nůž',
+    ],
+    questions: [
+      'Jmenovitý proud? (16A, 35A, 63A, 100A, 160A, 200A, 250A, 315A, 400A, 630A)',
+      'Velikost NH? (000, 00, 0, 1, 2, 3)',
+      'Charakteristika? (gG = obecné, aM = motorová)',
+      'Napětí? (500 V AC = standard, 690 V AC)',
+    ],
+    manufacturers: {
+      eaton: {
+        label: 'Eaton (Bussmann)',
+        doc: `## Eaton Bussmann – NH pojistkové vložky (nožové pojistky)
+
+### Schéma: [proud]NHG[velikost]B
+
+  [proud]    = jmenovitý proud (A)
+  NHG        = NH nůž, charakteristika gG
+  [velikost] = 000 / 00 / 0 / 1 / 2 / 3
+  B          = 500 V AC varianta
+
+### Velikost NH 000 (do 100 A)
+
+  16NHG000B  = 16 A,  NH 000, 500 V AC, gG
+  20NHG000B  = 20 A,  NH 000, 500 V AC, gG
+  25NHG000B  = 25 A,  NH 000, 500 V AC, gG
+  35NHG000B  = 35 A,  NH 000, 500 V AC, gG
+  50NHG000B  = 50 A,  NH 000, 500 V AC, gG
+  63NHG000B  = 63 A,  NH 000, 500 V AC, gG
+  80NHG000B  = 80 A,  NH 000, 500 V AC, gG
+  100NHG000B = 100 A, NH 000, 500 V AC, gG
+
+### Velikost NH 00 (do 160 A)
+
+  100NHG00B  = 100 A, NH 00, 500 V AC, gG
+  125NHG00B  = 125 A, NH 00, 500 V AC, gG
+  160NHG00B  = 160 A, NH 00, 500 V AC, gG
+
+### Velikost NH 0 (do 160 A)
+
+  63NHG0B    = 63 A,  NH 0, 500 V AC, gG
+  100NHG0B   = 100 A, NH 0, 500 V AC, gG
+  125NHG0B   = 125 A, NH 0, 500 V AC, gG
+  160NHG0B   = 160 A, NH 0, 500 V AC, gG
+
+### Velikost NH 1 (do 250 A)
+
+  63NHG1B    = 63 A,  NH 1, 500 V AC, gG
+  100NHG1B   = 100 A, NH 1, 500 V AC, gG
+  125NHG1B   = 125 A, NH 1, 500 V AC, gG
+  160NHG1B   = 160 A, NH 1, 500 V AC, gG
+  200NHG1B   = 200 A, NH 1, 500 V AC, gG
+  250NHG1B   = 250 A, NH 1, 500 V AC, gG
+
+### Velikost NH 2 (do 315 A)
+
+  100NHG2B   = 100 A, NH 2, 500 V AC, gG
+  160NHG2B   = 160 A, NH 2, 500 V AC, gG
+  200NHG2B   = 200 A, NH 2, 500 V AC, gG
+  250NHG2B   = 250 A, NH 2, 500 V AC, gG
+  315NHG2B   = 315 A, NH 2, 500 V AC, gG
+
+### Velikost NH 3 (do 630 A)
+
+  315NHG3B   = 315 A, NH 3, 500 V AC, gG
+  355NHG3B   = 355 A, NH 3, 500 V AC, gG
+  400NHG3B   = 400 A, NH 3, 500 V AC, gG
+  500NHG3B   = 500 A, NH 3, 500 V AC, gG
+  630NHG3B   = 630 A, NH 3, 500 V AC, gG
+
+### Parametry NH pojistek gG
+
+  Vypínací schopnost: 120 kA AC
+  Charakteristika gG: ochrana před přetížením i zkratem (General purpose)
+  Norma: IEC 60269-1, VDE 0636-2, DIN 43620
+  Fyzické rozměry (dle DIN 43620):
+    NH 000: délka ~73 mm, šířka ~22 mm
+    NH 00:  délka ~73 mm, šířka ~26 mm
+    NH 0:   délka ~73 mm, šířka ~33 mm
+    NH 1:   délka ~73 mm, šířka ~44 mm
+    NH 2:   délka ~73 mm, šířka ~55 mm
+    NH 3:   délka ~73 mm, šířka ~67 mm
+
+### Varianta 690 V AC
+
+  Pro vyšší napětí (690 V AC): přidá se kód B6 místo B
+  Příklad: 63NHG1B6 = 63 A, NH 1, 690 V AC, gG
+`,
+      },
+    },
+  }, // end pojistka
+
 }; // end PRODUCT_KNOWLEDGE
 
 // =============================================================================
