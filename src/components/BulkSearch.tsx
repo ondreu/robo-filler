@@ -4,10 +4,10 @@ import type { Article, SearchResult, BulkQueryResult } from '../types';
 import { search } from '../utils/searchEngine';
 import { exportBulkCSV } from '../utils/excelHandler';
 import { SelectableCard } from './SelectableCard';
-import { BomWizard } from './BomWizard';
 
 interface BulkSearchProps {
   articles: Article[];
+  onOpenInZbom?: (bulkResults: BulkQueryResult[], selections: Record<number, SearchResult | null>) => void;
 }
 
 function parseLines(raw: string): string[] {
@@ -19,7 +19,7 @@ function parseLines(raw: string): string[] {
 
 const COLS = 3;
 
-export function BulkSearch({ articles }: BulkSearchProps) {
+export function BulkSearch({ articles, onOpenInZbom }: BulkSearchProps) {
   const [rawInput, setRawInput] = useState('');
   const [topN, setTopN] = useState<3 | 6 | 9>(3);
   const [bulkResults, setBulkResults] = useState<BulkQueryResult[]>([]);
@@ -27,7 +27,6 @@ export function BulkSearch({ articles }: BulkSearchProps) {
   const [perRowVisible, setPerRowVisible] = useState<Record<number, number>>({});
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [showBomWizard, setShowBomWizard] = useState(false);
   const [hideSelected, setHideSelected] = useState(false);
 
   const queries = parseLines(rawInput);
@@ -209,9 +208,10 @@ export function BulkSearch({ articles }: BulkSearchProps) {
                 Export CSV
               </button>
               <button
-                onClick={() => setShowBomWizard(true)}
+                onClick={() => onOpenInZbom?.(bulkResults, selections)}
+                disabled={!onOpenInZbom}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all
-                  bg-mauve/10 text-mauve hover:bg-mauve/20 border border-mauve/30"
+                  bg-mauve/10 text-mauve hover:bg-mauve/20 border border-mauve/30 disabled:opacity-40"
                 title="Otevřít tabulkové zpracování kusovníku"
               >
                 <ClipboardList size={16} />
@@ -319,15 +319,6 @@ export function BulkSearch({ articles }: BulkSearchProps) {
             );
           })}
         </div>
-      )}
-      {showBomWizard && (
-        <BomWizard
-          bulkResults={bulkResults}
-          selections={selections}
-          articles={articles}
-          onClose={() => setShowBomWizard(false)}
-          startAtTable
-        />
       )}
     </div>
   );

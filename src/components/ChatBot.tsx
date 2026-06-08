@@ -281,7 +281,7 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
       {/* Floating toggle button */}
       <button
         onClick={() => setIsOpen(o => !o)}
-        className={`fixed bottom-6 right-6 z-[60] rounded-full p-4 transition-all duration-200
+        className={`fixed bottom-6 right-6 z-[60] rounded-full p-3 transition-all duration-200
           ${isOpen
             ? 'bg-surface2 hover:bg-overlay0 text-text shadow-lg'
             : 'bg-mauve/60 hover:bg-mauve/80 text-crust shadow-md'
@@ -289,7 +289,7 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
         aria-label={isOpen ? 'Zavřít Karla' : 'Otevřít Karel Bot'}
         title={isOpen ? 'Zavřít Karla' : 'Karel Bot — AI asistent artiklů'}
       >
-        {isOpen ? <X size={22} /> : <MessageCircle size={22} />}
+        {isOpen ? <X size={18} /> : <MessageCircle size={18} />}
       </button>
 
       {/* Chat panel */}

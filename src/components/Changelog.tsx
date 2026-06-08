@@ -10,6 +10,36 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V100626',
+    date: '10. 6. 2026',
+    major: true,
+    changes: [
+      'Databáze vodičů — nová specializovaná databáze 639 artiklů vodičů (LAPP, Helukabel, HUBER+SUHNER, KABLO VRCHLABÍ, ALPHAWIRE a další) vedle hlavní databáze',
+      'Databáze vodičů: prohledávána automaticky při hledání vodičů v Karel Botu i řízeném režimu; kategorie Vodič / Kabel má v řízeném módu přednost',
+      'Databáze vodičů: výsledky označeny odznakem "Vodič DB" na kartě; karta navíc zobrazuje průřez (mm²) a barvu',
+      'Databáze vodičů: sortiment — H07V-K, H05V-K, H07Z-K (HF), LiY, LiYCY, LiYv, LifY, RADOX 125/155/3GKW/4GKW, ÖLFLEX HEAT 125/180/260, UL-Style, NSGAFÖU, NSHXAFÖ, DESCAFLEX PTFE-200 a další',
+      'Zápatí: počet artiklů nyní zobrazuje hlavní DB a Vodič DB zvlášť (např. "90 000 artiklů + 639 vodičů")',
+    ],
+  },
+  {
+    version: 'V090626',
+    date: '9. 6. 2026',
+    major: true,
+    changes: [
+      'Znalosti vodičů a kabelů — nová kategorie v řízeném vyhledávání: Vodič / Kabel (LAPP ÖLFLEX, Helukabel TOPFLEX, Nexans NYY-J, HUBER+SUHNER RADOX)',
+      'LAPP, Helukabel, HUBER+SUHNER, Nexans — přidány do databáze výrobců (znalosti produktových řad, typová označení, normy IEC 60227/60245, EN 50525)',
+      'Oprava příslušenství svorek: WAGO 279 série — přidány správná typová označení nosičů popisků (2009-114, WMB-Inline) do znalostní báze',
+      'Doporučení při nenalezení materiálu — řízenývyhledávač nyní navrhuje konkrétní typové označení nebo produktovou řadu ze znalostní báze pokud nic nenajde v DB',
+      'Poradce komponent v Karel Botu — nový přepínač v nastavení; při aktivaci AI čerpá znalosti z průvodce kategoriemi a radí s výběrem komponent a produktových řad',
+      'Kompletní onboarding pro nové uživatele — průvodce při prvním spuštění provede hlavními funkcemi aplikace (Jednotlivé, Hromadné, AI mód, ZBOM); reset přes tlačítko "průvodce" v zápatí',
+      'Tabulkové zpracování z hromadného vyhledávání nyní otevře plnohodnotné ZBOM s kartami a persistencí (stejně jako ZBOM z hlavního menu)',
+      'Přepínač módů: "AI mód" přejmenován na ✨ AI ✨ s barevnými třpytkami',
+      'Řízený režim: odstraněn BETA badge, nahrazen "Doporučeno"',
+      'Plovoucí Karel Bot bublina zmenšena o 20 %',
+      'Onboarding: aktualizovány popisy módů — Běžný = obecné dotazy, Řízený = doporučený pro hledání komponent',
+    ],
+  },
+  {
     version: 'V080626',
     date: '8. 6. 2026',
     major: true,

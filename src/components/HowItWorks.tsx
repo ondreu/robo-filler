@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HelpCircle, X, Database, Search, Bot, List, Table2, Globe, ArrowRight, Sparkles, FlaskConical } from 'lucide-react';
+import { HelpCircle, X, Database, Search, Bot, List, Table2, Globe, ArrowRight, Sparkles, FlaskConical, ListOrdered } from 'lucide-react';
 
 export function HowItWorks() {
   const [open, setOpen] = useState(false);
@@ -51,11 +51,18 @@ export function HowItWorks() {
                   <Database size={15} className="text-mauve shrink-0" />
                   <h3 className="font-semibold text-sm text-text">Databáze artiklů</h3>
                 </div>
-                <p className="text-sm text-subtext1 leading-relaxed">
+                <p className="text-sm text-subtext1 leading-relaxed mb-2">
                   Aplikace pracuje se dvěma interními databázemi — <span className="text-text font-medium">Ústí nad Orlicí</span> a <span className="text-text font-medium">Effretikon</span> — dohromady přes <span className="text-text font-medium">90 000 artiklů</span>.
                   Každá položka má typové označení, číslo artiklu, výrobce, název a číslo dílu výrobce.
                   Databáze se aktualizuje týdně a načítá se přímo v prohlížeči — vyhledávání nepotřebuje připojení k serveru.
                 </p>
+                <div className="flex items-start gap-2 bg-surface0 rounded-xl p-3">
+                  <span className="text-xs font-semibold px-1.5 py-0.5 bg-teal/15 text-teal rounded-lg shrink-0 mt-0.5">Vodič DB</span>
+                  <p className="text-xs text-subtext1">
+                    <span className="text-text font-medium">Speciální databáze vodičů</span> — přes <span className="text-text font-medium">600 artiklů</span> vodičů (LAPP, Helukabel, HUBER+SUHNER, KABLO VRCHLABÍ a další).
+                    Prohledává se automaticky vedle hlavní databáze — výsledky z Vodič DB jsou označeny zeleným odznakem. V řízeném režimu (kategorie Vodič / Kabel) má Vodič DB přednost.
+                  </p>
+                </div>
               </section>
 
               {/* Klasické vyhledávání */}
@@ -132,13 +139,31 @@ export function HowItWorks() {
               <section>
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles size={15} className="text-mauve shrink-0" />
-                  <h3 className="font-semibold text-sm text-text">AI mód</h3>
+                  <h3 className="font-semibold text-sm text-text">✨ AI mód — tři nástroje</h3>
                 </div>
-                <p className="text-sm text-subtext1 leading-relaxed">
-                  Záložka <span className="text-text font-medium">AI mód</span> (nahoře vedle "Jednotlivé" a "Hromadné") je rozšířená verze Karel Bota — stejné funkce, ale přes celou šířku obrazovky.
-                  Vhodné pro delší konverzace. Z plovoucího chatu se sem lze přepnout tlačítkem v nastavení (<span className="text-text font-medium">Teleportovat do AI módu</span>) — konverzace se přenese celá.
-                  V AI módu lze přepnout na <span className="text-text font-medium">AI stavbu kusovníku</span> (viz níže).
-                </p>
+                <div className="space-y-2.5">
+                  <div className="flex items-start gap-2 bg-surface0 rounded-xl p-3">
+                    <Bot size={13} className="text-mauve shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-semibold text-text mb-0.5">Běžný (Karel Bot) — pro obecné dotazy</p>
+                      <p className="text-xs text-subtext1">Pomoc s aplikací, obecné dotazy. Přepínač <span className="text-text font-medium">Poradce komponent</span> v nastavení aktivuje AI znalosti o produktových řadách — radí s výběrem komponent (jaký jistič pro 11kW motor, rozdíl WAGO 2002 vs TOPJOB S).</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2 bg-surface0 rounded-xl p-3">
+                    <ListOrdered size={13} className="text-teal shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-semibold text-text mb-0.5">Řízený mód — <span className="text-green">Doporučeno</span> pro hledání komponent</p>
+                      <p className="text-xs text-subtext1">Průvodce krok za krokem pro 18 kategorií komponent (jistič, stykač, svorka, vodič/kabel…). Odpovídáš na otázky, AI vygeneruje typová označení a vyhledá v databázi. Pokud nic nenajde, navrhne konkrétní produkt ze znalostní báze.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2 bg-surface0 rounded-xl p-3">
+                    <FlaskConical size={13} className="text-yellow shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-semibold text-text mb-0.5">AI stavba kusovníku <span className="text-[10px] font-semibold bg-yellow/20 text-yellow rounded px-1 py-0.5 align-middle">BETA</span></p>
+                      <p className="text-xs text-subtext1">Experimentální: vloží tabulku typových označení, AI sestaví kusovník. Vyžaduje více AI volání — je dražší a pomalejší. Výsledky ukládá do historie (posledních 5).</p>
+                    </div>
+                  </div>
+                </div>
               </section>
 
               {/* AI stavba kusovníku */}

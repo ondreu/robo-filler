@@ -56,3 +56,27 @@ export async function loadCSV(filename: string): Promise<CSVLoadResult> {
     return { articles: [], lastModified: null };
   }
 }
+
+export async function loadWires(): Promise<Article[]> {
+  try {
+    const baseUrl = import.meta.env.BASE_URL;
+    const response = await fetch(`${baseUrl}wires.json`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    if (!Array.isArray(data)) return [];
+    return data.map((w: Record<string, unknown>) => ({
+      typoveOznaceni: String(w.typoveOznaceni ?? ''),
+      artikl: String(w.artikl ?? ''),
+      vyrobce: String(w.vyrobce ?? ''),
+      nazev: String(w.nazev ?? ''),
+      cisloDiluVyrobce: String(w.cisloDiluVyrobce ?? ''),
+      vybehovyDil: '',
+      status: String(w.status ?? ''),
+      prurez: typeof w.prurez === 'number' ? w.prurez : null,
+      barva: String(w.barva ?? ''),
+      skupina: String(w.skupina ?? ''),
+    }));
+  } catch {
+    return [];
+  }
+}

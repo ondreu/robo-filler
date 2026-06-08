@@ -6,6 +6,10 @@ export interface Article {
   cisloDiluVyrobce: string;
   vybehovyDil: string;
   status: string;
+  // Wire DB extra fields (only present for articles from wires.json)
+  prurez?: number | null;
+  barva?: string;
+  skupina?: string;
 }
 
 export type SearchMode = 'fuzzy' | 'wildcard' | 'combined';
