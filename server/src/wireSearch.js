@@ -230,13 +230,15 @@ const SKUPINA_MAP = [
 
 /**
  * Filter wires by structured answers (from guided search).
+ * dropKeys: array of answer keys to skip (progressive relaxation).
  * Returns ALL matching wires (no topN limit) — caller should slice.
  */
-export function filterWires(answers) {
+export function filterWires(answers, dropKeys = []) {
   let result = [...allWires];
 
   for (const ans of answers) {
     if (!ans.answer) continue;
+    if (dropKeys.includes(ans.key)) continue;
     const val = ans.answer.trim();
     if (val === 'Bez omezení' || val === 'Bez preference') continue;
 
