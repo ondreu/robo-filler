@@ -66,7 +66,7 @@ function App() {
   // App mode (single / bulk / ai)
   const [appMode, setAppMode] = useState<AppMode>('single');
   // AI sub-mode: chat = existing Karel Bot, bom = AI BOM builder, guided = new Řízený režim
-  const [aiSubMode, setAiSubMode] = useState<'chat' | 'bom' | 'guided'>('chat');
+  const [aiSubMode, setAiSubMode] = useState<'chat' | 'bom' | 'guided'>('guided');
   const [showBomWarning, setShowBomWarning] = useState(false);
 
   // ZBOM tabs — persisted in localStorage so they survive page refresh
@@ -443,23 +443,22 @@ function App() {
                 {/* AI sub-mode toggle */}
                 <div className="flex bg-surface0 rounded-xl p-1 gap-1 w-fit">
                   <button
-                    id="onb-chat"
-                    onClick={() => setAiSubMode('chat')}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                      aiSubMode === 'chat' ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
-                    }`}
-                  >
-                    Běžný
-                  </button>
-                  <button
                     id="onb-guided"
                     onClick={() => setAiSubMode('guided')}
                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       aiSubMode === 'guided' ? 'bg-teal text-crust shadow' : 'text-subtext1 hover:text-text'
                     }`}
                   >
-                    Řízený
-                    <span className="ml-1.5 text-[10px] font-semibold bg-green/20 text-green rounded px-1 py-0.5 leading-none align-middle">Doporučeno</span>
+                    Vyhledávač
+                  </button>
+                  <button
+                    id="onb-chat"
+                    onClick={() => setAiSubMode('chat')}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      aiSubMode === 'chat' ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
+                    }`}
+                  >
+                    Chat bot
                   </button>
                   <button
                     id="onb-bom"
@@ -468,7 +467,7 @@ function App() {
                       aiSubMode === 'bom' ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
                     }`}
                   >
-                    AI stavba kusovníku
+                    Stavba kusovníku
                     <span className="ml-1.5 text-[10px] font-semibold bg-yellow/20 text-yellow rounded px-1 py-0.5 leading-none align-middle">BETA</span>
                   </button>
                 </div>
