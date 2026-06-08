@@ -58,13 +58,18 @@ Znalosti o kategorii "${category.label}":
 ${category.knowledge}
 
 ÚKOL: Z parametrů poskytnutých uživatelem vygeneruj 20–35 různorodých vyhledávacích termínů.
-Termíny musí pokrývat:
-1. Přesná typová označení výrobce (pokud výrobce znám — použij jeho konkrétní formát)
-2. Česky: název dílu + klíčové parametry v různých kombinacích
-3. Německy: výrazy jak se píší v německých katalozích (průmyslová němčina)
-4. Anglicky: technické zkratky a anglické výrazy
-5. Zkrácené formy a zkratky
-6. Samotné klíčové hodnoty (jen proud, jen charakteristika, jen napětí)
+
+PRIORITA TERMÍNŮ — NEJDŮLEŽITĚJŠÍ:
+1. PRIMÁRNĚ: Konkrétní typová označení výrobce (catalog numbers) dle vzorů v knowledge bázi.
+   Příklady správného formátu: S203-C16, 3RT2016-1BB41, LC1D09BD, PKZM0-10, RM85-2011-35-1024
+   - Pokud znáš výrobce: vygeneruj 8–15 konkrétních typových označení z jeho řad pro zadané parametry
+   - Pokud výrobce neznáš: generuj typová označení od VŠECH hlavních výrobců kategorie
+   - Zahrň typová označení pro sousední hodnoty parametrů (±1 krok proud, ±1 výkonový stupeň)
+2. SEKUNDÁRNĚ: Obecné textové termíny jako záloha:
+   - Česky: název dílu + klíčové parametry
+   - Německy: výrazy z německých katalogů
+   - Anglicky: technické zkratky
+   - Zkrácené formy, zkratky, samotné klíčové hodnoty
 
 Kombinuj parametry různě — každý termín má zachytit jiný možný způsob zápisu v DB.
 Pokud je výrobce "bez preference", nevynechej žádného hlavního výrobce z termínů.
@@ -76,7 +81,7 @@ Odpovídej POUZE jako JSON: {"terms": ["term1", "term2", ...], "manufacturer": "
 Parametry od uživatele:
 ${answerText}
 
-Vygeneruj 20–35 vyhledávacích termínů.`;
+Vygeneruj 20–35 vyhledávacích termínů. Začni konkrétními typovými označeními výrobce (catalog numbers), pak přidej obecné fallback termíny.`;
 
   const resp = await client.chat.complete({
     model: MODEL,
