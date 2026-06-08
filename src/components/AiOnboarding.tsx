@@ -1,6 +1,6 @@
 import { useState, useLayoutEffect, useMemo, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowRight, ArrowLeft, X, Bot, ListOrdered, Sparkles, ClipboardList } from 'lucide-react';
+import { ArrowRight, ArrowLeft, X, Bot, Sparkles, ClipboardList } from 'lucide-react';
 
 const LS_KEY = 'ai-onboarding-v1';
 const CARD_W = 340;
@@ -24,25 +24,16 @@ const STEPS: StepDef[] = [
     iconClass: 'text-mauve',
     icon: <Sparkles size={20} />,
     title: 'Vítej v AI módu',
-    body: 'Tato část aplikace kombinuje AI s databází artiklů. Jsou tu tři různé nástroje — pojďme si je krátce projít.',
+    body: 'Tato část aplikace kombinuje AI s databází artiklů. Jsou tu dva nástroje — pojďme si je krátce projít.',
     ringHex: '#cba6f7',
     nextClass: 'bg-mauve text-crust hover:bg-mauve/90',
-  },
-  {
-    targetId: 'onb-guided',
-    iconClass: 'text-teal',
-    icon: <ListOrdered size={20} />,
-    title: 'Vyhledávač — hledání komponent',
-    body: 'Hlavní nástroj pro hledání průmyslových komponent. Průvodce krok za krokem — vyberáš výrobce, proud, póly — AI vygeneruje typová označení a najde shody v databázi.',
-    ringHex: '#94e2d5',
-    nextClass: 'bg-teal text-crust hover:bg-teal/90',
   },
   {
     targetId: 'onb-chat',
     iconClass: 'text-mauve',
     icon: <Bot size={20} />,
     title: 'Chat bot — Karel Bot',
-    body: 'Pro obecné dotazy a pomoc s aplikací. Ptej se přirozenou češtinou — „jak exportovat ZBOM“ nebo vyhledávání konkrétních artiklů.',
+    body: 'Ptej se přirozenou češtinou. Pro vyhledávání komponent AI automaticky nabídne Průvodce vyhledáváním — krok za krokem ti pomůže přesně specifikovat díl.',
     ringHex: '#cba6f7',
     nextClass: 'bg-mauve text-crust hover:bg-mauve/90',
   },

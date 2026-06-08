@@ -17,7 +17,6 @@ import { BulkSearch } from './components/BulkSearch';
 import { ChatBot } from './components/ChatBot';
 import { AiChat } from './components/AiChat';
 import { AiBomBuilder } from './components/AiBomBuilder';
-import { GuidedSearch } from './components/GuidedSearch';
 import { AiOnboarding } from './components/AiOnboarding';
 import { AppOnboarding } from './components/AppOnboarding';
 
@@ -65,8 +64,8 @@ function App() {
 
   // App mode (single / bulk / ai)
   const [appMode, setAppMode] = useState<AppMode>('single');
-  // AI sub-mode: chat = existing Karel Bot, bom = AI BOM builder, guided = new Řízený režim
-  const [aiSubMode, setAiSubMode] = useState<'chat' | 'bom' | 'guided'>('guided');
+  // AI sub-mode: chat = Karel Bot (includes guided search), bom = AI BOM builder
+  const [aiSubMode, setAiSubMode] = useState<'chat' | 'bom'>('chat');
   const [showBomWarning, setShowBomWarning] = useState(false);
 
   // ZBOM tabs — persisted in localStorage so they survive page refresh
@@ -443,15 +442,6 @@ function App() {
                 {/* AI sub-mode toggle */}
                 <div className="flex bg-surface0 rounded-xl p-1 gap-1 w-fit">
                   <button
-                    id="onb-guided"
-                    onClick={() => setAiSubMode('guided')}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                      aiSubMode === 'guided' ? 'bg-teal text-crust shadow' : 'text-subtext1 hover:text-text'
-                    }`}
-                  >
-                    Vyhledávač
-                  </button>
-                  <button
                     id="onb-chat"
                     onClick={() => setAiSubMode('chat')}
                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
@@ -476,7 +466,6 @@ function App() {
 
                 <AiOnboarding />
                 {aiSubMode === 'chat' && <AiChat />}
-                {aiSubMode === 'guided' && <GuidedSearch />}
                 {aiSubMode === 'bom' && (
                   <div className="bg-mantle rounded-2xl border border-surface1 p-6">
                     <div className="mb-5">

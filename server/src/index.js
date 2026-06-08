@@ -17,7 +17,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.post('/api/chat', async (req, res) => {
-  const { message, history = [], webSearchEnabled = false, synthModel, componentAdvisor = false } = req.body ?? {};
+  const { message, history = [], webSearchEnabled = false, synthModel, componentAdvisor = false, skipGuidedSuggestion = false } = req.body ?? {};
 
   if (!message || typeof message !== 'string' || !message.trim()) {
     return res.status(400).json({ error: 'Chybí parametr message.' });
@@ -43,8 +43,10 @@ app.post('/api/chat', async (req, res) => {
       !!webSearchEnabled,
       synthModel,
       !!componentAdvisor,
+      !!skipGuidedSuggestion,
+      send,
     );
-    send('result', result);
+    if (result !== null) send('result', result);
   } catch (err) {
     console.error('[chat]', err);
     send('error', { error: 'Chyba při zpracování dotazu.' });

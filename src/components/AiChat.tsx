@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Send, Loader2, Copy, Check, ExternalLink, Settings,
   PenLine, Download, ChevronDown, ChevronUp, MessageCircle, Globe,
   Search, Sparkles, BookOpen, X,
 } from 'lucide-react';
+import { GuidedSearch } from './GuidedSearch';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -73,6 +74,7 @@ interface Status {
 interface AiMessage {
   role: 'user' | 'assistant';
   content: string;
+  type?: 'guided_offer';
   articles?: Article[];
   allCandidates?: Article[];
   expandedTerms?: string[];
@@ -294,6 +296,8 @@ export function AiChat() {
   const [expandedTraces, setExpandedTraces] = useState<Set<number>>(new Set());
   const [lastAllCandidates, setLastAllCandidates] = useState<Article[]>([]);
   const [showUsageWarning, setShowUsageWarning] = useState(false);
+  const [pendingQuery, setPendingQuery] = useState<string | null>(null);
+  const [guidedSearchActive, setGuidedSearchActive] = useState(false);
   const [sessions, setSessions] = useState<ChatSession[]>(() => loadSessions());
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(() => {
     try { return sessionStorage.getItem(SESSION_ID_KEY); } catch { return null; }
@@ -446,23 +450,19 @@ export function AiChat() {
     });
   };
 
-  async function sendMessage() {
-    const text = input.trim();
-    if (!text || isLoading) return;
-
-    if (recordQuery()) setShowUsageWarning(true);
-
+  const executeChatRequest = useCallback(async (
+    text: string,
+    historyMsgs: AiMessage[],
+    opts: { skipGuidedSuggestion?: boolean } = {},
+  ) => {
     const myCount = ++requestCounterRef.current;
     const isCurrentRequest = () => requestCounterRef.current === myCount;
 
-    const userMsg: AiMessage = { role: 'user', content: text };
-    setInput('');
-    setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
     setCurrentStatusLog([]);
     statusLogRef.current = [];
 
-    const history = [...messages, userMsg]
+    const history = historyMsgs
       .slice(-8)
       .map(m => ({ role: m.role, content: m.content }));
 
@@ -470,7 +470,14 @@ export function AiChat() {
       const response = await fetch(`${BACKEND_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history, webSearchEnabled, synthModel, componentAdvisor }),
+        body: JSON.stringify({
+          message: text,
+          history,
+          webSearchEnabled,
+          synthModel,
+          componentAdvisor,
+          skipGuidedSuggestion: opts.skipGuidedSuggestion ?? false,
+        }),
       });
 
       if (!response.ok || !response.body) throw new Error('Server error');
@@ -494,7 +501,15 @@ export function AiChat() {
           } else if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
-              if (eventType === 'status') {
+              if (eventType === 'suggest_guided') {
+                if (!isCurrentRequest()) { abandoned = true; break; }
+                setPendingQuery(text);
+                setMessages(prev => [...prev, {
+                  role: 'assistant',
+                  content: '',
+                  type: 'guided_offer',
+                }]);
+              } else if (eventType === 'status') {
                 if (!isCurrentRequest()) { abandoned = true; break; }
                 const newLog = [...statusLogRef.current, data as Status];
                 statusLogRef.current = newLog;
@@ -544,13 +559,51 @@ export function AiChat() {
     } finally {
       if (isCurrentRequest()) setIsLoading(false);
     }
+  }, [webSearchEnabled, synthModel, componentAdvisor]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function sendMessage() {
+    const text = input.trim();
+    if (!text || isLoading) return;
+
+    if (recordQuery()) setShowUsageWarning(true);
+
+    const userMsg: AiMessage = { role: 'user', content: text };
+    setInput('');
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
+
+    await executeChatRequest(text, nextMessages);
   }
+
+  const acceptGuidedSearch = useCallback(() => {
+    setPendingQuery(null);
+    setMessages(prev => prev.filter(m => m.type !== 'guided_offer'));
+    setGuidedSearchActive(true);
+  }, []);
+
+  const declineGuidedSearch = useCallback(async () => {
+    const query = pendingQuery;
+    if (!query) return;
+    setPendingQuery(null);
+
+    const msgsForHistory = messages.filter(m => m.type !== 'guided_offer');
+    setMessages(msgsForHistory);
+
+    await executeChatRequest(query, msgsForHistory, { skipGuidedSuggestion: true });
+  }, [pendingQuery, messages, executeChatRequest]);
 
   return (
     <div
       className="flex rounded-2xl overflow-hidden border border-surface1"
       style={{ height: 'calc(100vh - 130px)', minHeight: '600px', boxShadow: '0 0 32px 4px rgba(203,166,247,0.08), 0 0 8px 0px rgba(203,166,247,0.06)' }}
     >
+      {guidedSearchActive ? (
+        <GuidedSearch
+          embedded={true}
+          onBack={() => setGuidedSearchActive(false)}
+        />
+      ) : (
+      <>
       {/* Sidebar */}
       <div className="w-52 shrink-0 bg-crust border-r border-surface1 flex flex-col overflow-hidden">
         <div className="px-2 py-2.5 border-b border-surface1 shrink-0">
@@ -669,6 +722,29 @@ export function AiChat() {
               {msg.role === 'user' ? (
                 <div className="bg-mauve text-crust text-sm rounded-2xl rounded-br-sm px-5 py-3 max-w-[75%] leading-relaxed">
                   {msg.content}
+                </div>
+              ) : msg.type === 'guided_offer' ? (
+                <div className="max-w-[82%]">
+                  <div className="bg-surface0 text-text text-sm rounded-2xl rounded-bl-sm px-5 py-4 leading-relaxed space-y-3">
+                    <p>Detekoval jsem dotaz na komponent nebo díl. Chceš použít <strong className="text-teal">Vyhledávání s průvodcem</strong>? Průvodce ti postupnými otázkami pomůže přesně specifikovat hledaný díl.</p>
+                    <div className="flex gap-2 flex-wrap">
+                      <button
+                        onClick={acceptGuidedSearch}
+                        disabled={isLoading}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-teal/20 hover:bg-teal/30 text-teal border border-teal/30 transition-colors disabled:opacity-40"
+                      >
+                        <Sparkles size={13} />
+                        Ano, spustit průvodce
+                      </button>
+                      <button
+                        onClick={declineGuidedSearch}
+                        disabled={isLoading}
+                        className="px-3 py-1.5 rounded-lg text-sm font-medium bg-surface1 hover:bg-surface2 text-subtext1 transition-colors disabled:opacity-40"
+                      >
+                        Ne, hledat v chatu
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="max-w-[82%] space-y-2">
@@ -855,7 +931,9 @@ export function AiChat() {
         </div>
       </div>
 
-      </div>{/* end main chat */}
+      </div>
+      </>
+      )}
 
       {/* Usage warning popup */}
       {showUsageWarning && (
