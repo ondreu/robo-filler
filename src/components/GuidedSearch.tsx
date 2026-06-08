@@ -198,7 +198,7 @@ export function GuidedSearch() {
   // ---------------------------------------------------------------------------
 
   const saveSession = useCallback((
-    cat: string,
+    _cat: string,
     catLabel: string,
     ans: Answer[],
     res: GuidedResult | null,
