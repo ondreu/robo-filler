@@ -314,6 +314,7 @@ export function AiChat() {
   const [showUsageWarning, setShowUsageWarning] = useState(false);
   const [pendingQuery, setPendingQuery] = useState<string | null>(null);
   const [guidedSearchActive, setGuidedSearchActive] = useState(false);
+  const [guidedOfferDismissed, setGuidedOfferDismissed] = useState(false);
   const [activeGuidedResult, setActiveGuidedResult] = useState<GuidedResultSnapshot | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>(() => loadSessions());
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(() => {
@@ -603,11 +604,12 @@ export function AiChat() {
     const nextMessages = [...messages, userMsg];
     setMessages(nextMessages);
 
-    await executeChatRequest(text, nextMessages, { guidedContext: activeGuidedResult });
+    await executeChatRequest(text, nextMessages, { guidedContext: activeGuidedResult, skipGuidedSuggestion: guidedOfferDismissed });
   }
 
   const acceptGuidedSearch = useCallback(() => {
     setPendingQuery(null);
+    setGuidedOfferDismissed(true);
     setMessages(prev => prev.filter(m => m.type !== 'guided_offer'));
     setGuidedSearchActive(true);
   }, []);
@@ -616,12 +618,13 @@ export function AiChat() {
     const query = pendingQuery;
     if (!query) return;
     setPendingQuery(null);
+    setGuidedOfferDismissed(true);
 
     const msgsForHistory = messages.filter(m => m.type !== 'guided_offer');
     setMessages(msgsForHistory);
 
     await executeChatRequest(query, msgsForHistory, { skipGuidedSuggestion: true, guidedContext: activeGuidedResult });
-  }, [pendingQuery, messages, activeGuidedResult, executeChatRequest]);
+  }, [pendingQuery, messages, activeGuidedResult, guidedOfferDismissed, executeChatRequest]);
 
   const handleGuidedResult = useCallback((result: GuidedResultSnapshot) => {
     setActiveGuidedResult(result);
@@ -754,6 +757,17 @@ export function AiChat() {
                 ))}
               </div>
             </div>
+            <button
+              onClick={() => { setGuidedOfferDismissed(true); setGuidedSearchActive(true); }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-teal/10 hover:bg-teal/20 border border-teal/20 hover:border-teal/40 transition-colors text-left group"
+            >
+              <Sparkles size={16} className="text-teal shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-teal">Spustit Vyhledávání s průvodcem</p>
+                <p className="text-xs text-overlay0 group-hover:text-subtext0 transition-colors">Průvodce krok za krokem — specifikuj díl otázkami a AI najde nejlepší shody</p>
+              </div>
+              <span className="ml-auto text-teal/60 group-hover:text-teal transition-colors text-lg leading-none">→</span>
+            </button>
           </div>
         )}
 
