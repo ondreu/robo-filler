@@ -38,7 +38,7 @@ export function filterCables(answers) {
   for (const ans of answers) {
     if (!ans.answer) continue;
     const val = ans.answer.trim();
-    if (val === 'Bez omezení' || val === 'Bez preference' || val.startsWith('Bez ')) continue;
+    if (val === 'Bez omezení' || val === 'Bez preference') continue;
 
     if (ans.key === 'pocetZil') {
       if (val === 'více než 30') {
@@ -71,7 +71,7 @@ export function filterCables(answers) {
       if (val.includes('Stíněný')) {
         result = result.filter(c => isYes(c.stineni));
       } else if (val.includes('Bez stínění')) {
-        result = result.filter(c => isNo(c.stineni));
+        result = result.filter(c => isNo(c.stineni) || c.stineni === null);
       }
     }
 
@@ -86,7 +86,8 @@ export function filterCables(answers) {
           return mp.includes('pry') || mp.includes('gum') || mp.includes('epr') || mp.includes('epdm') || mp.includes('silikon');
         });
       } else if (val.includes('PVC')) {
-        result = result.filter(c => norm(c.materialPlaste).includes('pvc'));
+        // null materialPlaste = standard cable (typically PVC) — include it
+        result = result.filter(c => c.materialPlaste === null || norm(c.materialPlaste).includes('pvc'));
       }
     }
 

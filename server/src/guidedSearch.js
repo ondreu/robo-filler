@@ -307,8 +307,15 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
 
     const questions = category.questions;
 
-    // Find the current question (skip non-applicable conditional questions)
-    const currentQIdx = getNextApplicableIdx(questions, answers.length, answers);
+    // Find the current question.
+    // We can't use answers.length as array index because skipped conditional
+    // branches (e.g. wire questions when in cable branch) create gaps.
+    // Instead, start from the last answered question's array position + 1.
+    const lastAnsweredKey = answers.length > 0 ? answers[answers.length - 1].key : null;
+    const lastAnsweredArrayIdx = lastAnsweredKey
+      ? questions.findIndex(q => q.key === lastAnsweredKey)
+      : -1;
+    const currentQIdx = getNextApplicableIdx(questions, lastAnsweredArrayIdx + 1, answers);
     const currentQ = questions[currentQIdx];
     if (!currentQ) {
       sendEvent('error', { error: 'Neočekávaný stav otázek.' });
