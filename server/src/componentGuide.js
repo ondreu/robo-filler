@@ -891,16 +891,15 @@ Série 221: 221-412 (2×do 4mm²), 221-413 (3×), 221-415 (5×)
   2273-XXX = svorky pro vodiče 0.5–2.5 mm²
 
 **WAGO TOPJOB S (2002 / 2004 / 2006 řady — Push-In CAGE CLAMP, 5mm rozteč):**
-  2002-199 = čílko pro 2002 (2.5mm² / 5mm rozteč)
-  2004-199 = čílko pro 2004 (4mm² / 6mm rozteč)
-  2006-199 = čílko pro 2006 (6mm² / 8mm rozteč)
-  2010-199 = čílko pro 10mm²
-  2002-1281 = propojka 2P pro TOPJOB S 2002
-  2002-1282 = propojka 2P kov (standard)
-  2004-1281 = propojka pro 2004
-  2002-1690 = nosič popisků (Inline Marker) pro 2002 — WMB systém
-  2009-114  = Inline Marker Carrier WMB-Inline pro 5mm svorky (TOPJOB S 2002, 279 série) — SPRÁVNÉ typové označení pro nosiče štítků!
-  2009-115  = Inline Marker Carrier WMB-Inline pro 6mm svorky (TOPJOB S 2004)
+  XXXX-YYZZ = "XXXX" -označuje řadu pro velikost vodiče (např. 2002=2.5mm², 2006=6mm²). "YY" -označuje počet zdířek (např. 14=4pólová, 13=3pólová). "ZZ" označuje barvu (91=šedá, 92=oranžová)
+  2002-1391 = čílko pro 2002 (2.5mm²)
+  2004-1391 = čílko pro 2004 (4mm²)
+  2006-1391 = čílko pro 2006 (6mm²)
+  2010-1391 = čílko pro 2010 10mm²
+  2002-402 = propojka 2P pro TOPJOB S 2002 (2002-403 má 3 póly, 2002-404 má 4 póly atd..)
+  2004-402 = propojka 2P pro 2004 (20024-403 má 3 póly, 2004-404 má 4 póly atd..)
+  2009-114  = Inline Marker WMB-Inline pro 5mm svorky (TOPJOB S 2002, 279 série) — SPRÁVNÉ typové označení pro nosiče štítků!
+  2009-115  = Inline Marker WMB-Inline pro 6mm svorky (TOPJOB S 2004)
   WMB-Inline = systémové označení inline markovacího systému WAGO pro DIN svorky
 
 **WAGO 279 řada (TOPJOB S šroubová, starší, 5mm rozteč):**
