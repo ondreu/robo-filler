@@ -1784,6 +1784,29 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   Číslo v závorce = objednací číslo Weidmüller
 `,
       },
+      relpol: {
+        label: 'Relpol',
+        doc: `## Relpol – Průmyslové relé RM85
+
+### RM85 – jednonastavitelné relé (1CO/SPDT), 16 A, pro patici GZT8
+
+  Schéma: RM85-2011-35-[napětí_cívky]
+
+  RM85-2011-35-1024 = 1CO, 24 VDC cívka, 16 A / 250 VAC, pro patici GZT8-1
+  RM85-2011-35-5230 = 1CO, 230 VAC cívka, 16 A / 250 VAC, pro patici GZT8-1
+  RM85-2011-35-1012 = 1CO, 12 VDC cívka, 16 A / 250 VAC, pro patici GZT8-1
+
+### Parametry RM85
+
+  Konfigurace: 1CO (SPDT – NO + NC + COM)
+  Jmenovitý proud kontaktů: 16 A / 250 VAC
+  Materiál kontaktů: AgSnO2
+  Mechanická životnost: 30 × 10⁶ cyklů
+  Montáž: výhradně do patice GZT8-1 (DIN 35 mm) nebo GZT8-2 (přímá montáž PCB)
+  Pracovní teplota: –40 °C … +70 °C
+  Norma: IEC 61810-1
+`,
+      },
     },
   }, // end rele
 
@@ -1836,6 +1859,27 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
   Finder 40.51 / 40.52 (1CO / 2CO, 8-pin) → patice série 94
   Finder 55.34 (4CO, 14-pin)               → patice série 95
+`,
+      },
+      relpol: {
+        label: 'Relpol',
+        doc: `## Relpol – Patice GZT8 pro relé RM85
+
+### GZT8-1 – DIN 35 mm patice pro RM85 (8-pin)
+
+  GZT8-1  = 8-pin, DIN 35 mm, šroubové svorky
+             Kompatibilní s: RM85 (1CO, 16 A)
+             Šroubové svorky max. průřez: 2,5 mm²
+
+### GZT14-1 – DIN 35 mm patice pro RM15 / R15 (14-pin)
+
+  GZT14-1 = 14-pin, DIN 35 mm, šroubové svorky
+             Kompatibilní s: R15 série (4CO)
+
+### Kompatibilita
+
+  Relpol RM85 (1CO, 8-pin) → GZT8-1 (DIN)
+  Relpol R15  (4CO, 14-pin) → GZT14-1 (DIN)
 `,
       },
     },
@@ -1893,6 +1937,35 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   Montáž: DIN 35 mm lišta, šířka 35 mm
   Pracovní teplota: –20 °C … +55 °C
   Objednací číslo v závorce = ABB číslo
+`,
+      },
+      finder: {
+        label: 'Finder',
+        doc: `## Finder – Multifunkční časové relé série 88
+
+### 88.02 – 7 funkcí, DPDT (2CO), 12–240 V AC/DC
+
+  88.02.0.240.0000 = 7 časovacích funkcí, 12–240 V AC/DC, 2CO, 8 A / 250 VAC
+
+### Časovací funkce série 88.02
+
+  A1 = zapínací prodleva (ON-delay)
+  A2 = vypínací prodleva (OFF-delay)
+  A3 = jednorázový impuls (single pulse po náběhu)
+  A4 = blikač (symetrický, start při napájení)
+  A5 = blikač s předvolbou (start + stop impulsy)
+  A6 = hvězda-trojúhelník prodleva
+  A7 = asymetrický blikač
+
+### Parametry
+
+  Napájení: 12–240 V AC/DC (universální vstup – jeden typ pro všechna napětí)
+  Výstupní kontakty: 2CO (DPDT), 8 A / 250 VAC
+  Časový rozsah: 0,05 s … 100 hod (9 rozsahů potenciometrem)
+  Nastavení: 2 potenciometry (čas + rozsah) + přepínač funkce
+  Montáž: DIN 35 mm lišta, šířka 22,5 mm
+  Pracovní teplota: –20 °C … +55 °C
+  Norma: IEC/EN 61812-1
 `,
       },
     },
@@ -1954,6 +2027,31 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   A = auto reset, B = auto + ruční reset
 `,
       },
+      abb: {
+        label: 'ABB',
+        doc: `## ABB – Monitorovací relé CM-PFE.2
+
+### CM-PFE.2 – Kontrola fází třífázové sítě
+
+  CM-PFE.2 (2CSS2012400R1800) = 3× 200–500 V AC, 1CO, DIN 35 mm, šířka 22,5 mm
+
+### Funkce
+
+  Sleduje: sled fází (nesprávné pořadí L1-L2-L3), výpadek fáze (asymetrie >50 %)
+  Výstup: 1CO (přepínací), 4 A / 250 VAC
+  Reakce: < 500 ms při výpadku fáze
+
+### Parametry
+
+  Vstupní napětí: 3× 200–500 V AC (50/60 Hz) – pokrývá evropský standard 3×400 V
+  Napájení měřicí části: z měřené sítě (bez externího napájení)
+  Reset: automatický při obnovení správného stavu fází
+  Montáž: DIN 35 mm lišta, šířka 22,5 mm (1 TE)
+  Pracovní teplota: –20 °C … +55 °C
+  Norma: IEC 60255-1
+  Objednací číslo v závorce = ABB číslo
+`,
+      },
     },
   }, // end fazove_rele
 
@@ -2008,6 +2106,69 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   XB4: kovová deska, IP65, vyšší mechanická odolnost, průmyslové prostředí
   XB5: plastová deska, IP66 (lepší těsnost), lehčí, ekonomičtější
   Kontaktní bloky XB4 a XB5 nejsou vzájemně zaměnitelné
+`,
+      },
+      eaton: {
+        label: 'Eaton',
+        doc: `## Eaton – Tlačítka RMQ-Titan M22 / M22-I
+
+### M22 – Modulární systém, Ø22 mm, IP67/IP69K
+
+  Schéma: M22-[varianta]-[barva]  +  M22-[typ_bloku]
+
+  Ovládací hlavy (momentální tlačítka):
+    M22-D-G  = zelená ovládací hlava, Ø22 mm, momentální, IP67
+    M22-D-R  = červená ovládací hlava, Ø22 mm, momentální, IP67
+    M22-D-B  = černá ovládací hlava, Ø22 mm, momentální, IP67
+    M22-D-Y  = žlutá ovládací hlava, Ø22 mm, momentální, IP67
+
+  Kontaktní bloky (objednávány zvlášť):
+    M22-K10  = 1NO kontaktní blok (snap-on, zadní montáž)
+    M22-K01  = 1NC kontaktní blok
+    M22-K11  = 1NO + 1NC kontaktní blok
+
+### Sestavení kompletní jednotky
+
+  Kompletní tlačítko = ovládací hlava + kontaktní blok, např.:
+    M22-D-G + M22-K10  = zelené momentální tlačítko, 1NO
+
+### Parametry M22
+
+  Průměr montážního výřezu: Ø22,3 mm
+  Proud kontaktu: 10 A / 230 VAC (AC-15: 4 A / 230 VAC)
+  Krytí čelní desky: IP67 (závisí na provedení základny)
+  Norma: IEC 60947-5-1
+`,
+      },
+      siemens: {
+        label: 'Siemens',
+        doc: `## Siemens – Tlačítka SIRIUS ACT 3SB3
+
+### 3SB3 – Modulární systém, Ø22 mm
+
+  Schéma: 3SB3[xxx]-[varianta][barva][kontakt]
+
+  Kompletní tlačítkové jednotky (standardní konfigurace):
+    3SB3001-0AA21 = Ø22 mm, černé, momentální, 1NO
+    3SB3001-0AB21 = Ø22 mm, zelené, momentální, 1NO
+    3SB3001-0AD21 = Ø22 mm, červené, momentální, 1NO
+    3SB3001-0AB11 = Ø22 mm, zelené, momentální, 1NC
+
+  Poznámka: Kód sufixu:
+    1. číslo za pomlčkou = 0 (standard)
+    2. písmeno = barva (A=černá, B=zelená, D=červená, E=žlutá)
+    3. číslice = verze hlavy
+    4. číslice = konfigurace kontaktů (1=1NO, 2=1NC, varianta bez číslice)
+
+### Parametry 3SB3
+
+  Průměr montážního výřezu: Ø22,3 mm
+  Proud kontaktu: 10 A / 240 VAC
+  Krytí: IP65 (s krytkou)
+  Norma: IEC 60947-5-1
+
+  Důležité: Pro přesný kód konfigurace kontaktů ověřit v aktuálním katalogu Siemens
+            SIRIUS ACT 3SB3, protože kódování pozic sufixu je komplexní.
 `,
       },
     },
@@ -2115,6 +2276,55 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   Normy: IEC 60947-3, UL 508
   Vhodné jako hlavní vypínač rozvaděče dle IEC 61439
   Objednací číslo v závorce = ABB číslo
+`,
+      },
+      siemens: {
+        label: 'Siemens',
+        doc: `## Siemens – Odpínače 3LD2
+
+### 3LD2 – Výkonové odpojovače (load break switch), 3P
+
+  Schéma: 3LD2[xxx]-0TK[51/53]
+
+  3LD2003-0TK51 = 3P, 16 A, DIN 35 mm nebo přímá montáž, IP65 s krytem
+  3LD2103-0TK51 = 3P, 25 A
+  3LD2203-0TK51 = 3P, 32 A
+  3LD2504-0TK51 = 3P, 63 A
+
+  Suffix -0TK51: přímé ovládání rukojeti (frontální montáž)
+  Suffix -0TK53: pro prodloužení hřídele (montáž na dveře skříně)
+
+### Parametry 3LD2
+
+  Napětí: do 690 V AC
+  Spínací kategorie: AC-23A (motorové zátěže)
+  Krytí: IP65 se standardním krytem
+  Montáž: DIN 35 mm lišta nebo přímá montáž šrouby
+  Norma: IEC/EN 60947-3
+  Vhodné jako hlavní vypínač rozvaděče dle IEC 61439
+`,
+      },
+      schneider: {
+        label: 'Schneider Electric',
+        doc: `## Schneider Electric – Odpínače TeSys Vario VCF
+
+### VCF – kompaktní odpojovač se svorkami, 3P, přímý pohon
+
+  VCF0 (GV7RE025) = 3P, 25 A, TeSys Vario, DIN 35 mm
+  VCF1 (GV7RE032) = 3P, 32 A
+  VCF3 (GV7RE040) = 3P, 40 A
+
+  Poznámka: Čísla GV7RExx jsou základní varianty bez ovládacích prvků dveří.
+            Pro montáž na dveře skříně se používají doplňkové rukojeti GV7A/GV7E.
+
+### Parametry VCF
+
+  Napětí: do 690 V AC
+  Spínací kategorie: AC-23A
+  Montáž: DIN 35 mm nebo přímá montáž
+  Norma: IEC/EN 60947-3
+  Vhodné jako hlavní vypínač dle IEC 61439
+  Objednací číslo v závorce = Schneider číslo
 `,
       },
     },
@@ -2373,6 +2583,34 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   Type 1 (třída I):  Iimp ≥ 12,5 kA (10/350 µs), pro bleskosvodná zóny 0/1
   Type 2 (třída II): Imax ≥ 40 kA (8/20 µs), pro hlavní a dílčí rozvodnice
   Type 3 (třída III): Up ≤ 1,5 kV, terminálová ochrana u citlivých zátěží
+`,
+      },
+      abb: {
+        label: 'ABB',
+        doc: `## ABB – Přepěťové ochrany OVR T2
+
+### OVR T2 – Type 2 SPD pro AC sítě 230/400 V, DIN lišta
+
+  OVR T2 1N 40-275 P TS (2CTB803972R0500) = Type 2, jednofázový 1+N, Uc=275 V AC,
+                                              Imax=40 kA, se signalizací + odpojovač
+  OVR T2 3N 40-275 P QS (2CTB803973R1100) = Type 2, třífázový 3+N, Uc=275 V AC,
+                                              Imax=40 kA, se signalizací + rychlospojka
+
+### Schéma typového označení OVR T2
+
+  OVR T[třída] [póly] [Imax]-[Uc] [P=s ochr.] [přípona]
+  Přípona: TS = se svorkami pro signalizaci, QS = quick-connect svorky
+
+### Parametry OVR T2
+
+  Třída: Type 2 (IEC/EN 61643-11, třída II)
+  Maximální výbojový proud Imax: 40 kA (8/20 µs) na pól
+  Ochranná hladina Up: ≤ 1,5 kV
+  Jmenovité napětí Uc: 275 V AC (pro síť 230/400 V TN-S, TN-C-S)
+  Montáž: DIN 35 mm lišta
+  Indikace závady: vizuální okénko (zelená/červená) + dálková signalizace (TS verze)
+  Norma: IEC/EN 61643-11
+  Objednací číslo v závorce = ABB číslo
 `,
       },
     },
@@ -2674,6 +2912,265 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
       },
     },
   }, // end pojistka
+
+  // ===========================================================================
+  // NAPÁJECÍ ZDROJ (SMPS — Switched-Mode Power Supply)
+  // ===========================================================================
+  napajeci_zdroj: {
+    label: 'Napájecí zdroj',
+    aliases: [
+      'napájecí zdroj', 'napajeci zdroj', 'zdroj', 'spínaný zdroj',
+      'SMPS', 'DIN rail PSU', 'průmyslový zdroj', 'napájení',
+      'QUINT', 'TRIO', 'SITOP', 'stabilizovaný zdroj',
+      'primární spínaný', 'DC zdroj',
+    ],
+    questions: [
+      { key: 'mfr',    text: 'Preferovaný výrobce?',                         options: ['Phoenix Contact', 'Siemens', 'Bez preference'] },
+      { key: 'vstup',  text: 'Napájecí napětí vstupu?',                      options: ['1× 100–240 V AC (jednofázový)', '3× 400 V AC (třífázový)'] },
+      { key: 'vystup', text: 'Výstupní napětí?',                             options: ['24 V DC (standard)', '12 V DC', 'Jiné'] },
+      { key: 'proud',  text: 'Výstupní proud / výkon?',                      options: ['2,5 A (60 W)', '5 A (120 W)', '10 A (240 W)', '20 A (480 W)', '40 A (960 W)'] },
+    ],
+    manufacturers: {
+      phoenix_contact: {
+        label: 'Phoenix Contact',
+        doc: `## Phoenix Contact – Napájecí zdroje QUINT4-PS a TRIO-PS
+
+### QUINT4-PS – Výkonové DIN PSU s diagnostikou (24 V DC výstup)
+
+  Schéma: QUINT4-PS/[vstup]/[výstup]/[proud]
+
+  Jednofázový vstup (100–240 V AC):
+    QUINT4-PS/1AC/24DC/5  (2904600) =  5 A / 120 W
+    QUINT4-PS/1AC/24DC/10 (2904601) = 10 A / 240 W
+    QUINT4-PS/1AC/24DC/20 (2904602) = 20 A / 480 W
+
+  Třífázový vstup (3× 400–500 V AC):
+    QUINT4-PS/3AC/24DC/20 (2904603) = 20 A / 480 W
+    QUINT4-PS/3AC/24DC/40 (2904605) = 40 A / 960 W
+
+### TRIO-PS – Kompaktní DIN PSU (24 V DC výstup)
+
+  Schéma: TRIO-PS/[vstup]/[výstup]/[proud]
+
+  Jednofázový vstup (100–240 V AC):
+    TRIO-PS/1AC/24DC/5  (2903148) =  5 A / 120 W
+    TRIO-PS/1AC/24DC/10 (2903149) = 10 A / 240 W
+
+### Vlastnosti QUINT4-PS
+
+  Vstup: 100–240 V AC, 50/60 Hz (jednofázové varianty)
+  Výstup: 24 V DC ±1 % (nastavitelné 18–29,5 V)
+  Diagnostika: LED + potenciál pro signalizaci, SFB (selectivity function)
+  Montáž: DIN 35 mm lišta
+  Krytí: IP20
+  Pracovní teplota: –25 °C … +60 °C
+  Normy: IEC 62368-1, UL 508A
+  Číslo v závorce = objednací číslo Phoenix Contact
+`,
+      },
+      siemens: {
+        label: 'Siemens',
+        doc: `## Siemens – Napájecí zdroje SITOP PSU100S
+
+### SITOP PSU100S – Standardní DIN PSU, 24 V DC výstup
+
+  Schéma: 6EP1[xxx]-[yyy]
+
+  Jednofázový vstup (100–240 V AC):
+    6EP1331-2BA20 =  2,5 A /  60 W, 24 V DC
+    6EP1332-2BA20 =  5 A /  120 W, 24 V DC
+    6EP1333-2BA20 = 10 A /  240 W, 24 V DC
+    6EP1334-2BA20 = 20 A /  480 W, 24 V DC
+
+### Vlastnosti PSU100S
+
+  Vstup: 100–240 V AC, 50/60 Hz (automatický výběr)
+  Výstup: 24 V DC ±1 % (nastavitelné 22–26 V)
+  Indikace: zelená LED (výstup OK)
+  Montáž: DIN 35 mm lišta
+  Krytí: IP20
+  Pracovní teplota: –25 °C … +60 °C
+  Normy: IEC 62368-1, UL 508
+`,
+      },
+    },
+  }, // end napajeci_zdroj
+
+  // ===========================================================================
+  // DIN LIŠTA
+  // ===========================================================================
+  din_lista: {
+    label: 'DIN lišta',
+    aliases: [
+      'DIN lišta', 'din lista', 'nosná lišta', 'montážní lišta',
+      'omega lišta', 'NS35', 'TS35', 'tophat rail', 'DIN rail',
+      '35mm lišta', 'hutní lišta',
+    ],
+    questions: [
+      { key: 'sirka',  text: 'Šířka lišty?',                                 options: ['35 mm (DIN 35 = standard pro průmysl)', '15 mm (DIN 15 = pro malé prvky)'] },
+      { key: 'material', text: 'Materiál?',                                   options: ['Ocel (pozinkovaná)', 'Nerez', 'Hliník'] },
+      { key: 'delka',  text: 'Délka?',                                        options: ['2000 mm (standardní tyč)', '1000 mm', 'Zkrácená na míru'] },
+    ],
+    manufacturers: {
+      phoenix_contact: {
+        label: 'Phoenix Contact',
+        doc: `## Phoenix Contact – DIN lišty NS35
+
+### NS 35 – Standardní DIN 35 lišta (EN 60715)
+
+  NS 35/ 7,5 UNPERF 2000MM (1201916) = 35×7,5 mm, ocel, 2000 mm, neperforovaná
+  NS 35/15 UNPERF 2000MM    (1201929) = 35×15 mm, ocel, 2000 mm, neperforovaná
+  NS 35/ 7,5 PERF 2000MM   (0801733) = 35×7,5 mm, ocel, 2000 mm, perforovaná (otvory Ø6,3 mm á 25 mm)
+
+### Parametry
+
+  Profil: symetrický omega profil (top-hat) dle EN 60715 / IEC 60715
+  Materiál: pozinkovaná ocel (standard), alternativně nerez nebo hliník
+  Výška profilu: 7,5 mm nebo 15 mm (standardní pro svorky a jistítka: 7,5 mm)
+  Montážní délka: 2000 mm, zkracuje se na míru
+  Číslo v závorce = objednací číslo Phoenix Contact
+`,
+      },
+      wago: {
+        label: 'WAGO',
+        doc: `## WAGO – DIN lišty série 210
+
+### 210-112 – 35 mm DIN lišta, 1000 mm
+
+  210-112 = 35×7,5 mm, ocel pozinkovaná, 1000 mm, neperforovaná
+  210-113 = 35×7,5 mm, ocel pozinkovaná, 2000 mm, neperforovaná
+
+### Parametry
+
+  Profil: EN 60715 / IEC 60715 omega (top-hat)
+  Šířka: 35 mm, výška profilu: 7,5 mm
+  Materiál: pozinkovaná ocel
+  Použití: montáž svorkovnic WAGO a průmyslových komponent na DIN lištu
+`,
+      },
+      weidmuller: {
+        label: 'Weidmüller',
+        doc: `## Weidmüller – DIN lišty TSLD35
+
+### TSLD35 – 35 mm standardní DIN lišta
+
+  TSLD35 2000 (0205200000) = 35×7,5 mm, pozinkovaná ocel, 2000 mm, neperforovaná
+
+### Parametry
+
+  Profil: dle EN 60715 / IEC 60715
+  Šířka: 35 mm, výška: 7,5 mm
+  Materiál: pozinkovaná ocel
+  Montáž do skříně: přes boční otvory nebo konec lišty
+  Číslo v závorce = objednací číslo Weidmüller
+`,
+      },
+    },
+  }, // end din_lista
+
+  // ===========================================================================
+  // SOFTSTARTER (Softstartér / Motorový regulátor rozběhu)
+  // ===========================================================================
+  softstarter: {
+    label: 'Softstarter',
+    aliases: [
+      'softstarter', 'soft starter', 'softstartér', 'plynulý rozběh',
+      'motorový regulátor', 'rozběhový regulátor', '3RW', 'ATS22', 'PSR',
+      'elektronický spouštěč', 'omezovač rozběhového proudu',
+    ],
+    questions: [
+      { key: 'mfr',   text: 'Preferovaný výrobce?',                          options: ['Siemens', 'ABB', 'Schneider', 'Bez preference'] },
+      { key: 'vykon', text: 'Výkon motoru? (kW)',                             options: ['Do 5,5 kW', '7,5 kW', '11 kW', '15 kW', '22 kW', '30 kW+'] },
+      { key: 'vstup', text: 'Napájecí napětí?',                              options: ['3× 200–480 V AC (standard)', '3× 380–600 V AC'] },
+    ],
+    manufacturers: {
+      siemens: {
+        label: 'Siemens',
+        doc: `## Siemens – Softstartéry SIRIUS 3RW40
+
+### 3RW40 – Standardní softstartéry, 200–480 V AC, 24 V DC řídicí napětí
+
+  Schéma: 3RW40[xx]-1BB14
+    [xx] = kód výkonového stupně
+    1BB14: základní varianta, 24 VDC řídicí obvod
+
+  3RW4022-1BB14 = do  5,5 kW (400 V), Ie = 12 A
+  3RW4023-1BB14 = do  7,5 kW (400 V), Ie = 17 A
+  3RW4025-1BB14 = do 11,0 kW (400 V), Ie = 25 A
+  3RW4026-1BB14 = do 15,0 kW (400 V), Ie = 32 A
+  3RW4027-1BB14 = do 18,5 kW (400 V), Ie = 37 A
+  3RW4028-1BB14 = do 22,0 kW (400 V), Ie = 45 A
+  3RW4036-1BB14 = do 30,0 kW (400 V), Ie = 63 A
+  3RW4038-1BB14 = do 37,0 kW (400 V), Ie = 72 A
+
+### Parametry 3RW40
+
+  Napájecí napětí (silová část): 3× 200–480 V AC, 50/60 Hz
+  Řídicí napětí: 24 V DC (varianty -1BB14)
+  Funkce: plynulý rozběh, plynulé zastavení (brzdění napětím)
+  Nastavení: potenciometry (rozběhové napětí, čas rozběhu, čas dobrzďování)
+  Bypass: interní bypass relé (nulové ztráty za chodu)
+  Montáž: přímá (šrouby) nebo na DIN 35 mm lištu (s adaptérem)
+  Norma: IEC/EN 60947-4-2
+`,
+      },
+      abb: {
+        label: 'ABB',
+        doc: `## ABB – Softstartéry PSR (kompaktní)
+
+### PSR – Jednoduché softstartéry, 24–690 V AC, pro přímé zapojení
+
+  Schéma: PSR[proud]- [verze]
+
+  PSR3-600-11  (1SFA896105R1100) =  3 A,  0,75 kW (400 V), 24–690 V AC vstup
+  PSR6-600-11  (1SFA896106R1100) =  6 A,  1,5 kW (400 V)
+  PSR9-600-11  (1SFA896107R1100) =  9 A,  4,0 kW (400 V)
+  PSR16-600-11 (1SFA896108R1100) = 16 A,  7,5 kW (400 V)
+  PSR25-600-11 (1SFA896109R1100) = 25 A, 11,0 kW (400 V)
+  PSR37-600-11 (1SFA896110R1100) = 37 A, 18,5 kW (400 V)
+  PSR60-600-11 (1SFA896111R1100) = 60 A, 30,0 kW (400 V)
+
+### Parametry PSR
+
+  Napájecí napětí (silová část): 24–690 V AC, 50/60 Hz
+  Řídicí napětí: ze silové sítě (bez externího napájení)
+  Funkce: plynulý rozběh (rampa napětí), volitelné plynulé zastavení
+  Nastavení: jeden potenciometr pro počáteční napětí
+  Bypass: interní bypass relé
+  Montáž: DIN 35 mm lišta
+  Norma: IEC/EN 60947-4-2
+  Číslo v závorce = objednací číslo ABB
+`,
+      },
+      schneider: {
+        label: 'Schneider Electric',
+        doc: `## Schneider Electric – Softstartéry Altistart ATS22
+
+### ATS22 – Průmyslové softstartéry, 3× 208–600 V AC
+
+  Schéma: ATS22[xxx]S6U
+
+  ATS22D17S6U = 17 A,  7,5 kW (400 V), 3× 208–600 V AC
+  ATS22D32S6U = 32 A, 15,0 kW (400 V)
+  ATS22D47S6U = 47 A, 22,0 kW (400 V)
+  ATS22D62S6U = 62 A, 30,0 kW (400 V)
+  ATS22D75S6U = 75 A, 37,0 kW (400 V)
+
+  Suffix S6U: 3× 208–600 V AC, vestavěný bypass
+
+### Parametry ATS22
+
+  Napájecí napětí: 3× 208–600 V AC, 50/60 Hz
+  Řídicí napětí: 24 V DC nebo 110–240 V AC (dle verze)
+  Funkce: plynulý rozběh + zastavení, ochrana motoru (tepelná, fázová)
+  Komunikace: Modbus (vestavěný)
+  Bypass: interní
+  Montáž: přímá montáž nebo DIN 35 mm
+  Norma: IEC/EN 60947-4-2
+`,
+      },
+    },
+  }, // end softstarter
 
 }; // end PRODUCT_KNOWLEDGE
 
