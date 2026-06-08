@@ -137,7 +137,6 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [panelW, setPanelW] = useState(DEFAULT_W);
   const [panelH, setPanelH] = useState(DEFAULT_H);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const resizeRef = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
 
@@ -148,9 +147,6 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
     }
   }, [messages]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, status]);
 
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();
@@ -401,7 +397,6 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
 
             {status && <StatusPill status={status} />}
 
-            <div ref={messagesEndRef} />
           </div>
 
           {/* Input */}

@@ -299,7 +299,6 @@ export function AiChat() {
     try { return sessionStorage.getItem(SESSION_ID_KEY); } catch { return null; }
   });
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
   const sessionIdRef = useRef<string | null>((() => {
@@ -333,9 +332,6 @@ export function AiChat() {
     setSessions(all.slice(0, 30));
   }, [messages]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, currentStatusLog]);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -744,7 +740,6 @@ export function AiChat() {
             </div>
           )}
 
-          <div ref={messagesEndRef} />
         </div>
       </div>
 

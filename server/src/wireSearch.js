@@ -195,6 +195,87 @@ function fuzzySearch(corpus, query) {
   }));
 }
 
+// ─── Filter-based search (deterministic, no AI) ───────────────────────────────
+
+const BARVA_MAP = [
+  ['Černá',        b => b === 'BK' || b === 'BKWH' || b === 'WHBK'],
+  ['Červená',      b => b === 'RD' || b === 'RDWH' || b === 'WHRD'],
+  ['Hnědá',        b => b === 'BN' || b === 'BNWH'],
+  ['Oranžová',     b => b === 'OG' || b === 'OGWH' || b === 'WHOG'],
+  ['Žlutá',        b => b === 'YE'],
+  ['Zelená',       b => b === 'GN' || b === 'GNWH' || b === 'WHGN'],
+  ['Zeleno-žlutá', b => b === 'GNYE'],
+  ['Světle modrá', b => b === 'LBU' || b === 'BUWH' || b === 'WHBU'],
+  ['Tmavě modrá',  b => b === 'DBU' || b === 'DBUWH'],
+  ['Šedá',         b => b === 'GY'],
+  ['Fialová',      b => b === 'VT' || b === 'VTWH' || b === 'WHVT'],
+  ['Bílá',         b => b === 'WH' || b.startsWith('WH')],
+  ['Růžová',       b => b === 'PK'],
+  ['Bordó',        b => b === 'BURD'],
+];
+
+const SKUPINA_MAP = [
+  ['Standardní',    s => s === 'CE'],
+  ['Bezhalogenový', s => s === 'CE_Halogen-free'],
+  ['Flexibilní',    s => s === 'CE_flexibilni' || s === 'CE_vysoce_flexibilni'],
+  ['RADOX',         s => s.startsWith('RADOX')],
+  ['ÖLFLEX HEAT',   s => s.startsWith('ÖLFLEX HEAT')],
+  ['UL',            s => s.startsWith('UL_')],
+  ['NSGAFÖU',       s => s.startsWith('NSGAFÖU')],
+  ['NSHXAFÖ',       s => s.startsWith('NSHXAFÖ')],
+  ['PTFE',          s => s.startsWith('DESCAFLEX')],
+  ['ALPHAWIRE',     s => s.startsWith('ALPHAWIRE')],
+  ['Silikon',       s => s.includes('Silikon') || s.includes('SiF')],
+];
+
+/**
+ * Filter wires by structured answers (from guided search).
+ * Returns ALL matching wires (no topN limit) — caller should slice.
+ */
+export function filterWires(answers) {
+  let result = [...allWires];
+
+  for (const ans of answers) {
+    if (!ans.answer) continue;
+    const val = ans.answer.trim();
+    if (val === 'Bez omezení' || val === 'Bez preference' || val.startsWith('Bez ')) continue;
+
+    if (ans.key === 'wire_typ') {
+      for (const [label, pred] of SKUPINA_MAP) {
+        if (val.includes(label)) { result = result.filter(w => pred(w.skupina || '')); break; }
+      }
+    }
+
+    if (ans.key === 'prurez') {
+      const num = parseFloat(val);
+      if (!isNaN(num)) result = result.filter(w => w.prurez === num);
+    }
+
+    if (ans.key === 'barva') {
+      for (const [label, pred] of BARVA_MAP) {
+        if (val.includes(label)) { result = result.filter(w => w.barva && pred(w.barva)); break; }
+      }
+    }
+
+    if (ans.key === 'vyrobce') {
+      const mfr = val.toLowerCase();
+      result = result.filter(w => {
+        const v = (w.vyrobce || '').toLowerCase();
+        if (mfr.includes('lapp')) return v.includes('lapp');
+        if (mfr.includes('helukabel')) return v.includes('helukabel');
+        if (mfr.includes('huber') || mfr.includes('suhner') || mfr.includes('radox')) return v.includes('huber') || v.includes('suhner');
+        if (mfr.includes('kablo')) return v.includes('kablo');
+        if (mfr.includes('leoni')) return v.includes('leoni');
+        if (mfr.includes('alphawire')) return v.includes('alphawire');
+        if (mfr.includes('desca')) return v.includes('desca');
+        return true;
+      });
+    }
+  }
+
+  return result.map(w => ({ ...w, _matchType: 'filter', _db: 'wires' }));
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
