@@ -151,7 +151,12 @@ const MD_COMPONENTS: Components = {
 // Main component
 // ---------------------------------------------------------------------------
 
-export function GuidedSearch() {
+interface GuidedSearchProps {
+  embedded?: boolean;
+  onBack?: () => void;
+}
+
+export function GuidedSearch({ embedded = false, onBack }: GuidedSearchProps = {}) {
   // Core state
   const [phase, setPhase] = useState<Phase>('idle');
   const [category, setCategory] = useState<string | null>(null);
@@ -534,11 +539,8 @@ export function GuidedSearch() {
     : phase === 'results' ? 100
     : 0;
 
-  return (
-    <div
-      className="flex rounded-2xl overflow-hidden border border-surface1"
-      style={{ height: 'calc(100vh - 130px)', minHeight: '600px', boxShadow: '0 0 32px 4px rgba(203,166,247,0.08)' }}
-    >
+  const inner = (
+    <>
       {/* ------------------------------------------------------------------ */}
       {/* Left sidebar — session history                                       */}
       {/* ------------------------------------------------------------------ */}
@@ -594,6 +596,15 @@ export function GuidedSearch() {
 
         {/* Header */}
         <div className="bg-mantle border-b border-surface1 px-5 py-3 flex items-center gap-2.5 shrink-0">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1 text-xs text-subtext1 hover:text-mauve transition-colors mr-1 shrink-0"
+            >
+              <ArrowRight size={12} className="rotate-180" />
+              Zpět do chatu
+            </button>
+          )}
           <Sparkles size={18} className="text-teal shrink-0" />
           <span className="font-semibold text-text">Řízené vyhledávání</span>
           {categoryLabel && (
@@ -937,6 +948,17 @@ export function GuidedSearch() {
         )}
 
       </div>{/* end main area */}
+    </>
+  );
+
+  if (embedded) return inner;
+
+  return (
+    <div
+      className="flex rounded-2xl overflow-hidden border border-surface1"
+      style={{ height: 'calc(100vh - 130px)', minHeight: '600px', boxShadow: '0 0 32px 4px rgba(203,166,247,0.08)' }}
+    >
+      {inner}
     </div>
   );
 }
