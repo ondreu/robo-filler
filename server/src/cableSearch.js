@@ -22,15 +22,9 @@ function norm(val) {
   return (val ?? '').toString().toLowerCase().trim();
 }
 
-function matchesYes(val) {
-  const n = norm(val);
-  return n === 'ano' || n === 'yes' || n === 'a';
-}
-
-function matchesNo(val) {
-  const n = norm(val);
-  return n === 'ne' || n === 'no' || n === '' || n === 'n';
-}
+// cables.json uses normalized 'ANO'/'NE'/null
+function isYes(val) { return val === 'ANO'; }
+function isNo(val)  { return val === 'NE'; }
 
 /**
  * Filter cables by structured answers (from guided search).
@@ -75,9 +69,9 @@ export function filterCables(answers) {
 
     if (ans.key === 'stineni') {
       if (val.includes('Stíněný')) {
-        result = result.filter(c => matchesYes(c.stineni));
+        result = result.filter(c => isYes(c.stineni));
       } else if (val.includes('Bez stínění')) {
-        result = result.filter(c => matchesNo(c.stineni));
+        result = result.filter(c => isNo(c.stineni));
       }
     }
 
@@ -85,31 +79,28 @@ export function filterCables(answers) {
       if (val.includes('PUR')) {
         result = result.filter(c => norm(c.materialPlaste).includes('pur'));
       } else if (val.includes('Bezhalogenový') || val.includes('FRNC') || val.includes('LSZH')) {
-        result = result.filter(c => matchesYes(c.bezhalogenovy));
+        result = result.filter(c => isYes(c.bezhalogenovy) || ['halogen free', 'bezhalogen', 'polyolefin'].some(k => norm(c.materialPlaste).includes(k)));
       } else if (val.includes('Gumový') || val.includes('EPR') || val.includes('EPDM')) {
         result = result.filter(c => {
           const mp = norm(c.materialPlaste);
           return mp.includes('pry') || mp.includes('gum') || mp.includes('epr') || mp.includes('epdm') || mp.includes('silikon');
         });
       } else if (val.includes('PVC')) {
-        result = result.filter(c => {
-          const mp = norm(c.materialPlaste);
-          return mp.includes('pvc') && !matchesYes(c.bezhalogenovy);
-        });
+        result = result.filter(c => norm(c.materialPlaste).includes('pvc'));
       }
     }
 
     if (ans.key === 'retiez') {
       if (val.includes('Ano') || val.includes('e-chain') || val.includes('ohebný')) {
-        result = result.filter(c => matchesYes(c.retiez));
+        result = result.filter(c => isYes(c.retiez));
       } else if (val.includes('Ne') || val.includes('pevné')) {
-        result = result.filter(c => matchesNo(c.retiez));
+        result = result.filter(c => isNo(c.retiez) || c.retiez === null);
       }
     }
 
     if (ans.key === 'olej') {
       if (val.includes('Ano') || val.includes('olejuv')) {
-        result = result.filter(c => matchesYes(c.olej));
+        result = result.filter(c => isYes(c.olej));
       }
     }
 
