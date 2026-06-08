@@ -165,7 +165,6 @@ export function GuidedSearch() {
   const [categories, setCategories] = useState<{ key: string; label: string }[]>([]);
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const requestCounterRef = useRef(0);
   // Always-current ref so sendRequest (stable identity, empty deps) never captures a stale handleEvent
   const handleEventRef = useRef<(et: string, d: Record<string, unknown>, ic: () => boolean) => void>(() => {});
@@ -181,10 +180,6 @@ export function GuidedSearch() {
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    if (!answers.length && !result && !isLoading) return;
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [answers, result, isLoading]);
 
   // ---------------------------------------------------------------------------
   // Reset / new session
@@ -796,7 +791,6 @@ export function GuidedSearch() {
                 </div>
               )}
 
-              <div ref={bottomRef} />
             </div>
           )}
         </div>
