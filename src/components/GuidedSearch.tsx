@@ -453,10 +453,21 @@ export function GuidedSearch() {
     }
   };
 
-  const handleOptionClick = (option: string) => {
-    setInput(option);
-    setTimeout(() => handleSubmit(), 0);
-  };
+  const handleOptionClick = useCallback(async (option: string) => {
+    if (isLoading) return;
+
+    if (phase === 'idle') {
+      await sendRequest({ message: option, phase: 'initial', category: null, answers: [] });
+      return;
+    }
+
+    if (phase === 'questioning' && currentQuestion) {
+      const newAnswers = [...answers, { key: '', question: currentQuestion.text, answer: option }];
+      setAnswers(newAnswers);
+      setCurrentQuestion(null);
+      await sendRequest({ message: option, phase: 'questioning', category, answers });
+    }
+  }, [isLoading, phase, currentQuestion, answers, category, sendRequest]);
 
   const handleCategoryChipClick = useCallback(async (key: string) => {
     if (isLoading) return;
