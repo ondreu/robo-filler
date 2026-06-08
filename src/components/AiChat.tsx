@@ -334,7 +334,7 @@ export function AiChat() {
 
 
   useEffect(() => {
-    inputRef.current?.focus();
+    inputRef.current?.focus({ preventScroll: true });
   }, []);
 
   useEffect(() => {

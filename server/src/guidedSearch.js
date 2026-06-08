@@ -214,7 +214,7 @@ function virtualQuestionIdx(questions, arrayIdx, answers) {
 
 function buildFilterAnswer(allAnswers, count, type) {
   const params = allAnswers
-    .filter(a => a.answer && !a.answer.startsWith('Bez ') && a.key !== 'subtype')
+    .filter(a => a.answer && a.answer !== 'Bez omezení' && a.answer !== 'Bez preference' && a.key !== 'subtype')
     .map(a => `**${a.answer}**`)
     .join(', ');
   if (count === 0) {
@@ -307,8 +307,15 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
 
     const questions = category.questions;
 
-    // Find the current question (skip non-applicable conditional questions)
-    const currentQIdx = getNextApplicableIdx(questions, answers.length, answers);
+    // Find the current question.
+    // We can't use answers.length as array index because skipped conditional
+    // branches (e.g. wire questions when in cable branch) create gaps.
+    // Instead, start from the last answered question's array position + 1.
+    const lastAnsweredKey = answers.length > 0 ? answers[answers.length - 1].key : null;
+    const lastAnsweredArrayIdx = lastAnsweredKey
+      ? questions.findIndex(q => q.key === lastAnsweredKey)
+      : -1;
+    const currentQIdx = getNextApplicableIdx(questions, lastAnsweredArrayIdx + 1, answers);
     const currentQ = questions[currentQIdx];
     if (!currentQ) {
       sendEvent('error', { error: 'Neočekávaný stav otázek.' });
@@ -319,6 +326,16 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
       ...answers,
       { key: currentQ.key, question: currentQ.text, answer: message },
     ];
+
+    // vodic_kabel: after subtype is answered, send ALL remaining params as one form
+    // instead of asking questions one-by-one (avoids 5+ sequential turns)
+    if (category.key === 'vodic_kabel' && currentQ.key === 'subtype') {
+      const formQuestions = questions
+        .filter((q, idx) => idx > currentQIdx && questionApplies(q, allAnswers))
+        .map(q => ({ key: q.key, text: q.text, options: q.options ?? null }));
+      sendEvent('parameter_form', { formQuestions, answers: allAnswers });
+      return;
+    }
 
     // Find next applicable question
     const nextQIdx = getNextApplicableIdx(questions, currentQIdx + 1, allAnswers);
@@ -352,19 +369,6 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
 
       const filtered = isWire ? filterWires(allAnswers) : filterCables(allAnswers);
       const answer = buildFilterAnswer(allAnswers, filtered.length, type);
-
-      if (!isWire && filtered.length === 0) {
-        const noCablesMsg = 'Databáze vícežilových kabelů není ještě načtena. '
-          + 'Zatím jsou dostupné pouze jednožilové vodiče (H07V-K, RADOX, ÖLFLEX HEAT, UL…).';
-        sendEvent('result', {
-          answer: noCablesMsg,
-          articles: [],
-          allCandidates: [],
-          expandedTerms: [],
-          answers: allAnswers,
-        });
-        return;
-      }
 
       sendEvent('result', {
         answer,

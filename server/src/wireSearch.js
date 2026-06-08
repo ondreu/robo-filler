@@ -238,7 +238,7 @@ export function filterWires(answers) {
   for (const ans of answers) {
     if (!ans.answer) continue;
     const val = ans.answer.trim();
-    if (val === 'Bez omezení' || val === 'Bez preference' || val.startsWith('Bez ')) continue;
+    if (val === 'Bez omezení' || val === 'Bez preference') continue;
 
     if (ans.key === 'wire_typ') {
       for (const [label, pred] of SKUPINA_MAP) {

@@ -39,6 +39,17 @@ interface GuidedResult {
   expandedTerms: string[];
 }
 
+interface ParamFormQuestion {
+  key: string;
+  text: string;
+  options: string[] | null;
+}
+
+interface ParamForm {
+  questions: ParamFormQuestion[];
+  answeredBefore: Answer[];
+}
+
 interface CurrentQuestion {
   text: string;
   options: string[] | null;
@@ -148,6 +159,8 @@ export function GuidedSearch() {
   const [currentQuestion, setCurrentQuestion] = useState<CurrentQuestion | null>(null);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [result, setResult] = useState<GuidedResult | null>(null);
+  const [paramForm, setParamForm] = useState<ParamForm | null>(null);
+  const [paramFormValues, setParamFormValues] = useState<Record<string, string>>({});
 
   // UI state
   const [input, setInput] = useState('');
@@ -170,7 +183,7 @@ export function GuidedSearch() {
   const handleEventRef = useRef<(et: string, d: Record<string, unknown>, ic: () => boolean) => void>(() => {});
 
   useEffect(() => {
-    inputRef.current?.focus();
+    inputRef.current?.focus({ preventScroll: true });
   }, [phase, currentQuestion]);
 
   useEffect(() => {
@@ -192,6 +205,8 @@ export function GuidedSearch() {
     setCurrentQuestion(null);
     setAnswers([]);
     setResult(null);
+    setParamForm(null);
+    setParamFormValues({});
     setInput('');
     setStatusLabel('');
     setSearchTerms([]);
@@ -244,7 +259,7 @@ export function GuidedSearch() {
       setResult(session.result);
       setSearchTerms(session.result.expandedTerms ?? []);
     }
-    setTimeout(() => inputRef.current?.focus(), 50);
+    setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 50);
   }, [resetState]);
 
   // ---------------------------------------------------------------------------
@@ -332,7 +347,22 @@ export function GuidedSearch() {
         total: Number(data.questionTotal ?? 1),
       });
       setStatusLabel('');
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 50);
+      return;
+    }
+
+    if (eventType === 'parameter_form') {
+      const questions = Array.isArray(data.formQuestions) ? (data.formQuestions as ParamFormQuestion[]) : [];
+      const prevAnswers = Array.isArray(data.answers) ? (data.answers as Answer[]) : [];
+      const defaults: Record<string, string> = {};
+      for (const q of questions) {
+        if (q.options && q.options.length > 0) defaults[q.key] = q.options[q.options.length - 1];
+      }
+      setParamForm({ questions, answeredBefore: prevAnswers });
+      setParamFormValues(defaults);
+      setAnswers(prevAnswers);
+      setCurrentQuestion(null);
+      setStatusLabel('');
       return;
     }
 
@@ -360,7 +390,7 @@ export function GuidedSearch() {
         });
       }
       setStatusLabel('');
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 50);
       return;
     }
 
@@ -470,12 +500,36 @@ export function GuidedSearch() {
     await sendRequest({ message: '', phase: 'initial', categoryKey: key, answers: [] });
   }, [isLoading, sendRequest]);
 
+  const handleParamFormSubmit = useCallback(async () => {
+    if (!paramForm || isLoading) return;
+
+    const formAnswers: Answer[] = paramForm.questions.map(q => ({
+      key: q.key,
+      question: q.text,
+      answer: paramFormValues[q.key] ?? (q.options?.[q.options.length - 1] ?? 'Bez omezení'),
+    }));
+
+    const allDisplayAnswers = [...paramForm.answeredBefore, ...formAnswers];
+    setAnswers(allDisplayAnswers);
+    setParamForm(null);
+
+    const prevForBackend = [...paramForm.answeredBefore, ...formAnswers.slice(0, -1)];
+    const lastAns = formAnswers[formAnswers.length - 1];
+    await sendRequest({
+      message: lastAns.answer,
+      phase: 'questioning',
+      category,
+      answers: prevForBackend,
+    });
+  }, [paramForm, paramFormValues, isLoading, category, sendRequest]);
+
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
 
   const progressPercent = currentQuestion
     ? Math.round(((currentQuestion.index) / currentQuestion.total) * 100)
+    : paramForm ? 20
     : phase === 'searching' ? 90
     : phase === 'results' ? 100
     : 0;
@@ -643,8 +697,61 @@ export function GuidedSearch() {
                 </div>
               )}
 
-              {/* Current question (large) */}
-              {(phase === 'questioning' && currentQuestion) && (
+              {/* Parameter form — vodic_kabel shows all params at once */}
+              {phase === 'questioning' && paramForm && !isLoading && (
+                <div className="space-y-4">
+                  <p className="text-sm font-semibold text-text">Upřesni parametry</p>
+                  <div className="space-y-2.5">
+                    {paramForm.questions.map(q => {
+                      const selected = paramFormValues[q.key];
+                      const shortLabel = q.text
+                        .replace('Použití v energetickém řetězu (e-chain)', 'E-chain')
+                        .replace('(volitelně)', '')
+                        .replace('?', '')
+                        .trim();
+                      return (
+                        <div key={q.key} className="flex items-start gap-3">
+                          <div className="w-32 shrink-0 text-xs text-subtext0 pt-1 leading-snug">{shortLabel}</div>
+                          {q.options && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {q.options.map(opt => {
+                                const isNone = opt === 'Bez omezení' || opt === 'Bez preference';
+                                const isSelected = selected === opt;
+                                return (
+                                  <button
+                                    key={opt}
+                                    onClick={() => setParamFormValues(prev => ({ ...prev, [q.key]: opt }))}
+                                    className={`px-2.5 py-0.5 text-xs rounded-lg border transition-colors ${
+                                      isSelected
+                                        ? isNone
+                                          ? 'bg-surface1 border-surface2 text-overlay1'
+                                          : 'bg-teal/20 border-teal/60 text-teal font-medium'
+                                        : 'bg-surface0 border-surface1 text-subtext0 hover:border-teal/40 hover:text-teal'
+                                    }`}
+                                  >
+                                    {opt}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={handleParamFormSubmit}
+                    disabled={isLoading}
+                    className="flex items-center gap-2 px-4 py-2 bg-teal hover:bg-teal/80 text-crust rounded-xl text-sm font-medium transition-colors disabled:opacity-40"
+                  >
+                    <Search size={14} />
+                    Hledat
+                  </button>
+                </div>
+              )}
+
+              {/* Current question (large) — single-answer categories */}
+              {(phase === 'questioning' && currentQuestion && !paramForm) && (
                 <div className="space-y-3">
                   <div className="flex items-start gap-2">
                     <div className="text-xs text-overlay0 w-4 mt-0.5 shrink-0 font-mono">
@@ -798,7 +905,7 @@ export function GuidedSearch() {
         {/* ---------------------------------------------------------------- */}
         {/* Input bar — shown during questioning phase and idle               */}
         {/* ---------------------------------------------------------------- */}
-        {(phase === 'idle' || phase === 'questioning') && (
+        {(phase === 'idle' || (phase === 'questioning' && !paramForm)) && (
           <div className="border-t border-surface1 bg-mantle p-3 shrink-0">
             <div className="flex gap-2 max-w-3xl mx-auto">
               <input
