@@ -503,6 +503,101 @@ stykač [proud]A [napětí_cívky], kontaktor [proud]A, Schütz [proud]A [napět
   },
 
   // -------------------------------------------------------------------------
+  // 2b. Nadproudová spouště (tepelná / elektronická ochrana motoru)
+  // -------------------------------------------------------------------------
+  {
+    key: 'nadproudova_spoust',
+    label: 'Nadproudová spouště',
+    aliases: [
+      'nadproudová spouště', 'nadproudova spoust', 'tepelná spouště', 'tepelna spoust',
+      'nadproudové relé', 'nadproudove rele', 'motorová tepelná ochrana',
+      'thermal overload', 'overload relay', 'überlastrelais', 'thermisches überlastrelais',
+      '3RU2', 'TA25DU', 'TA42DU', 'TA75DU', 'LRD12', 'LRD16', 'LRD22', 'ZB12', 'ZB32',
+    ],
+    questions: [
+      { key: 'mfr',   text: 'Výrobce?',                                                   options: ['Siemens (3RU2)', 'ABB (TA-DU)', 'Schneider Electric (LRD)', 'Eaton (ZB)', 'Bez preference'] },
+      { key: 'proud', text: 'Jmenovitý proud motoru nebo nastavovací rozsah? (napiš číslo, např. 7.5 nebo 11)' },
+      { key: 'frame', text: 'Velikost stykače (frame), pokud znáš?',                      options: ['S00  — do 16A  (3RT2015–18, A9–A16, LC1D09–D18, DILM7–17)', 'S0   — 17–40A (3RT2025–38, A26–A38, LC1D25–38, DILM25–38)', 'Větší (S2 a výše, nad 40A)', 'Nevím'] },
+    ],
+    mfrKeys: ['siemens', 'abb', 'schneider', 'eaton'],
+    knowledge: `## Nadproudová spouště — tepelná/elektronická ochrana motoru
+
+Nadproudová spouště se montuje na kontaktor nebo vedle něj. Klíčový parametr: rozsah nastavení proudu musí obsahovat jmenovitý proud motoru (In). Frame (S00/S0/S2) musí odpovídat kontaktoru.
+
+---
+### Siemens 3RU2 — tepelné spouště:
+**3RU2116 — pro S00 (k 3RT2016–3RT2018, In do 16 A):**
+  3RU2116-1AB0  = 1.1–1.6 A
+  3RU2116-1BB0  = 1.4–2.0 A
+  3RU2116-1CB0  = 1.8–2.5 A
+  3RU2116-1DB0  = 2.2–3.2 A
+  3RU2116-1EB0  = 2.8–4.0 A
+  3RU2116-1GB0  = 4.5–6.3 A
+  3RU2116-1HB0  = 5.5–8.0 A
+  3RU2116-1JB0  = 7.0–10 A
+  3RU2116-1KB0  = 9.0–12.5 A
+  3RU2116-4AB0  = 11–16 A
+**3RU2126 — pro S0 (k 3RT2025–3RT2038, In 17–40 A):**
+  3RU2126-4CB0  = 17–22 A
+  3RU2126-4DB0  = 22–32 A
+  3RU2126-4EB0  = 28–40 A
+**3RU2136 — pro S2 (k 3RT2045+, In 40–100 A):**
+  3RU2136-4FB0  = 36–45 A
+  3RU2136-4GB0  = 45–63 A
+  3RU2136-4HB0  = 55–80 A
+
+---
+### ABB — TA-DU tepelné spouště:
+**TA25DU — pro A9–A16 (S00), In do 19 A:**
+  TA25DU-1.4  = 1.0–1.4 A
+  TA25DU-2.4  = 1.7–2.4 A
+  TA25DU-4.0  = 2.8–4.0 A
+  TA25DU-6.5  = 4.5–6.5 A
+  TA25DU-8.5  = 6.0–8.5 A
+  TA25DU-11   = 7.5–11 A
+  TA25DU-14   = 10–14 A
+  TA25DU-19   = 13–19 A
+**TA42DU — pro A26–A38 (S0), In do 28 A:**
+  TA42DU-25   = 18–25 A
+  TA42DU-28   = 20–28 A
+**TA75DU — pro A40–A75, In do 80 A:**
+  TA75DU-32   = 22–32 A
+  TA75DU-52   = 36–52 A
+  TA75DU-63   = 45–63 A
+  TA75DU-80   = 55–80 A
+
+---
+### Schneider LRD — pro LC1D:
+**Pro LC1D09–LC1D18 (S00, do 18 A):**
+  LRD06  = 1.0–1.6 A
+  LRD08  = 2.5–4.0 A
+  LRD10  = 4.0–6.0 A
+  LRD12  = 5.5–8.0 A
+  LRD14  = 7.0–10 A
+  LRD16  = 9.0–13 A
+  LRD21  = 12–18 A
+**Pro LC1D25–LC1D38 (S0, do 40 A):**
+  LRD22  = 16–24 A
+  LRD32  = 23–32 A
+  LRD35  = 30–40 A
+
+---
+### Eaton ZB — pro DILM série:
+**ZB12 — pro DILM7–DILM15 (S00, do 12 A):**
+  ZB12-1.6  = 1.0–1.6 A
+  ZB12-2.5  = 1.6–2.5 A
+  ZB12-4    = 2.5–4.0 A
+  ZB12-6    = 4.0–6.0 A
+  ZB12-10   = 6.0–10 A
+  ZB12-12   = 8.0–12 A
+**ZB32 — pro DILM17–DILM32 (S0, do 40 A):**
+  ZB32-20   = 14–20 A
+  ZB32-25   = 18–25 A
+  ZB32-40   = 25–40 A
+`,
+  },
+
+  // -------------------------------------------------------------------------
   // 3a. Pojistkové spodky, základny a odpínače
   // -------------------------------------------------------------------------
   {
@@ -1303,6 +1398,131 @@ transformátor [výkon]VA [primár]/[sekundár]V`,
   },
 
   // -------------------------------------------------------------------------
+  // 8a. Časové relé (time delay / timer relays)
+  // -------------------------------------------------------------------------
+  {
+    key: 'casove_rele',
+    label: 'Časové relé',
+    aliases: [
+      'časové relé', 'casove rele', 'časovač', 'casovac', 'timer relé', 'timer relay',
+      'zpožďovací relé', 'zpozd relé', 'zpoždění zapnutí', 'zpozdeni zapnuti',
+      'on-delay', 'off-delay', 'přepínač hvězda trojúhelník časový', 'hvězda trojúhelník timer',
+      'zeitrelais', 'zeitschalter', 'zpoždění vypnutí', 'zpozdeni vypnuti',
+      '8.01', '8.04', '8.30', '88.02', '3RP2', 'CT-AHS', 'CT-ERS', 'CT-MVS',
+    ],
+    questions: [
+      { key: 'mfr',      text: 'Výrobce?',                         options: ['Finder (8.xx / 88.xx)', 'Siemens (3RP2)', 'ABB (CT série)', 'Schneider Electric', 'Bez preference'] },
+      { key: 'func',     text: 'Funkce časování?',                  options: ['Zpoždění zapnutí (on-delay)', 'Zpoždění vypnutí (off-delay)', 'Multifunkční (on + off + blikání…)', 'Hvězda-trojúhelník (star-delta)', 'Zapínací / blikací impulz'] },
+      { key: 'voltage',  text: 'Napájecí napětí cívky / řídící?',  options: ['24 V DC', '24 V AC', '230 V AC', '24–240 V AC/DC  (univerzální)', 'Jiné'] },
+    ],
+    mfrKeys: [],
+    knowledge: `## Časové relé — přehled
+
+Časová relé (timer relays) zajišťují zpoždění zapnutí/vypnutí nebo multifunkční časování. Montáž na DIN lištu nebo do patice. Klíčové parametry: funkce, rozsah časování, napájení.
+
+---
+### Finder — řady 8.xx a 88.xx:
+**8.01 — zpoždění zapnutí (on-delay), 1× přepínací kontakt:**
+  8.01.8.024.0000 = 24 V AC/DC, 0.1 s–10 h
+  8.01.8.230.0000 = 230 V AC, 0.1 s–10 h
+**8.04 — zpoždění zapnutí (on-delay), 1× přepínací:**
+  8.04.8.024.0000 = 24 V AC/DC, rozsah 0.1 s–10 h (DIN lišta)
+  8.04.8.230.0000 = 230 V AC, 0.1 s–10 h
+**8.30 — zpoždění vypnutí (off-delay), 1× přepínací:**
+  8.30.8.024.0000 = 24 V AC/DC
+  8.30.8.230.0000 = 230 V AC
+**88.02 — multifunkční (8 funkcí), 2× přepínací:**
+  88.02.0.240.0000 = 24–240 V AC/DC (nejpoužívanější, univerzální napájení)
+  88.02.0.240.0060 = 24–240 V + potenciometr + displej
+
+---
+### Siemens — 3RP2:
+**3RP2025 — multifunkční (on-delay + off-delay + impulz):**
+  3RP2025-1AP30 = 24–240 V AC/DC, 0.05 s–100 h, 1× přepínací
+  3RP2025-1BB30 = 24 V DC, 0.05 s–100 h
+**3RP2005 — zpoždění zapnutí:**
+  3RP2005-1AW30 = 24–240 V AC/DC, 0.5 s–10 h
+**3RP2574 — hvězda-trojúhelník timer:**
+  3RP2574-1NP30 = 24–240 V AC/DC, nastavitelné zpoždění přepnutí Y→Δ
+
+---
+### ABB — CT série:
+**CT-AHS — on-delay, 1 C/O:**
+  CT-AHS-24DC    = 24 V DC, 0.1 s–10 h
+  CT-AHS-24AC    = 24 V AC
+  CT-AHS-110AC   = 110 V AC
+  CT-AHS-230AC   = 230 V AC
+**CT-ERS — off-delay:**
+  CT-ERS-24DC    = 24 V DC
+  CT-ERS-230AC   = 230 V AC
+**CT-MVS — hvězda-trojúhelník:**
+  CT-MVS-24DC    = 24 V DC
+  CT-MVS-230AC   = 230 V AC
+`,
+  },
+
+  // -------------------------------------------------------------------------
+  // 8b. Monitorovací relé (napěťová a fázová ochrana)
+  // -------------------------------------------------------------------------
+  {
+    key: 'monitorovaci_rele',
+    label: 'Monitorovací relé',
+    aliases: [
+      'monitorovací relé', 'monitorovaci rele', 'fázové relé', 'fazove rele',
+      'sledování fází', 'sledovani fazi', 'fázová ochrana', 'fazova ochrana',
+      'sled fází', 'výpadek fáze', 'vypadek faze', 'nesymetrie fází', 'nesymetrie fazi',
+      'napěťové relé', 'napetove rele', 'podpěťové relé', 'prepetove rele',
+      'phase monitoring', 'phase failure relay', 'phase sequence relay', 'voltage monitoring',
+      'phasenwächter', 'phasenueberwachung', 'spannungsüberwachung',
+      '3UG46', '3UG4615', '3UG4616', 'CM-PFE', 'CM-UFK', 'EMD-FL',
+    ],
+    questions: [
+      { key: 'mfr',     text: 'Výrobce?',                    options: ['Siemens (3UG46)', 'ABB (CM série)', 'Phoenix Contact (EMD-FL)', 'Carlo Gavazzi', 'Bez preference'] },
+      { key: 'func',    text: 'Co má relé hlídat?',          options: ['Výpadek fáze + sled fází (3-fáze)', 'Nesymetrie fází (asymetrie)', 'Podpětí / přepětí (1 nebo 3 fáze)', 'Vše výše (kombinované)'] },
+      { key: 'voltage', text: 'Napájecí (síťové) napětí?',   options: ['3×400 V AC (standard EU)', '3×230 V AC', '3×200–500 V AC (univerzální)', 'Jiné'] },
+    ],
+    mfrKeys: ['siemens', 'abb', 'phoenix'],
+    knowledge: `## Monitorovací relé — fázová a napěťová ochrana
+
+Hlídají 3-fázové napájení: výpadek fáze, špatný sled fází, nesymetrie, podpětí/přepětí. Po detekci chyby rozepnou výstupní kontakt → odstaví zátěž nebo signalizují poruchu.
+
+---
+### Siemens — 3UG4615 / 3UG4616:
+**3UG4615 — výpadek fáze + sled fází + nesymetrie:**
+  3UG4615-1CR20 = 3×160–690 V AC, 1 NO + 1 NC, šroubová svorka, DIN
+  3UG4615-1CW30 = 3×160–690 V AC, 1 NO + 1 NC, pružinová svorka
+**3UG4616 — výpadek fáze + sled fází + nesymetrie + podpětí:**
+  3UG4616-1CR20 = 3×160–690 V AC, 1 NO + 1 NC, DIN lišta
+  3UG4616-1CW30 = 3×160–690 V AC, pružinová svorka
+**3UG4622 — podpětí/přepětí 1-fázové:**
+  3UG4622-1AW30 = 1×24–240 V AC/DC, nastavitelné pásmo
+
+---
+### ABB — CM série:
+**CM-PFE — výpadek fáze + sled fází:**
+  CM-PFE.2   = 3×200–500 V AC, 2× přepínací, DIN lišta (nejpoužívanější)
+  CM-PFS.2   = 3×200–500 V AC, 2× přepínací, s nastavitelnou asymetrií
+**CM-UFK — podpětí/přepětí 1-fázové:**
+  CM-UFK.1   = 1×24–240 V AC/DC, 1× přepínací
+**CM-ENN — univerzální napěťový monitor:**
+  CM-ENN.1   = 3×100–500 V AC, výpadek + sled + nesymetrie, 1× C/O
+
+---
+### Phoenix Contact — EMD-FL:
+**EMD-FL-3V-400 — výpadek fáze + sled fází:**
+  2866067 = EMD-FL-3V-400, 3×400 V AC, 1 NO + 1 NC, DIN
+  2866080 = EMD-FL-3V-500, 3×500 V AC
+**EMD-FL-V-1AC-230V — jednofázové podpětí/přepětí:**
+  2902834 = EMD-FL-V-1AC-230V, nastavitelné, 1× C/O
+
+---
+### Carlo Gavazzi:
+  DP3-CB40 = 3-fázový monitor výpadku fáze + sledu fází, 220–480 V
+  DP3-PB40 = rozšířená verze s nastavením
+`,
+  },
+
+  // -------------------------------------------------------------------------
   // 9a. Patice relé (relay sockets / bases)
   // -------------------------------------------------------------------------
   {
@@ -1479,6 +1699,68 @@ relé 24VDC 2CO, relay 24VDC DPDT, Relais 24V DC 2 Wechsler, patice, sokl`,
   },
 
   // -------------------------------------------------------------------------
+  // 9c. DIN lišta — dorazy a příchytky
+  // -------------------------------------------------------------------------
+  {
+    key: 'din_lista_prislusenstvi',
+    label: 'DIN lišta — dorazy a příchytky',
+    aliases: [
+      'doraz lišty', 'doraz listy', 'doraz DIN lišty', 'doraz din listy',
+      'end stop DIN', 'end bracket DIN', 'endanschlag', 'abschlusswinkel',
+      'příchytka DIN', 'prychytka DIN', 'prychytka lišty', 'klín lišty', 'klin listy',
+      'upevnění lišty', 'fixátor lišty', 'fixator listy', 'zajištění svorek DIN',
+      'dorazy svorek', 'dorazy na listu', 'zarážka lišty',
+      'E/NS 35', 'D-UK', 'AB35', 'NSYBCH35',
+    ],
+    questions: [
+      { key: 'mfr',   text: 'Výrobce?',                      options: ['Phoenix Contact', 'Weidmüller', 'ABB', 'Schneider Electric', 'Bez preference'] },
+      { key: 'type',  text: 'Typ příslušenství?',            options: ['Doraz / krajní záraz (end stop, zabrání posunutí svorek)', 'Příchytka / klín (fixace lišty nebo svorek)', 'Svorka pro uzemnění lišty (PE klip)'] },
+      { key: 'width', text: 'Šířka DIN lišty?',              options: ['35 mm  (NS35/TS35 — standard)', '15 mm  (NS15)', '75 mm  (NS75)', 'Nevím'] },
+    ],
+    mfrKeys: [],
+    knowledge: `## DIN lišta — dorazy a příchytky
+
+Dorazy (end stops) zabraňují svorkovnicím ve sklouznutí z DIN lišty. Příchytky/klíny fixují svorky nebo DIN lištu v rozváděči.
+
+---
+### Phoenix Contact — dorazy a příchytky NS35:
+**Dorazy pro NS 35:**
+  3030169  = E/NS 35×15 — doraz pro TS35 / NS35 lištu, pás (nejpoužívanější)
+  3030008  = E/NS 35N — doraz s nosem, DIN 35
+  0201528  = D-UK — příchytka/klín pro svorkovnici na NS35
+**Příchytky:**
+  0201535  = D-UK/5 — rozšířená příchytka
+
+---
+### Weidmüller — dorazy NS35:
+  1064400000 = AEK 35 — doraz pro NS35, ocelový (sada)
+  1063200000 = KSW 35 — klín/příchytka pro NS35
+  0517500000 = EW NS35 — doraz s výklopem
+
+---
+### Schneider Electric:
+  NSYBCH35M  = doraz DIN 35 mm (kovový, montáž šroubem)
+  NSYBCH35   = doraz DIN 35 mm (plastový)
+
+---
+### ABB:
+  1SNA011200R0100 = doraz G-profil / TS35, ocelový
+  1SNA011204R0200 = příchytka NS35
+
+---
+### Siemens:
+  8WH9040-1AA00  = doraz / end clamp pro DIN 35 mm lištu
+  8WH9040-6AA00  = příchytka svorek na DIN lištu
+
+---
+### Obecně:
+- Dorazy se objednávají vždy po párech (levý + pravý konec svorkovnice)
+- Pro NS35 hledej: "doraz NS35", "end stop TS35", "E/NS 35", "AEK 35"
+- Příchytky/klíny: "D-UK", "KSW 35", "klín DIN", "fixace svorky"
+`,
+  },
+
+  // -------------------------------------------------------------------------
   // 10. DIN lišta
   // -------------------------------------------------------------------------
   {
@@ -1528,6 +1810,84 @@ NS 35/7,5, Hutschiene NS35 1000, TS35 1m, 210-112, DIN lišta 35 1m
 
 **SEKUNDÁRNÍ:**
 DIN rail 35mm, Tragschiene NS35, omega lišta, montážní lišta 35mm`,
+  },
+
+  // -------------------------------------------------------------------------
+  // 10a. Příslušenství Rittal (zámky, závěsy, ventilátory, topení, desky)
+  // -------------------------------------------------------------------------
+  {
+    key: 'prislusenstvi_rittal',
+    label: 'Příslušenství Rittal',
+    aliases: [
+      'zámek skříně', 'zamek skrine', 'zámek rozváděče', 'zamek rozvadece',
+      'závěs skříně', 'zaves skrine', 'závěs rozváděče', 'pantová pánev',
+      'ventilátor skříně', 'ventilator skrine', 'ventilátor rozváděč', 'ventilator rozvadec',
+      'filtr ventilátoru', 'filtr skříně', 'filtrační rohož', 'filtrmatta', 'filtermatte',
+      'montážní deska rittal', 'montazni deska rittal', 'montážní deska skříně', 'montazni deska skrine',
+      'topení skříně', 'topeni skrine', 'ohřívač skříně', 'ohrivac skrine', 'anti-condensation', 'condensation heater',
+      'kabelová průchodka rittal', 'kabelova pruchovka rittal', 'vývodová deska rittal',
+      'příslušenství Rittal', 'prislusenstvi rittal', 'Rittal SK', 'Rittal SZ', 'Rittal SV',
+      'SK 3213', 'SK 3240', 'SK 3241', 'SK 3105', 'SZ 2455', 'SZ 2586',
+    ],
+    questions: [
+      { key: 'acc_type', text: 'Jaký typ příslušenství Rittal?',    options: ['Ventilátor / chladicí jednotka', 'Filtrační rohož / Filtrační jednotka', 'Topení / ohřívač (kondenzace)', 'Zámek / cylindrická vložka', 'Závěs / pant', 'Montážní deska', 'Vývodová deska / kabelová průchodka'] },
+      { key: 'enclosure',text: 'Série rozváděče?',                  options: ['AX (nástěnný, malý)', 'KX (nástěnný, větší)', 'TS 8 (stojatý)', 'VX 25 (stojatý, velký)', 'Nevím / univerzální'] },
+      { key: 'size',     text: 'Rozměr nebo výkon (pokud víš)? (napiš, např. 60W, 200×200mm, 250m³/h)' },
+    ],
+    mfrKeys: [],
+    knowledge: `## Příslušenství Rittal — ventilátory, filtry, topení, zámky, závěsy
+
+---
+### Ventilátory a filtrační jednotky (SK série):
+**Malé ventilátory s filtrem (pro AX/KX skříně):**
+  SK 3213.100 = ventilátor 20 W, 60 m³/h, 230 V AC, 150×150 mm
+  SK 3213.200 = ventilátor 20 W, 60 m³/h, 115 V AC
+  SK 3240.100 = ventilátor 30 W, 105 m³/h, 230 V AC, 150×150 mm
+  SK 3240.200 = ventilátor 30 W, 105 m³/h, 115 V AC
+  SK 3241.100 = ventilátor 35 W, 130 m³/h, 230 V AC, 150×150 mm
+**Větší ventilátory (pro TS8/VX25):**
+  SK 3244.100 = ventilátor 50 W, 230 m³/h, 230 V, 254×254 mm
+  SK 3245.100 = ventilátor 65 W, 300 m³/h, 230 V
+**Výstupní mřížky (pro odtah vzduchu):**
+  SK 3323.100 = výstupní mřížka, 150×150 mm
+  SK 3324.100 = výstupní mřížka, 254×254 mm
+
+---
+### Filtrační rohože (náhradní, SK série):
+  SK 3286.000 = filtrační rohož pro SK 3213/3240/3241, 122×122 mm (balení 10 ks)
+  SK 3287.000 = filtrační rohož pro SK 3244/3245, 220×220 mm (balení 10 ks)
+
+---
+### Topení / ohřívač (kondenzace, SK série):
+  SK 3105.100 = PTC ohřívač 10 W, 130–250 V AC/DC (nástěnná montáž, univerzální)
+  SK 3105.200 = PTC ohřívač 20 W, 130–250 V AC/DC
+  SK 3109.100 = vyhřívací tyč 15 W, 230 V AC (pro TS8/VX25)
+  SK 3109.200 = vyhřívací tyč 30 W, 230 V AC
+
+---
+### Zámky a cylindrické vložky (SZ série):
+  SZ 2586.000 = zámek (vačkový), trojhranný klíč 3 mm, standard Rittal
+  SZ 2587.000 = zámek s cylindrickou vložkou (klíčový)
+  SZ 4315.000 = záchytná vložka pro TS8/VX25
+  SZ 4315.100 = zámek pro TS8 dveře
+
+---
+### Závěsy a panty (SZ série):
+  SZ 2455.000 = závěs (pant) pro AX / KX nástěnné skříně — levý
+  SZ 2455.200 = závěs pravý pro AX / KX
+  SZ 2459.000 = těžký závěs pro TS8 / VX25 dveře
+
+---
+### Montážní desky:
+  AX 2600.000 = montážní deska pro AX skříně (ocel, černá)
+  TS 8600.500 = montážní deska TS8 600×500 mm
+  VX 8617.035 = montážní deska VX25 600×600 mm
+
+---
+### Vývodové desky / kabelové průchodky:
+  SZ 2362.000 = vývodová deska (kabelová), dělená, pro AX/KX
+  SZ 2362.120 = vývodová deska pro TS8 dno
+`,
   },
 
   // -------------------------------------------------------------------------
