@@ -1,6 +1,7 @@
 import { Mistral } from '@mistralai/mistralai';
 import { searchTerm } from './search.js';
-import { searchWires } from './wireSearch.js';
+import { searchWires, filterWires } from './wireSearch.js';
+import { filterCables } from './cableSearch.js';
 import { MANUFACTURER_DOCS } from './manufacturers.js';
 import { COMPONENT_CATEGORIES, detectCategory, getCategoryByKey, listCategoryLabels } from './componentGuide.js';
 
@@ -176,6 +177,56 @@ KRITICKÉ: nikdy nepiš typová označení ani artikl čísla která nejsou v ka
 }
 
 // ---------------------------------------------------------------------------
+// Conditional question helpers
+// ---------------------------------------------------------------------------
+
+function questionApplies(q, answers) {
+  if (!q.onlyIf) return true;
+  const prev = answers.find(a => a.key === q.onlyIf.key);
+  if (!prev) return true; // condition not yet established — include
+  const condVal = q.onlyIf.value;
+  return Array.isArray(condVal)
+    ? condVal.some(v => prev.answer.includes(v))
+    : prev.answer.includes(condVal);
+}
+
+function getNextApplicableIdx(questions, fromIdx, answers) {
+  let i = fromIdx;
+  while (i < questions.length && !questionApplies(questions[i], answers)) i++;
+  return i;
+}
+
+function countApplicableQuestions(questions, answers) {
+  return questions.filter(q => questionApplies(q, answers)).length;
+}
+
+function virtualQuestionIdx(questions, arrayIdx, answers) {
+  let virtual = 0;
+  for (let i = 0; i <= arrayIdx; i++) {
+    if (questionApplies(questions[i], answers)) virtual++;
+  }
+  return virtual - 1; // 0-based
+}
+
+// ---------------------------------------------------------------------------
+// Filter-based wire/cable search (no AI cost, deterministic)
+// ---------------------------------------------------------------------------
+
+function buildFilterAnswer(allAnswers, count, type) {
+  const params = allAnswers
+    .filter(a => a.answer && !a.answer.startsWith('Bez ') && a.key !== 'subtype')
+    .map(a => `**${a.answer}**`)
+    .join(', ');
+  if (count === 0) {
+    return `Žádný ${type} v databázi neodpovídá zadaným parametrům.\n\n`
+      + `Zkus méně přísné filtrování — vynech některý z parametrů nebo zvol "Bez omezení".`;
+  }
+  const noun = type === 'vodič' ? (count === 1 ? 'vodič' : count < 5 ? 'vodiče' : 'vodičů') : (count === 1 ? 'kabel' : count < 5 ? 'kabely' : 'kabelů');
+  return `Nalezeno **${count} ${noun}**${params ? ' pro ' + params : ''}. `
+    + `Zobrazuji prvních ${Math.min(10, count)} — klikni "Zobrazit všechny" pro celý seznam.`;
+}
+
+// ---------------------------------------------------------------------------
 // Main handler
 // ---------------------------------------------------------------------------
 export async function handleGuidedChat(message, phase, categoryKey, answers, sendEvent) {
@@ -189,6 +240,11 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
       const directCat = getCategoryByKey(categoryKey);
       if (directCat) {
         const questions = directCat.questions;
+        // For categories with conditional branches, use unconditional count as initial total
+        // (will update dynamically after first answer selects a branch)
+        const initTotal = questions.some(q => q.onlyIf)
+          ? questions.filter(q => !q.onlyIf).length
+          : questions.length;
         sendEvent('category', {
           category: directCat.key,
           categoryLabel: directCat.label,
@@ -196,7 +252,7 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
           options: questions[0].options ?? null,
           hint: questions[0].hint ?? null,
           questionIndex: 0,
-          questionTotal: questions.length,
+          questionTotal: initTotal,
         });
         return;
       }
@@ -224,6 +280,9 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
     }
 
     const questions = category.questions;
+    const initTotal2 = questions.some(q => q.onlyIf)
+      ? questions.filter(q => !q.onlyIf).length
+      : questions.length;
     sendEvent('category', {
       category: category.key,
       categoryLabel: category.label,
@@ -231,7 +290,7 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
       options: questions[0].options ?? null,
       hint: questions[0].hint ?? null,
       questionIndex: 0,
-      questionTotal: questions.length,
+      questionTotal: initTotal2,
     });
     return;
   }
@@ -248,9 +307,8 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
 
     const questions = category.questions;
 
-    // `answers` = previously recorded Q&As (0..N-1)
-    // `message` = answer to questions[answers.length]
-    const currentQIdx = answers.length;
+    // Find the current question (skip non-applicable conditional questions)
+    const currentQIdx = getNextApplicableIdx(questions, answers.length, answers);
     const currentQ = questions[currentQIdx];
     if (!currentQ) {
       sendEvent('error', { error: 'Neočekávaný stav otázek.' });
@@ -262,24 +320,63 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
       { key: currentQ.key, question: currentQ.text, answer: message },
     ];
 
-    const nextQIdx = currentQIdx + 1;
+    // Find next applicable question
+    const nextQIdx = getNextApplicableIdx(questions, currentQIdx + 1, allAnswers);
+    const effectiveTotal = countApplicableQuestions(questions, allAnswers);
 
     if (nextQIdx < questions.length) {
       const nextQ = questions[nextQIdx];
+      const vIdx = virtualQuestionIdx(questions, nextQIdx, allAnswers);
       sendEvent('question', {
         question: nextQ.text,
         options: nextQ.options ?? null,
         hint: nextQ.hint ?? null,
-        questionIndex: nextQIdx,
-        questionTotal: questions.length,
+        questionIndex: vIdx,
+        questionTotal: effectiveTotal,
         answers: allAnswers,
       });
       return;
     }
 
     // --------------------------------------------------------------------------
-    // All questions answered — generate terms, search, synthesize
+    // All questions answered
     // --------------------------------------------------------------------------
+
+    // ── Filter-based path for wires/cables (no AI cost) ────────────────────
+    if (category.key === 'vodic_kabel') {
+      const subtypeAnswer = allAnswers.find(a => a.key === 'subtype')?.answer ?? '';
+      const isWire = subtypeAnswer.includes('Jednožilový');
+      const type = isWire ? 'vodič' : 'kabel';
+
+      sendEvent('status', { label: `Filtruji databázi ${isWire ? 'vodičů' : 'kabelů'}…` });
+
+      const filtered = isWire ? filterWires(allAnswers) : filterCables(allAnswers);
+      const answer = buildFilterAnswer(allAnswers, filtered.length, type);
+
+      if (!isWire && filtered.length === 0) {
+        const noCablesMsg = 'Databáze vícežilových kabelů není ještě načtena. '
+          + 'Zatím jsou dostupné pouze jednožilové vodiče (H07V-K, RADOX, ÖLFLEX HEAT, UL…).';
+        sendEvent('result', {
+          answer: noCablesMsg,
+          articles: [],
+          allCandidates: [],
+          expandedTerms: [],
+          answers: allAnswers,
+        });
+        return;
+      }
+
+      sendEvent('result', {
+        answer,
+        articles: filtered.slice(0, 10),
+        allCandidates: filtered.slice(0, 200),
+        expandedTerms: [],
+        answers: allAnswers,
+      });
+      return;
+    }
+
+    // ── AI-based path for all other categories ──────────────────────────────
     sendEvent('status', { label: 'Generuji vyhledávací termíny…' });
 
     const { terms, manufacturer } = await generateSearchTerms(category, allAnswers);
@@ -291,20 +388,11 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
 
     sendEvent('searching', { terms, total: terms.length });
 
-    const isWireCategory = category.key === 'vodic_kabel';
     const seen = new Set();
     const articles = [];
 
     for (const term of terms) {
-      // For wire category: search wires DB first (primary), then main DB as fallback
-      const wireResults = isWireCategory ? searchWires(term, 12, manufacturer) : [];
-      for (const article of wireResults) {
-        if (!seen.has(article.artikl)) {
-          seen.add(article.artikl);
-          articles.push(article);
-        }
-      }
-      for (const article of searchTerm(term, isWireCategory ? 6 : 12, manufacturer)) {
+      for (const article of searchTerm(term, 12, manufacturer)) {
         if (!seen.has(article.artikl)) {
           seen.add(article.artikl);
           articles.push(article);

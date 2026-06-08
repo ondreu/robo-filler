@@ -2467,11 +2467,91 @@ přepěťová ochrana T2 [kA]kA [póly]P+N, SPD T2 40kA 400V, Überspannungsschu
       'Leitung', 'Kabel', 'Steuerleitung', 'Energiekabel',
     ],
     questions: [
-      { key: 'typ',     text: 'Jaký typ kabelu / vodiče?',                                options: ['Ovládací / řídicí kabel (PVC)', 'Silový kabel (NYY, NHXMH)', 'Datový / stíněný kabel (LiYCY)', 'Gumový kabel (H07RN-F, JZ-600)', 'Vysoce ohebný (řetězový, e-chain)', 'Solární / speciální', 'Nevím'] },
-      { key: 'mfr',     text: 'Preferovaný výrobce?',                                     options: ['LAPP (ÖLFLEX)', 'Helukabel', 'Nexans', 'HUBER+SUHNER', 'Bez preference'] },
-      { key: 'zily',    text: 'Počet žil a průřez? (napiš, např. 5G2.5, 4x1.5, 7G1.5)' },
-      { key: 'stineni', text: 'Stínění?',                                                  options: ['Bez stínění', 'Cu oplet (stíněný)', 'Fóliové stínění', 'Nevím'] },
-      { key: 'plast',   text: 'Typ pláště?',                                              options: ['PVC (standardní)', 'PUR (olejuvzdorný)', 'Bezhalogenový (FRNC/LSZH)', 'Gumový (EPR/EPDM)', 'Nevím'] },
+      {
+        key: 'subtype',
+        text: 'Co hledáš?',
+        options: [
+          'Jednožilový vodič (H07V-K, RADOX, ÖLFLEX HEAT, UL, NSGAFÖU…)',
+          'Vícežilový kabel (ÖLFLEX CLASSIC, TOPFLEX, NYY-J, LiYCY…)',
+        ],
+      },
+      // ── Jednožilový vodič ──────────────────────────────────────────────────
+      {
+        key: 'wire_typ',
+        text: 'Typ / norma vodiče?',
+        options: [
+          'Standardní instalační (H07V-K, PVC 70°C)',
+          'Bezhalogenový (H07Z-K, FRNC)',
+          'Flexibilní (H05V-K)',
+          'RADOX (125°C / solární / 4GKW)',
+          'ÖLFLEX HEAT (125°C / 180°C / 260°C)',
+          'UL / CSA certifikovaný',
+          'Těžký průmysl (NSGAFÖU, NSHXAFÖ)',
+          'Speciální (PTFE, Silikon, ALPHAWIRE)',
+          'Bez omezení',
+        ],
+        onlyIf: { key: 'subtype', value: 'Jednožilový' },
+      },
+      {
+        key: 'prurez',
+        text: 'Průřez vodiče (mm²)?',
+        options: ['0.25', '0.35', '0.5', '0.75', '1.0', '1.5', '2.5', '4.0', '6.0', '10.0', '16.0', '25.0', '35.0', '50.0', '70.0', '95.0', 'Bez omezení'],
+        onlyIf: { key: 'subtype', value: 'Jednožilový' },
+      },
+      {
+        key: 'barva',
+        text: 'Barva vodiče?',
+        options: [
+          'Černá (BK)', 'Červená (RD)', 'Hnědá (BN)', 'Oranžová (OG)', 'Žlutá (YE)',
+          'Zelená (GN)', 'Zeleno-žlutá PE (GNYE)',
+          'Světle modrá (LBU)', 'Tmavě modrá (DBU)', 'Šedá (GY)',
+          'Fialová (VT)', 'Bílá (WH)', 'Růžová (PK)', 'Bez omezení',
+        ],
+        onlyIf: { key: 'subtype', value: 'Jednožilový' },
+      },
+      {
+        key: 'vyrobce',
+        text: 'Výrobce (volitelně)?',
+        options: ['LAPP', 'HELUKABEL', 'HUBER+SUHNER (RADOX)', 'KABLO VRCHLABÍ', 'LEONI', 'ALPHAWIRE', 'DESCA', 'Bez preference'],
+        onlyIf: { key: 'subtype', value: 'Jednožilový' },
+      },
+      // ── Vícežilový kabel ──────────────────────────────────────────────────
+      {
+        key: 'pocetZil',
+        text: 'Počet žil?',
+        options: ['2', '3', '4', '5', '7', '8', '10', '12', '14', '16', '18', '20', '25', '30', 'více než 30', 'Bez omezení'],
+        onlyIf: { key: 'subtype', value: 'Vícežilový' },
+      },
+      {
+        key: 'kabel_prurez',
+        text: 'Průřez žil (mm²)?',
+        options: ['0.14', '0.25', '0.34', '0.5', '0.75', '1.0', '1.5', '2.5', '4.0', '6.0', '10.0', '16.0', '25.0', '35.0', 'Bez omezení'],
+        onlyIf: { key: 'subtype', value: 'Vícežilový' },
+      },
+      {
+        key: 'stineni',
+        text: 'Stínění?',
+        options: ['Bez stínění', 'Stíněný (Cu oplet / fólie)', 'Bez omezení'],
+        onlyIf: { key: 'subtype', value: 'Vícežilový' },
+      },
+      {
+        key: 'materialPlaste',
+        text: 'Materiál pláště?',
+        options: ['PVC (standardní)', 'PUR (olejuvzdorný, ohebný)', 'Bezhalogenový (FRNC/LSZH)', 'Gumový (EPR/EPDM)', 'Bez omezení'],
+        onlyIf: { key: 'subtype', value: 'Vícežilový' },
+      },
+      {
+        key: 'retiez',
+        text: 'Použití v energetickém řetězu (e-chain)?',
+        options: ['Ano — vysoce ohebný pro e-chain', 'Ne — standardní pevné uložení', 'Bez omezení'],
+        onlyIf: { key: 'subtype', value: 'Vícežilový' },
+      },
+      {
+        key: 'kabel_vyrobce',
+        text: 'Výrobce (volitelně)?',
+        options: ['LAPP (ÖLFLEX)', 'Helukabel', 'Nexans', 'HUBER+SUHNER', 'Bez preference'],
+        onlyIf: { key: 'subtype', value: 'Vícežilový' },
+      },
     ],
     mfrKeys: ['lapp', 'helukabel', 'nexans', 'huber_suhner'],
     knowledge: `## Vodiče a kabely — přehled kategorií a typových označení

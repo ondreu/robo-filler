@@ -10,6 +10,18 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V110626',
+    date: '11. 6. 2026',
+    major: true,
+    changes: [
+      'Vyhledávač vodičů — filtrování místo AI hledání: kategorie Vodič / Kabel nyní přímo filtruje databázi',
+      'Jednožilové vodiče: filtry Typ / norma (H07V-K, RADOX, ÖLFLEX HEAT, UL...) + Průřez (mm²) + Barva + Výrobce — vrátí všechny nevyloučené výsledky',
+      'Vícežilové kabely: filtry Počet žil + Průřez + Stínění + Materiál pláště + E-chain + Výrobce (databáze kabelů bude doplněna)',
+      'Větvené otázky: první otázka rozhodne větev (vodič vs. kabel), zobrazí se jen relevantní dotazy bez zbytečných AI volání',
+      'Výsledky: zobrazuje všechny odpovídající vodiče/kabely včetně tlačítka "Zobrazit všechny"',
+    ],
+  },
+  {
     version: 'V100626',
     date: '10. 6. 2026',
     major: true,
