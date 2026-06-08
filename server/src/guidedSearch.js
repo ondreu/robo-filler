@@ -228,7 +228,7 @@ const FILTER_KEY_LABELS = {
 function buildFilterAnswer(allAnswers, count, type, droppedKeys = []) {
   const params = allAnswers
     .filter(a => a.answer && a.answer !== 'Bez omezení' && a.answer !== 'Bez preference' && a.key !== 'subtype' && !droppedKeys.includes(a.key))
-    .map(a => `**${a.answer}**`)
+    .map(a => `**${a.answer.includes('|||') ? a.answer.split('|||').join(' / ') : a.answer}**`)
     .join(', ');
 
   if (count === 0) {
@@ -418,7 +418,8 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
         for (const key of bonusOrder) {
           // Only drop if the user actually set a non-trivial value for this key
           const ans = allAnswers.find(a => a.key === key);
-          const isActive = ans && ans.answer !== 'Bez omezení' && ans.answer !== 'Bez preference';
+          const isActive = ans && ans.answer && ans.answer !== 'Bez omezení' && ans.answer !== 'Bez preference'
+            && !ans.answer.split('|||').every(v => v.trim() === 'Bez omezení' || v.trim() === 'Bez preference');
           if (!isActive) continue;
           droppedKeys.push(key);
           filtered = isWire ? filterWires(allAnswers, droppedKeys) : filterCables(allAnswers, droppedKeys);

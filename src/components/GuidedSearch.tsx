@@ -175,7 +175,7 @@ export function GuidedSearch({ embedded = false, onBack, onResult }: GuidedSearc
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [result, setResult] = useState<GuidedResult | null>(null);
   const [paramForm, setParamForm] = useState<ParamForm | null>(null);
-  const [paramFormValues, setParamFormValues] = useState<Record<string, string>>({});
+  const [paramFormValues, setParamFormValues] = useState<Record<string, string[]>>({});
 
   // UI state
   const [input, setInput] = useState('');
@@ -221,7 +221,7 @@ export function GuidedSearch({ embedded = false, onBack, onResult }: GuidedSearc
     setAnswers([]);
     setResult(null);
     setParamForm(null);
-    setParamFormValues({});
+    setParamFormValues({} as Record<string, string[]>);
     setInput('');
     setStatusLabel('');
     setSearchTerms([]);
@@ -369,9 +369,9 @@ export function GuidedSearch({ embedded = false, onBack, onResult }: GuidedSearc
     if (eventType === 'parameter_form') {
       const questions = Array.isArray(data.formQuestions) ? (data.formQuestions as ParamFormQuestion[]) : [];
       const prevAnswers = Array.isArray(data.answers) ? (data.answers as Answer[]) : [];
-      const defaults: Record<string, string> = {};
+      const defaults: Record<string, string[]> = {};
       for (const q of questions) {
-        if (q.options && q.options.length > 0) defaults[q.key] = q.options[q.options.length - 1];
+        if (q.options && q.options.length > 0) defaults[q.key] = [q.options[q.options.length - 1]];
       }
       setParamForm({ questions, answeredBefore: prevAnswers });
       setParamFormValues(defaults);
@@ -530,11 +530,12 @@ export function GuidedSearch({ embedded = false, onBack, onResult }: GuidedSearc
   const handleParamFormSubmit = useCallback(async () => {
     if (!paramForm || isLoading) return;
 
-    const formAnswers: Answer[] = paramForm.questions.map(q => ({
-      key: q.key,
-      question: q.text,
-      answer: paramFormValues[q.key] ?? (q.options?.[q.options.length - 1] ?? 'Bez omezení'),
-    }));
+    const formAnswers: Answer[] = paramForm.questions.map(q => {
+      const selected = (paramFormValues[q.key] ?? [q.options?.[q.options.length - 1] ?? 'Bez omezení'])
+        .filter(v => v !== 'Bez omezení' && v !== 'Bez preference');
+      const answer = selected.length > 0 ? selected.join('|||') : (q.options?.[q.options.length - 1] ?? 'Bez omezení');
+      return { key: q.key, question: q.text, answer };
+    });
 
     const allDisplayAnswers = [...paramForm.answeredBefore, ...formAnswers];
     setAnswers(allDisplayAnswers);
@@ -723,7 +724,7 @@ export function GuidedSearch({ embedded = false, onBack, onResult }: GuidedSearc
                       <div className="text-xs text-overlay0 w-4 mt-0.5 shrink-0 font-mono">{i + 1}.</div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-overlay0 mb-0.5">{a.question}</p>
-                        <p className="text-sm font-medium text-teal">{a.answer}</p>
+                        <p className="text-sm font-medium text-teal">{a.answer.includes('|||') ? a.answer.split('|||').join(' / ') : a.answer}</p>
                       </div>
                     </div>
                   ))}
@@ -736,7 +737,7 @@ export function GuidedSearch({ embedded = false, onBack, onResult }: GuidedSearc
                   <p className="text-sm font-semibold text-text">Upřesni parametry</p>
                   <div className="space-y-2.5">
                     {paramForm.questions.map(q => {
-                      const selected = paramFormValues[q.key];
+                      const selectedVals = paramFormValues[q.key] ?? [];
                       const shortLabel = q.text
                         .replace('Použití v energetickém řetězu (e-chain)', 'E-chain')
                         .replace('(volitelně)', '')
@@ -749,11 +750,23 @@ export function GuidedSearch({ embedded = false, onBack, onResult }: GuidedSearc
                             <div className="flex flex-wrap gap-1.5">
                               {q.options.map(opt => {
                                 const isNone = opt === 'Bez omezení' || opt === 'Bez preference';
-                                const isSelected = selected === opt;
+                                const isSelected = selectedVals.includes(opt);
                                 return (
                                   <button
                                     key={opt}
-                                    onClick={() => setParamFormValues(prev => ({ ...prev, [q.key]: opt }))}
+                                    onClick={() => setParamFormValues(prev => {
+                                      const cur = prev[q.key] ?? [];
+                                      if (isNone) return { ...prev, [q.key]: [opt] };
+                                      if (cur.includes(opt)) {
+                                        // deselect — fall back to "Bez omezení" if nothing left
+                                        const next = cur.filter(v => v !== opt);
+                                        const noneOpt = q.options?.find(o => o === 'Bez omezení' || o === 'Bez preference') ?? 'Bez omezení';
+                                        return { ...prev, [q.key]: next.length > 0 ? next : [noneOpt] };
+                                      }
+                                      // select — remove any "Bez omezení" first
+                                      const next = cur.filter(v => v !== 'Bez omezení' && v !== 'Bez preference');
+                                      return { ...prev, [q.key]: [...next, opt] };
+                                    })}
                                     className={`px-2.5 py-0.5 text-xs rounded-lg border transition-colors ${
                                       isSelected
                                         ? isNone
