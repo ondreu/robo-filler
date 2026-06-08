@@ -14,8 +14,11 @@ function loadCables() {
 }
 
 const allCables = loadCables();
-console.log(`[cableSearch] DATA_DIR=${DATA_DIR}`);
-console.log(`[cableSearch] Loaded ${allCables.length} cable articles`);
+if (allCables.length === 0) {
+  console.error(`[cableSearch] CHYBA: cables.json nenalezen! Očekávaná cesta: ${join(DATA_DIR, 'cables.json')}`);
+} else {
+  console.log(`[cableSearch] Loaded ${allCables.length} cable articles`);
+}
 
 export const cableArticleCount = allCables.length;
 

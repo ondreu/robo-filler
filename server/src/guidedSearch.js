@@ -1,7 +1,7 @@
 import { Mistral } from '@mistralai/mistralai';
 import { searchTerm } from './search.js';
-import { searchWires, filterWires } from './wireSearch.js';
-import { filterCables } from './cableSearch.js';
+import { searchWires, filterWires, wireArticleCount } from './wireSearch.js';
+import { filterCables, cableArticleCount } from './cableSearch.js';
 import { MANUFACTURER_DOCS } from './manufacturers.js';
 import { COMPONENT_CATEGORIES, detectCategory, getCategoryByKey, listCategoryLabels } from './componentGuide.js';
 
@@ -391,14 +391,26 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
       const isWire = subtypeAnswer.includes('Jednožilový');
       const type = isWire ? 'vodič' : 'kabel';
 
-      console.log('[guided debug] allAnswers:', JSON.stringify(allAnswers));
-      console.log('[guided debug] isWire:', isWire, '| subtypeAnswer:', subtypeAnswer.slice(0, 40));
+      // Check data availability
+      if (isWire && wireArticleCount === 0) {
+        sendEvent('result', {
+          answer: '⚠️ **Databáze vodičů není dostupná na serveru.**\n\nZkontroluj, zda soubor `public/wires.json` existuje v projektu a server byl spuštěn z adresáře projektu.',
+          articles: [], allCandidates: [], expandedTerms: [], answers: allAnswers,
+        });
+        return;
+      }
+      if (!isWire && cableArticleCount === 0) {
+        sendEvent('result', {
+          answer: '⚠️ **Databáze kabelů není dostupná na serveru.**\n\nZkontroluj, zda soubor `public/cables.json` existuje v projektu a server byl spuštěn z adresáře projektu.',
+          articles: [], allCandidates: [], expandedTerms: [], answers: allAnswers,
+        });
+        return;
+      }
 
       sendEvent('status', { label: `Filtruji databázi ${isWire ? 'vodičů' : 'kabelů'}…` });
 
       // Progressive relaxation: if 0 results, drop bonus filters one by one
       let filtered = isWire ? filterWires(allAnswers) : filterCables(allAnswers);
-      console.log('[guided debug] filtered.length after initial filter:', filtered.length);
       const droppedKeys = [];
 
       if (filtered.length === 0) {
