@@ -38,6 +38,7 @@ function loadWires() {
 }
 
 const allWires = loadWires();
+console.log(`[wireSearch] DATA_DIR=${DATA_DIR}`);
 console.log(`[wireSearch] Loaded ${allWires.length} wire articles`);
 
 export const wireArticleCount = allWires.length;
@@ -235,12 +236,14 @@ const SKUPINA_MAP = [
  */
 export function filterWires(answers, dropKeys = []) {
   let result = [...allWires];
+  console.log('[filterWires] start, allWires.length:', allWires.length, '| answers keys:', answers.map(a => `${a.key}=${JSON.stringify(a.answer)}`).join(', '));
 
   for (const ans of answers) {
     if (!ans.answer) continue;
     if (dropKeys.includes(ans.key)) continue;
     const val = ans.answer.trim();
     if (val === 'Bez omezení' || val === 'Bez preference') continue;
+    console.log('[filterWires] applying filter:', ans.key, '=', val, '| before:', result.length);
 
     if (ans.key === 'wire_typ') {
       for (const [label, pred] of SKUPINA_MAP) {
@@ -275,6 +278,7 @@ export function filterWires(answers, dropKeys = []) {
     }
   }
 
+  console.log('[filterWires] final result.length:', result.length);
   return result.map(w => ({ ...w, _matchType: 'filter', _db: 'wires' }));
 }
 
