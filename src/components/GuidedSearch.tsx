@@ -151,12 +151,22 @@ const MD_COMPONENTS: Components = {
 // Main component
 // ---------------------------------------------------------------------------
 
+export interface GuidedResultSnapshot {
+  categoryLabel: string;
+  answers: { question: string; answer: string }[];
+  articles: Article[];
+  allCandidates: Article[];
+  answer: string;
+  expandedTerms: string[];
+}
+
 interface GuidedSearchProps {
   embedded?: boolean;
   onBack?: () => void;
+  onResult?: (result: GuidedResultSnapshot) => void;
 }
 
-export function GuidedSearch({ embedded = false, onBack }: GuidedSearchProps = {}) {
+export function GuidedSearch({ embedded = false, onBack, onResult }: GuidedSearchProps = {}) {
   // Core state
   const [phase, setPhase] = useState<Phase>('idle');
   const [category, setCategory] = useState<string | null>(null);
@@ -426,6 +436,18 @@ export function GuidedSearch({ embedded = false, onBack }: GuidedSearchProps = {
         const sid = saveSession(category, categoryLabel, finalAnswers, res, currentSessionId);
         setCurrentSessionId(sid);
       }
+
+      // Notify parent about the result (e.g. for chat context bubble)
+      if (onResult) {
+        onResult({
+          categoryLabel: categoryLabel ?? '',
+          answers: finalAnswers.map(a => ({ question: a.question, answer: a.answer })),
+          articles: res.articles,
+          allCandidates: res.allCandidates,
+          answer: res.answer,
+          expandedTerms: res.expandedTerms,
+        });
+      }
       return;
     }
 
@@ -434,7 +456,7 @@ export function GuidedSearch({ embedded = false, onBack }: GuidedSearchProps = {
       setPhase(phase === 'searching' ? 'results' : phase);
       return;
     }
-  }, [answers, category, categoryLabel, currentSessionId, phase, saveSession]);
+  }, [answers, category, categoryLabel, currentSessionId, onResult, phase, saveSession]);
   // Keep ref in sync so sendRequest always calls the latest version
   handleEventRef.current = handleEvent;
 

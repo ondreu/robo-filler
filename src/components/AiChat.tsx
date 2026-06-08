@@ -4,7 +4,7 @@ import {
   PenLine, Download, ChevronDown, ChevronUp, MessageCircle, Globe,
   Search, Sparkles, BookOpen, X,
 } from 'lucide-react';
-import { GuidedSearch } from './GuidedSearch';
+import { GuidedSearch, type GuidedResultSnapshot } from './GuidedSearch';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -74,11 +74,27 @@ interface Status {
 interface AiMessage {
   role: 'user' | 'assistant';
   content: string;
-  type?: 'guided_offer';
+  type?: 'guided_offer' | 'guided_result_ref';
+  guidedResult?: GuidedResultSnapshot;
   articles?: Article[];
   allCandidates?: Article[];
   expandedTerms?: string[];
   statusLog?: Status[];
+}
+
+function buildGuidedContext(r: GuidedResultSnapshot): string {
+  const lines = ['[Výsledky řízeného vyhledávání]', `Kategorie: ${r.categoryLabel}`];
+  if (r.answers.length > 0) {
+    lines.push('Parametry: ' + r.answers.map(a => `${a.question}: ${a.answer}`).join(', '));
+  }
+  if (r.articles.length > 0) {
+    lines.push('Nalezené artikly:');
+    r.articles.forEach(a => {
+      lines.push(`- ${a.artikl} | ${a.nazev} | ${a.vyrobce}${a.typoveOznaceni ? ` | ${a.typoveOznaceni}` : ''}`);
+    });
+  }
+  if (r.answer) lines.push(`Shrnutí: ${r.answer}`);
+  return lines.join('\n');
 }
 
 const GREETINGS = [
@@ -298,6 +314,7 @@ export function AiChat() {
   const [showUsageWarning, setShowUsageWarning] = useState(false);
   const [pendingQuery, setPendingQuery] = useState<string | null>(null);
   const [guidedSearchActive, setGuidedSearchActive] = useState(false);
+  const [activeGuidedResult, setActiveGuidedResult] = useState<GuidedResultSnapshot | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>(() => loadSessions());
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(() => {
     try { return sessionStorage.getItem(SESSION_ID_KEY); } catch { return null; }
@@ -453,7 +470,7 @@ export function AiChat() {
   const executeChatRequest = useCallback(async (
     text: string,
     historyMsgs: AiMessage[],
-    opts: { skipGuidedSuggestion?: boolean } = {},
+    opts: { skipGuidedSuggestion?: boolean; guidedContext?: GuidedResultSnapshot | null } = {},
   ) => {
     const myCount = ++requestCounterRef.current;
     const isCurrentRequest = () => requestCounterRef.current === myCount;
@@ -462,9 +479,23 @@ export function AiChat() {
     setCurrentStatusLog([]);
     statusLogRef.current = [];
 
-    const history = historyMsgs
+    // Exclude special UI-only message types from history sent to backend
+    const baseHistory = historyMsgs
+      .filter(m => !m.type)
       .slice(-8)
       .map(m => ({ role: m.role, content: m.content }));
+
+    // Inject guided search context as a fake assistant turn before the last user message
+    let history = baseHistory;
+    if (opts.guidedContext) {
+      const ctxMsg = { role: 'assistant' as const, content: buildGuidedContext(opts.guidedContext) };
+      const last = baseHistory.length > 0 ? baseHistory[baseHistory.length - 1] : null;
+      if (last?.role === 'user') {
+        history = [...baseHistory.slice(0, -1), ctxMsg, last];
+      } else {
+        history = [...baseHistory, ctxMsg];
+      }
+    }
 
     try {
       const response = await fetch(`${BACKEND_URL}/api/chat`, {
@@ -572,7 +603,7 @@ export function AiChat() {
     const nextMessages = [...messages, userMsg];
     setMessages(nextMessages);
 
-    await executeChatRequest(text, nextMessages);
+    await executeChatRequest(text, nextMessages, { guidedContext: activeGuidedResult });
   }
 
   const acceptGuidedSearch = useCallback(() => {
@@ -589,8 +620,17 @@ export function AiChat() {
     const msgsForHistory = messages.filter(m => m.type !== 'guided_offer');
     setMessages(msgsForHistory);
 
-    await executeChatRequest(query, msgsForHistory, { skipGuidedSuggestion: true });
-  }, [pendingQuery, messages, executeChatRequest]);
+    await executeChatRequest(query, msgsForHistory, { skipGuidedSuggestion: true, guidedContext: activeGuidedResult });
+  }, [pendingQuery, messages, activeGuidedResult, executeChatRequest]);
+
+  const handleGuidedResult = useCallback((result: GuidedResultSnapshot) => {
+    setActiveGuidedResult(result);
+    // Replace any existing guided_result_ref bubble with the fresh result
+    setMessages(prev => {
+      const without = prev.filter(m => m.type !== 'guided_result_ref');
+      return [...without, { role: 'assistant', content: '', type: 'guided_result_ref', guidedResult: result }];
+    });
+  }, []);
 
   return (
     <div
@@ -601,6 +641,7 @@ export function AiChat() {
         <GuidedSearch
           embedded={true}
           onBack={() => setGuidedSearchActive(false)}
+          onResult={handleGuidedResult}
         />
       ) : (
       <>
@@ -745,6 +786,43 @@ export function AiChat() {
                       </button>
                     </div>
                   </div>
+                </div>
+              ) : msg.type === 'guided_result_ref' && msg.guidedResult ? (
+                <div className="max-w-[82%]">
+                  <button
+                    onClick={() => setGuidedSearchActive(true)}
+                    className="w-full text-left bg-surface0 border border-teal/20 hover:border-teal/50 rounded-2xl rounded-bl-sm overflow-hidden transition-colors group"
+                  >
+                    <div className="px-4 py-2.5 flex items-center gap-2 border-b border-surface1/60">
+                      <Sparkles size={13} className="text-teal shrink-0" />
+                      <span className="text-sm font-medium text-teal">Řízené vyhledávání</span>
+                      {msg.guidedResult.categoryLabel && (
+                        <span className="text-overlay0 text-sm">— {msg.guidedResult.categoryLabel}</span>
+                      )}
+                      <span className="ml-auto text-xs text-overlay0 group-hover:text-subtext0 transition-colors">Otevřít →</span>
+                    </div>
+                    {msg.guidedResult.answers.length > 0 && (
+                      <div className="px-4 pt-2 pb-1 flex flex-wrap gap-1.5">
+                        {msg.guidedResult.answers.slice(0, 4).map((a, idx) => (
+                          <span key={idx} className="text-xs bg-surface1 text-subtext0 rounded-md px-2 py-0.5">
+                            {a.answer}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {msg.guidedResult.articles.length > 0 && (
+                      <div className="px-4 pt-1 pb-2.5 flex flex-wrap gap-1">
+                        {msg.guidedResult.articles.slice(0, 4).map(a => (
+                          <span key={a.artikl} className="text-xs bg-teal/10 text-teal rounded px-2 py-0.5 font-mono">
+                            {a.artikl}
+                          </span>
+                        ))}
+                        {msg.guidedResult.articles.length > 4 && (
+                          <span className="text-xs text-overlay0 py-0.5">+{msg.guidedResult.articles.length - 4}</span>
+                        )}
+                      </div>
+                    )}
+                  </button>
                 </div>
               ) : (
                 <div className="max-w-[82%] space-y-2">
