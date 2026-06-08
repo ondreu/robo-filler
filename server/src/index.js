@@ -3,6 +3,7 @@ import cors from 'cors';
 import { handleChat } from './chat.js';
 import { handleBomBuild, checkClarification, postCheckClarification } from './bomBuilder.js';
 import { handleGuidedChat } from './guidedSearch.js';
+import { COMPONENT_CATEGORIES } from './componentGuide.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -119,8 +120,12 @@ app.post('/api/bom-build', async (req, res) => {
   res.end();
 });
 
+app.get('/api/guided-categories', (_req, res) => {
+  res.json(COMPONENT_CATEGORIES.map(c => ({ key: c.key, label: c.label })));
+});
+
 app.post('/api/guided-chat', async (req, res) => {
-  const { message = '', phase = 'initial', category = null, answers = [] } = req.body ?? {};
+  const { message = '', phase = 'initial', category = null, categoryKey = null, answers = [] } = req.body ?? {};
 
   if (!process.env.MISTRAL_API_KEY) {
     return res.status(500).json({ error: 'MISTRAL_API_KEY není nastaven.' });
@@ -138,7 +143,7 @@ app.post('/api/guided-chat', async (req, res) => {
     await handleGuidedChat(
       typeof message === 'string' ? message.trim() : '',
       phase,
-      category,
+      categoryKey ?? category,
       Array.isArray(answers) ? answers : [],
       send,
     );

@@ -2448,21 +2448,11 @@ přepěťová ochrana T2 [kA]kA [póly]P+N, SPD T2 40kA 400V, Überspannungsschu
 // detectCategory — detects component category from user text
 // ---------------------------------------------------------------------------
 export function detectCategory(text) {
-  const n = normalize(text);
-  let best = null;
-  let bestScore = 0;
-  for (const cat of COMPONENT_CATEGORIES) {
-    for (const alias of cat.aliases) {
-      if (n.includes(normalize(alias))) {
-        const score = alias.length; // prefer longer matches
-        if (score > bestScore) {
-          best = cat;
-          bestScore = score;
-        }
-      }
-    }
-  }
-  return best;
+  const norm = normalize(text).trim();
+  return COMPONENT_CATEGORIES.find(cat =>
+    normalize(cat.label) === norm ||
+    cat.aliases.some(alias => normalize(alias) === norm),
+  ) ?? null;
 }
 
 // ---------------------------------------------------------------------------

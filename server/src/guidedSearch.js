@@ -178,6 +178,24 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
   // PHASE: initial — detect component category, return first question
   // --------------------------------------------------------------------------
   if (phase === 'initial') {
+    // Direct chip selection — skip detection entirely
+    if (categoryKey) {
+      const directCat = getCategoryByKey(categoryKey);
+      if (directCat) {
+        const questions = directCat.questions;
+        sendEvent('category', {
+          category: directCat.key,
+          categoryLabel: directCat.label,
+          question: questions[0].text,
+          options: questions[0].options ?? null,
+          hint: questions[0].hint ?? null,
+          questionIndex: 0,
+          questionTotal: questions.length,
+        });
+        return;
+      }
+    }
+
     sendEvent('status', { label: 'Rozpoznávám komponentu…' });
 
     // Keyword-based detection first (fast, no AI cost)
