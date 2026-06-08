@@ -206,8 +206,6 @@ Formát: 3RT20[XX]-[civka_kód]
   3RT2016 = S00, 9A AC-3
   3RT2017 = S00, 12A AC-3
   3RT2018 = S00, 16A AC-3
-  3RT2023 = S0, 9A AC-3
-  3RT2024 = S0, 12A AC-3
   3RT2025 = S0, 17A AC-3
   3RT2026 = S0, 25A AC-3
   3RT2027 = S0, 32A AC-3
@@ -867,9 +865,8 @@ Příznaky: -SN=patice+LED+dioda, -S=patice, bez=-standalone
   G2R-1-SN DC24 = 1-pól SPDT, patice, LED, dioda, 24VDC
   G2R-1-SN DC12 = 1-pól, 12VDC
   G2R-1-SN AC230 = 1-pól, 230VAC
-  G2R-2-SN DC24 = 2-pól DPDT, 24VDC
+  G2R-2-SN DC24 = 2-pól DPDT, patice, LED, dioda, 24VDC, 5A
   G2R-2-SN AC230 = 2-pól, 230VAC
-  G2R-2-SN DC24 = 2-pól, LED+dioda, 24VDC, 5A kontakty
 
 ### Omron MY (miniaturní, 5A):
 Patice: PYF08A (MY2, 8-pin), PYF14A (MY4, 14-pin).
