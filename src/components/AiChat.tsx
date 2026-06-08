@@ -85,7 +85,7 @@ interface AiMessage {
 function buildGuidedContext(r: GuidedResultSnapshot): string {
   const lines = ['[Výsledky řízeného vyhledávání]', `Kategorie: ${r.categoryLabel}`];
   if (r.answers.length > 0) {
-    lines.push('Parametry: ' + r.answers.map(a => `${a.question}: ${a.answer}`).join(', '));
+    lines.push('Parametry: ' + r.answers.map(a => `${a.question}: ${a.answer.includes('|||') ? a.answer.split('|||').join(' nebo ') : a.answer}`).join(', '));
   }
   if (r.articles.length > 0) {
     lines.push('Nalezené artikly:');
@@ -819,7 +819,7 @@ export function AiChat() {
                       <div className="px-4 pt-2 pb-1 flex flex-wrap gap-1.5">
                         {msg.guidedResult.answers.slice(0, 4).map((a, idx) => (
                           <span key={idx} className="text-xs bg-surface1 text-subtext0 rounded-md px-2 py-0.5">
-                            {a.answer}
+                            {a.answer.includes('|||') ? a.answer.split('|||').join(' / ') : a.answer}
                           </span>
                         ))}
                       </div>

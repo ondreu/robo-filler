@@ -199,6 +199,12 @@ function fuzzySearch(corpus, query) {
   }));
 }
 
+// ─── Multiselect helpers ──────────────────────────────────────────────────────
+
+function parseMultiVal(val) {
+  return val.split('|||').map(s => s.trim()).filter(s => s && s !== 'Bez omezení' && s !== 'Bez preference');
+}
+
 // ─── Filter-based search (deterministic, no AI) ───────────────────────────────
 
 const BARVA_MAP = [
@@ -247,34 +253,56 @@ export function filterWires(answers, dropKeys = []) {
     if (val === 'Bez omezení' || val === 'Bez preference') continue;
 
     if (ans.key === 'wire_typ') {
-      for (const [label, pred] of SKUPINA_MAP) {
-        if (val.includes(label)) { result = result.filter(w => pred(w.skupina || '')); break; }
+      const vals = parseMultiVal(val);
+      if (vals.length > 0) {
+        const preds = vals.flatMap(v => {
+          for (const [label, pred] of SKUPINA_MAP) {
+            if (v.includes(label)) return [pred];
+          }
+          return [];
+        });
+        if (preds.length > 0) result = result.filter(w => preds.some(pred => pred(w.skupina || '')));
       }
     }
 
     if (ans.key === 'prurez') {
-      const num = parseFloat(val);
-      if (!isNaN(num)) result = result.filter(w => w.prurez === num);
+      const nums = parseMultiVal(val).map(v => parseFloat(v)).filter(n => !isNaN(n));
+      if (nums.length === 0) {
+        const single = parseFloat(val);
+        if (!isNaN(single)) result = result.filter(w => w.prurez === single);
+      } else {
+        result = result.filter(w => nums.some(num => w.prurez === num));
+      }
     }
 
     if (ans.key === 'barva') {
-      for (const [label, pred] of BARVA_MAP) {
-        if (val.includes(label)) { result = result.filter(w => w.barva && pred(w.barva)); break; }
+      const vals = parseMultiVal(val);
+      if (vals.length > 0) {
+        const preds = vals.flatMap(v => {
+          for (const [label, pred] of BARVA_MAP) {
+            if (v.includes(label)) return [pred];
+          }
+          return [];
+        });
+        if (preds.length > 0) result = result.filter(w => w.barva && preds.some(pred => pred(w.barva)));
       }
     }
 
     if (ans.key === 'vyrobce') {
-      const mfr = val.toLowerCase();
+      const mfrs = parseMultiVal(val).map(v => v.toLowerCase());
+      if (mfrs.length === 0) mfrs.push(val.toLowerCase());
       result = result.filter(w => {
         const v = (w.vyrobce || '').toLowerCase();
-        if (mfr.includes('lapp')) return v.includes('lapp');
-        if (mfr.includes('helukabel')) return v.includes('helukabel');
-        if (mfr.includes('huber') || mfr.includes('suhner') || mfr.includes('radox')) return v.includes('huber') || v.includes('suhner');
-        if (mfr.includes('kablo')) return v.includes('kablo');
-        if (mfr.includes('leoni')) return v.includes('leoni');
-        if (mfr.includes('alphawire')) return v.includes('alphawire');
-        if (mfr.includes('desca')) return v.includes('desca');
-        return true;
+        return mfrs.some(mfr => {
+          if (mfr.includes('lapp')) return v.includes('lapp');
+          if (mfr.includes('helukabel')) return v.includes('helukabel');
+          if (mfr.includes('huber') || mfr.includes('suhner') || mfr.includes('radox')) return v.includes('huber') || v.includes('suhner');
+          if (mfr.includes('kablo')) return v.includes('kablo');
+          if (mfr.includes('leoni')) return v.includes('leoni');
+          if (mfr.includes('alphawire')) return v.includes('alphawire');
+          if (mfr.includes('desca')) return v.includes('desca');
+          return true;
+        });
       });
     }
   }
