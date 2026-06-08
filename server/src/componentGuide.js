@@ -588,7 +588,7 @@ Konkrétní příklady:
   WTR 4 = 4mm² testovací
 
 **Propojky Weidmüller:**
-  QV 2/10 = propojka 10-pozice pro 2.5mm²
+  QV 2,5/10 = propojka 10-pozice pro 2.5mm²
   QV 4/5 = propojka 5-pozice pro 4mm²
 
 ---
@@ -637,10 +637,10 @@ Výkonová část PM240-2: 6SL3210-1PE[výkon]...
 CU250D-2 (základní): 6SL3244-0BB13-1PA1
 
 **V20 (ekonomický):**
-  6SL3210-5BE21-8UV0 = 1-fáze 230V, 1.5kW
+  6SL3210-5BE21-8UV0 = 1-fáze 230V, 1.5kW (bez EMC filtru)
+  6SL3210-5BE21-8CV0 = 1-fáze 230V, 1.5kW (s EMC filtrem C2)
   6SL3210-5BB15-5UV1 = 3-fáze 400V, 0.75kW
   6SL3210-5BB17-5UV1 = 3-fáze 400V, 1.5kW
-  6SL3210-5BE21-8CV0 = 1-fáze 230V, 1.5kW (IP20)
 
 ---
 ### ABB ACS:
@@ -1124,11 +1124,12 @@ odpínač [proud]A 3P, Hauptschalter [proud]A 3P, Lasttrennschalter [proud]A, hl
 Celé tlačítko (hlava + kontakt) nebo moduly (hlava ZB4 + kontakt ZBE).
 Formát XB4B: XB4B[barva_kód][kontakt_kód]
 Barva kódy: A=zelená, A4=červená, A5=žlutá, A6=modrá, A2=bílá, A1=černá
-Kontakt kódy: 21=1NO, 22=1NC, 31=1NO+1NC (různé pro momentové vs. s aretací)
+Kontakt kódy: 21=1NO, 22=1NC, 31=1NO+1NC
 
 Konkrétní příklady:
-  XB4BA21 = zelené momentové, 1NO (zelená flush hlava)
-  XB4BA31 = zelené momentové, 1NO (výstupkové)
+  XB4BA21 = zelené momentové, 1NO
+  XB4BA22 = zelené momentové, 1NC
+  XB4BA31 = zelené momentové, 1NO+1NC
   XB4BA42 = červené momentové, 1NC
   XB4BA51 = žluté momentové, 1NO
   XB4BD21 = zelené s aretací (otočné odblokování), 1NO
@@ -1349,7 +1350,6 @@ Formát: F[typ_pólů][proud]/[citlivost] nebo F[P][A][typ]
   5SM2012-6 = RCCB, 2P, 25A, 30mA, Typ AC
   5SM2022-6 = RCCB, 2P, 40A, 30mA, Typ AC
   5SM2032-6 = RCCB, 2P, 63A, 30mA, Typ AC
-  5SM2032-2 = RCCB, 2P, 40A, 30mA (specifický model)
   5SM3412-6 = RCCB, 4P, 25A, 30mA, Typ AC
   5SM3422-6 = RCCB, 4P, 40A, 30mA, Typ AC
   5SM3432-6 = RCCB, 4P, 63A, 30mA, Typ AC
@@ -1409,7 +1409,6 @@ proudový chránič [proud]A [citlivost]mA Typ A [póly]P, RCCB [proud]A 30mA, F
   5SD7414-1 = T2, 4P (3+N), 40kA, 275V
   5SD7282-1 = T2, 2P (1+N), 40kA
   5SD7434-1 = T2, 4P, 25kA
-  5SD7424-1 = T2, 4P, 25kA
 
 ---
 ### Phoenix Contact Trabtech:
