@@ -890,7 +890,7 @@ Série 221: 221-412 (2×do 4mm²), 221-413 (3×), 221-415 (5×)
   2273-499 = čílko pro 2273 řadu (5mm rozteč)
   2273-XXX = svorky pro vodiče 0.5–2.5 mm²
 
-**WAGO TOPJOB S (2002 / 2004 / 2006 řady):**
+**WAGO TOPJOB S (2002 / 2004 / 2006 řady — Push-In CAGE CLAMP, 5mm rozteč):**
   2002-199 = čílko pro 2002 (2.5mm² / 5mm rozteč)
   2004-199 = čílko pro 2004 (4mm² / 6mm rozteč)
   2006-199 = čílko pro 2006 (6mm² / 8mm rozteč)
@@ -898,7 +898,16 @@ Série 221: 221-412 (2×do 4mm²), 221-413 (3×), 221-415 (5×)
   2002-1281 = propojka 2P pro TOPJOB S 2002
   2002-1282 = propojka 2P kov (standard)
   2004-1281 = propojka pro 2004
-  2002-1690 = nosič popisků pro 2002
+  2002-1690 = nosič popisků (Inline Marker) pro 2002 — WMB systém
+  2009-114  = Inline Marker Carrier WMB-Inline pro 5mm svorky (TOPJOB S 2002, 279 série) — SPRÁVNÉ typové označení pro nosiče štítků!
+  2009-115  = Inline Marker Carrier WMB-Inline pro 6mm svorky (TOPJOB S 2004)
+  WMB-Inline = systémové označení inline markovacího systému WAGO pro DIN svorky
+
+**WAGO 279 řada (TOPJOB S šroubová, starší, 5mm rozteč):**
+  279-1xx   = svorkovnice řady 279 (např. 279-101 = 1-pólová, 279-133 = 3-pólová)
+  279-100   = čílko/end cover pro 279 řadu
+  2009-114  = Inline Marker Carrier (nosič popisků) pro 279 řadu — SPRÁVNÉ označení! (ne "etiketa 279", ne "štítek pro 279-xxx")
+  WMB-Inline = systémové označení — hledej "WMB" nebo "2009-114" v DB
 
 **WAGO 280 řada (šroubová, 35mm²):**
   280-999 = čílko pro 280 řadu
@@ -2441,6 +2450,105 @@ OVR T2 1N 40-275 P TS, OVR T2 3N 40-275 P TS, 5SD7414-1, A9L40204
 
 **SEKUNDÁRNÍ:**
 přepěťová ochrana T2 [kA]kA [póly]P+N, SPD T2 40kA 400V, Überspannungsschutz T2 40kA, bleskojistka T2`,
+  },
+
+  // -------------------------------------------------------------------------
+  // 18. Vodiče a kabely
+  // -------------------------------------------------------------------------
+  {
+    key: 'vodic_kabel',
+    label: 'Vodič / Kabel',
+    aliases: [
+      'vodič', 'vodic', 'kabel', 'kabely', 'vodiče', 'ovládací kabel', 'ovladaci kabel',
+      'silový kabel', 'silovy kabel', 'datový kabel', 'datovy kabel', 'řídicí kabel',
+      'rizdici kabel', 'stíněný kabel', 'stineny kabel', 'gumový kabel', 'gumovy kabel',
+      'olflex', 'ölflex', 'liycy', 'liyy', 'nyy', 'nhxmh', 'h07rn-f', 'topflex',
+      'unitronic', 'heludata', 'helupower', 'lapp', 'helukabel',
+      'Leitung', 'Kabel', 'Steuerleitung', 'Energiekabel',
+    ],
+    questions: [
+      { key: 'typ',     text: 'Jaký typ kabelu / vodiče?',                                options: ['Ovládací / řídicí kabel (PVC)', 'Silový kabel (NYY, NHXMH)', 'Datový / stíněný kabel (LiYCY)', 'Gumový kabel (H07RN-F, JZ-600)', 'Vysoce ohebný (řetězový, e-chain)', 'Solární / speciální', 'Nevím'] },
+      { key: 'mfr',     text: 'Preferovaný výrobce?',                                     options: ['LAPP (ÖLFLEX)', 'Helukabel', 'Nexans', 'HUBER+SUHNER', 'Bez preference'] },
+      { key: 'zily',    text: 'Počet žil a průřez? (napiš, např. 5G2.5, 4x1.5, 7G1.5)' },
+      { key: 'stineni', text: 'Stínění?',                                                  options: ['Bez stínění', 'Cu oplet (stíněný)', 'Fóliové stínění', 'Nevím'] },
+      { key: 'plast',   text: 'Typ pláště?',                                              options: ['PVC (standardní)', 'PUR (olejuvzdorný)', 'Bezhalogenový (FRNC/LSZH)', 'Gumový (EPR/EPDM)', 'Nevím'] },
+    ],
+    mfrKeys: ['lapp', 'helukabel', 'nexans', 'huber_suhner'],
+    knowledge: `## Vodiče a kabely — přehled kategorií a typových označení
+
+### Přehled norem a typů kabelů:
+- **IEC 60227** — kabely s PVC izolací, 300/500V nebo 450/750V.
+- **IEC 60245** — kabely s gumovou izolací.
+- **EN 50525** — harmonizovaná norma pro LV kabely v EU (nahrazuje HD 603).
+- **VDE 0276** — německá norma, silové kabely (NYY, NAYY atd.).
+
+### Kódování průřezu a žil:
+- **[počet]G[průřez]** = N žil + zelenožlutá ochranná žíla PE (G = mit Grün-Gelbem Schutzleiter)
+  Příklad: 5G2.5 = 4 provozní žíly + 1 PE žíla, každá 2.5mm²
+- **[počet]x[průřez]** = N žil bez PE žíly
+  Příklad: 4x1.5 = 4 žíly 1.5mm², žádná PE
+
+---
+### LAPP — ÖLFLEX® ovládací kabely:
+**ÖLFLEX® CLASSIC 110** — standardní ovládací kabel PVC, 300/500V, -20 až +80°C:
+  3G1.5 = 3žily+PE, 1.5mm² | 5G2.5 = 5žil+PE, 2.5mm² | 7G1.5 = 7žil+PE, 1.5mm²
+  Stíněný: ÖLFLEX CLASSIC 110 CY = s Cu opletem
+  PUR: ÖLFLEX CLASSIC 110 PUR = olej/chemie odolný
+
+**ÖLFLEX® CHAIN 90** — pro energetické řetězy, vysoce ohebný, PVC:
+  4G1.5, 5G2.5 atd.
+
+**ÖLFLEX® ROBUST 200** — PUR plášť, UV stálý:
+  Vhodný pro venkovní stroje, těžký průmysl.
+
+**UNITRONIC® LiYCY** — stíněný datový kabel (Cu oplet), 250V:
+  2x0.25, 4x0.25, 4x0.34 (Profibus), 2x2x0.22 (párový)
+**UNITRONIC® LiYY** — nestíněný datový kabel:
+  Stejné průřezy jako LiYCY.
+
+---
+### Helukabel:
+**TOPFLEX® 600** — vysoce ohebný ovládací, PVC, 300/500V:
+  5G2.5, 7G1.5 atd.
+**TOPFLEX® 600-C** — stíněný:
+  Cu oplet, EMC ochrana.
+**HELUPOWER® 1000** — ekvivalent NYY-J:
+  4x16, 4x10, 4x6 atd.
+**JZ-600** — gumový ovládací kabel H07RN-F:
+  3G1.5, 4G2.5, 5G1.5 atd.
+**HELUDATA® LiYCY** — stíněný datový:
+  4x0.25, 4x0.34
+
+---
+### Nexans — standardní silové kabely:
+**NYY-J** — PVC silový kabel 0.6/1kV, pevné uložení:
+  4x1.5, 4x2.5, 4x6, 4x10, 4x16, 4x25mm²
+**NHXMH** — bezhalogenový silový, 0.6/1kV:
+  4x1.5, 4x2.5, 4x6mm² — pro budovy, FV systémy
+**LiYCY** — stíněný datový kabel:
+  4x0.25, 4x0.34, 2x2x0.25
+
+---
+### HUBER+SUHNER — koaxiální a solární kabely:
+**Koaxiální kabely:**
+  RG-58 C/U = 50Ω, průměr 5mm, běžné RF aplikace
+  RG-174 = 50Ω, ultra-tenký (3mm)
+  LMR-195 = 50Ω, nízká ztráta
+  LMR-400 = 50Ω, průměr 10.3mm, velké instalace, nízká útlum
+**RADOX® kabely:**
+  RADOX 125 = bezhalogenový, 125°C, pro lokomotivy, FV, průmysl
+
+---
+### Vyhledávací strategie:
+**PRIMÁRNÍ — specifická typová označení:**
+ÖLFLEX CLASSIC 110 5G2.5, ÖLFLEX CLASSIC 110 CY 4G1.5
+TOPFLEX 600 5G2.5, HELUDATA LiYCY 4x0.25
+NYY-J 4x16, NHXMH 4x1.5, H07RN-F 3G1.5
+
+**SEKUNDÁRNÍ:**
+ovládací kabel [žíly] [průřez], Steuerleitung [žíly]G[průřez], control cable
+datový kabel stíněný [průřez], LiYCY [žíly]x[průřez], shielded data cable
+silový kabel [průřez], NYY [žíly]x[průřez], power cable [průřez]`,
   },
 ];
 

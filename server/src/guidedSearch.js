@@ -148,8 +148,13 @@ Shrnutí co bylo nalezeno (2–3 věty). Pak vybrané artikly:
   - typ: {typové označení}
   - {relevantní parametry}
 Závěr: proč je první nejrelevantnější.
-Pokud nic nenalezeno: stručně co a proč, navrhni alternativní hledání.
-KRITICKÉ: nikdy nepiš typová označení ani artikl čísla která nejsou v kandidátech.`,
+
+POKUD NIC NENALEZENO nebo žádný kandidát nesplňuje parametry:
+• Stručně vysvětli proč.
+• Uveď konkrétní doporučení: "Doporučuji typové označení: **{přesné typové označení}** od {výrobce} — {krátký popis proč}."
+• Případně uveď alternativní produktovou řadu: "Produktová řada {řada} od {výrobce} je pro tyto parametry standardní volba."
+• Doporučení vycházej VÝHRADNĚ z knowledge báze kategorie — nikdy nevymýšlej typová označení.
+KRITICKÉ: nikdy nepiš typová označení ani artikl čísla která nejsou v kandidátech, POKUD NEJSOU z knowledge báze kategorie.`,
       },
       {
         role: 'user',

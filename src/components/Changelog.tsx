@@ -10,6 +10,24 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V090626',
+    date: '9. 6. 2026',
+    major: true,
+    changes: [
+      'Znalosti vodičů a kabelů — nová kategorie v řízeném vyhledávání: Vodič / Kabel (LAPP ÖLFLEX, Helukabel TOPFLEX, Nexans NYY-J, HUBER+SUHNER RADOX)',
+      'LAPP, Helukabel, HUBER+SUHNER, Nexans — přidány do databáze výrobců (znalosti produktových řad, typová označení, normy IEC 60227/60245, EN 50525)',
+      'Oprava příslušenství svorek: WAGO 279 série — přidány správná typová označení nosičů popisků (2009-114, WMB-Inline) do znalostní báze',
+      'Doporučení při nenalezení materiálu — řízenývyhledávač nyní navrhuje konkrétní typové označení nebo produktovou řadu ze znalostní báze pokud nic nenajde v DB',
+      'Poradce komponent v Karel Botu — nový přepínač v nastavení; při aktivaci AI čerpá znalosti z průvodce kategoriemi a radí s výběrem komponent a produktových řad',
+      'Kompletní onboarding pro nové uživatele — průvodce při prvním spuštění provede hlavními funkcemi aplikace (Jednotlivé, Hromadné, AI mód, ZBOM); reset přes tlačítko "průvodce" v zápatí',
+      'Tabulkové zpracování z hromadného vyhledávání nyní otevře plnohodnotné ZBOM s kartami a persistencí (stejně jako ZBOM z hlavního menu)',
+      'Přepínač módů: "AI mód" přejmenován na ✨ AI ✨ s barevnými třpytkami',
+      'Řízený režim: odstraněn BETA badge, nahrazen "Doporučeno"',
+      'Plovoucí Karel Bot bublina zmenšena o 20 %',
+      'Onboarding: aktualizovány popisy módů — Běžný = obecné dotazy, Řízený = doporučený pro hledání komponent',
+    ],
+  },
+  {
     version: 'V080626',
     date: '8. 6. 2026',
     major: true,

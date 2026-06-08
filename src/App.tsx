@@ -19,6 +19,7 @@ import { AiChat } from './components/AiChat';
 import { AiBomBuilder } from './components/AiBomBuilder';
 import { GuidedSearch } from './components/GuidedSearch';
 import { AiOnboarding } from './components/AiOnboarding';
+import { AppOnboarding } from './components/AppOnboarding';
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -69,7 +70,7 @@ function App() {
   const [showBomWarning, setShowBomWarning] = useState(false);
 
   // ZBOM tabs — persisted in localStorage so they survive page refresh
-  type ZbomTab = { id: string; name: string; importData?: ImportResult };
+  type ZbomTab = { id: string; name: string; importData?: ImportResult; bulkResults?: import('./types').BulkQueryResult[]; bulkSelections?: Record<number, SearchResult | null> };
   const ZBOM_TABS_KEY = 'robo-filler-zbom-tabs';
   const ZBOM_ACTIVE_KEY = 'robo-filler-zbom-active';
 
@@ -130,12 +131,12 @@ function App() {
     return () => document.removeEventListener('mousedown', handler);
   }, [zbomDropdownOpen]);
 
-  const openNewZbomTab = useCallback((importData?: ImportResult) => {
+  const openNewZbomTab = useCallback((importData?: ImportResult, bulkResults?: import('./types').BulkQueryResult[], bulkSelections?: Record<number, SearchResult | null>) => {
     const id = `zbom-${++zbomTabCtrRef.current}`;
     setZbomTabs(prev => {
       const derived = importData?.header?.cisloVrcholu?.trim() || importData?.header?.popis?.trim();
       const name = derived || `ZBOM ${prev.length + 1}`;
-      return [...prev, { id, name, importData }];
+      return [...prev, { id, name, importData, bulkResults, bulkSelections }];
     });
     setActiveZbomTabId(id);
     setZbomEditorOpen(true);
@@ -305,6 +306,7 @@ function App() {
         {/* Mode tabs */}
         <div className="flex bg-surface0 rounded-2xl p-1 gap-1 w-fit">
           <button
+            id="onb-single"
             onClick={() => setAppMode('single')}
             className={`px-5 py-2 rounded-xl font-medium transition-all ${
               appMode === 'single'
@@ -315,6 +317,7 @@ function App() {
             Jednotlivé
           </button>
           <button
+            id="onb-bulk"
             onClick={() => setAppMode('bulk')}
             className={`px-5 py-2 rounded-xl font-medium transition-all ${
               appMode === 'bulk'
@@ -326,6 +329,7 @@ function App() {
           </button>
           {BACKEND_URL && (
             <button
+              id="onb-aimode"
               onClick={() => setAppMode('ai')}
               className={`px-5 py-2 rounded-xl font-medium transition-all ${
                 appMode === 'ai'
@@ -333,7 +337,9 @@ function App() {
                   : 'text-subtext1 hover:text-text'
               }`}
             >
-              AI mód
+              <span className="text-pink">✨</span>
+              <span className={appMode === 'ai' ? 'text-crust' : 'text-mauve font-bold'}> AI </span>
+              <span className="text-pink">✨</span>
             </button>
           )}
         </div>
@@ -455,7 +461,7 @@ function App() {
                     }`}
                   >
                     Řízený
-                    <span className="ml-1.5 text-[10px] font-semibold bg-teal/20 text-teal rounded px-1 py-0.5 leading-none align-middle">BETA</span>
+                    <span className="ml-1.5 text-[10px] font-semibold bg-green/20 text-green rounded px-1 py-0.5 leading-none align-middle">Doporučeno</span>
                   </button>
                   <button
                     id="onb-bom"
@@ -530,7 +536,10 @@ function App() {
             )}
 
             {appMode === 'bulk' && (
-              <BulkSearch articles={activeArticles} />
+              <BulkSearch
+                articles={activeArticles}
+                onOpenInZbom={(bulkResults, bulkSelections) => openNewZbomTab(undefined, bulkResults, bulkSelections)}
+              />
             )}
 
             {appMode === 'single' && (
@@ -684,11 +693,23 @@ function App() {
             <Changelog />
             <HowItWorks />
             <InstallPrompt />
+            <button
+              onClick={() => {
+                localStorage.removeItem('ai-onboarding-v1');
+                localStorage.removeItem('app-onboarding-v1');
+                window.location.reload();
+              }}
+              className="text-overlay0 hover:text-subtext0 transition-colors text-xs"
+              title="Znovu spustit průvodce aplikací"
+            >
+              průvodce
+            </button>
           </div>
         </footer>
       </div>
 
       {BACKEND_URL && <ChatBot onTeleportToAi={() => setAppMode('ai')} />}
+      <AppOnboarding onSwitchToAi={() => setAppMode('ai')} />
 
       {zbomEditorOpen && zbomTabs.length > 0 && activeZbomTabId && (() => {
         const activeTab = zbomTabs.find(t => t.id === activeZbomTabId);
@@ -697,10 +718,11 @@ function App() {
           <BomWizard
             key={activeZbomTabId}
             draftKey={activeZbomTabId}
-            bulkResults={[]}
-            selections={{}}
+            bulkResults={activeTab.bulkResults ?? []}
+            selections={activeTab.bulkSelections ?? {}}
             articles={activeArticles}
             importData={activeTab.importData}
+            startAtTable={!!(activeTab.bulkResults?.length)}
             onClose={() => setZbomEditorOpen(false)}
             tabs={zbomTabs.map(t => ({ id: t.id, name: t.name }))}
             activeTabId={activeZbomTabId}

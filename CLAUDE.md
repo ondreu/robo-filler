@@ -17,8 +17,10 @@ Nástroj pro vyhledávání průmyslových artiklů a sestavení kusovníků. In
 |--------|-------|
 | `src/App.tsx` | Root komponenta — módy (single/bulk/ai), ZBOM záložky, sub-mode toggle |
 | `src/components/AiBomBuilder.tsx` | AI stavba kusovníku (BETA) — celá UI logika |
-| `src/components/AiChat.tsx` | Karel Bot chat UI |
-| `src/components/BulkSearch.tsx` | Hromadné vyhledávání |
+| `src/components/AiChat.tsx` | Karel Bot chat UI — `componentAdvisor` toggle pro poradce komponent |
+| `src/components/AiOnboarding.tsx` | AI mód onboarding (5 kroků), LS key `ai-onboarding-v1` |
+| `src/components/AppOnboarding.tsx` | Celoapplikační onboarding (5 kroků), LS key `app-onboarding-v1` |
+| `src/components/BulkSearch.tsx` | Hromadné vyhledávání — `onOpenInZbom` callback pro otevření v ZBOM záložce |
 | `src/components/ZbomEditor.tsx` | ZBOM tabulkový editor |
 | `src/components/HowItWorks.tsx` | Modal „Jak funguju?" |
 | `src/components/Changelog.tsx` | Modal se záznamy změn — verze `VDDMMYY` |
@@ -32,8 +34,9 @@ Nástroj pro vyhledávání průmyslových artiklů a sestavení kusovníků. In
 | `server/src/bomBuilder.js` | AI BOM builder logika |
 | `server/src/chat.js` | Karel Bot logika |
 | `server/src/search.js` | BM25 + wildcard + fuzzy vyhledávač |
-| `server/src/manufacturers.js` | `MANUFACTURER_DOCS`, `resolveManufacturerKey`, `resolveManufacturersByCategory` |
+| `server/src/manufacturers.js` | `MANUFACTURER_DOCS`, `resolveManufacturerKey`, `resolveManufacturersByCategory` — zahrnuje LAPP, Helukabel, HUBER+SUHNER, Nexans |
 | `server/src/abbreviations.js` | Průmyslové zkratky pro Karel Bot |
+| `server/src/guidedSearch.js` | Řízený vyhledávač — fáze initial/questioning, generace termínů, synthesize s doporučeními |
 
 ## API endpointy
 
@@ -88,5 +91,13 @@ Po vydání nové verze aktualizuj:
 - **`manufacturers.js` je sdílený** — `resolveManufacturerKey` a `MANUFACTURER_DOCS` používají Karel Bot i BOM builder
 - **SSE progress** — knowledge eventy (`status:'knowledge'`) se vkládají jako extra položky do `progressItems`, ne jako update existujícího řádku
 - **Historie BOM** — `localStorage` key `robo-filler-bom-history`, max 5 záznamů, cache key = JSON rows + preferences
-- **BETA feature** — BOM builder je označen BETA badge; varování se zobrazí při každém přepnutí na tento mód
+- **BOM builder BETA** — označen BETA badge; varování se zobrazí při každém přepnutí na tento mód
+- **Řízený mód** — byl BETA, nyní má badge „Doporučeno" (bg-green/20 text-green)
 - **Paralelismus** — worker pool max 10 (konstanta `CONCURRENCY` v `handleBomBuild`), každý řádek má 2-4 sekvenční AI volání uvnitř
+- **Poradce komponent** — toggle v nastavení Karel Bota; posílá `componentAdvisor: true` na backend, který injektuje znalosti z `componentGuide.js` do kontextu
+- **ZBOM z hromadného vyhledávání** — `BulkSearch` volá `onOpenInZbom(bulkResults, selections)` callback; `App.tsx` vytvoří novou ZBOM záložku s daty → plnohodnotný editor s persistencí
+- **Onboarding** — `app-onboarding-v1` (AppOnboarding, 5 kroků při prvním spuštění), `ai-onboarding-v1` (AiOnboarding, 5 kroků při prvním vstupu do AI módu); reset tlačítkem „průvodce" v zápatí
+- **ZbomTab typ** — `{ id, name, importData?: ImportResult, bulkResults?: BulkQueryResult[], bulkSelections?: Record<number, SearchResult | null> }`
+- **Mode switcher** — „AI mód" přejmenován na `✨ AI ✨` s pink sparkles
+- **Vodiče/Kabely** — nová kategorie `vodic_kabel` v `componentGuide.js`; výrobci LAPP, Helukabel, HUBER+SUHNER, Nexans s plnými `MANUFACTURER_DOCS`
+- **Řízený mód doporučení** — když DB nenajde nic, AI doporučí konkrétní typové označení z knowledge báze kategorie

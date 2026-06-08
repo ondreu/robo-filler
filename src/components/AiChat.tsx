@@ -281,6 +281,7 @@ export function AiChat() {
   const [currentStatusLog, setCurrentStatusLog] = useState<Status[]>([]);
   const statusLogRef = useRef<Status[]>([]);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [componentAdvisor, setComponentAdvisor] = useState(false);
   const [synthModel, setSynthModelState] = useState<string>(() => {
     try {
       const { model, ts } = JSON.parse(localStorage.getItem(SYNTH_MODEL_KEY) ?? '{}');
@@ -473,7 +474,7 @@ export function AiChat() {
       const response = await fetch(`${BACKEND_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history, webSearchEnabled, synthModel }),
+        body: JSON.stringify({ message: text, history, webSearchEnabled, synthModel, componentAdvisor }),
       });
 
       if (!response.ok || !response.body) throw new Error('Server error');
@@ -606,6 +607,11 @@ export function AiChat() {
             <Globe size={11} /> Web
           </span>
         )}
+        {componentAdvisor && (
+          <span className="ml-1 flex items-center gap-1 text-xs text-pink bg-pink/10 rounded-full px-2 py-0.5">
+            <Sparkles size={11} /> Poradce komponent
+          </span>
+        )}
       </div>
 
       {/* Messages */}
@@ -617,7 +623,23 @@ export function AiChat() {
                 {greeting}
               </div>
             </div>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className={`grid gap-4 ${componentAdvisor ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+              {componentAdvisor && (
+                <div className="space-y-2">
+                  <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Poradce komponent</p>
+                  {[
+                    'Jaký jistič pro motor 11kW 400V?',
+                    'Doporuč stykač Siemens 16A 24VDC',
+                    'Jaký typ svorky pro skříň?',
+                    'Rozdíl mezi WAGO 2002 a TOPJOB S',
+                  ].map(ex => (
+                    <button key={ex} onClick={() => { setInput(ex); inputRef.current?.focus(); }}
+                      className="block w-full text-left px-3 py-2.5 rounded-xl bg-pink/5 border border-pink/20 hover:bg-pink/10 text-subtext1 transition-colors text-sm">
+                      {ex}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="space-y-2">
                 <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Hledání artiklů</p>
                 {['záslepka M20', 'ABB pojistka 16A', 'Jistič 16A', 'WAGO svorka 2.5mm²'].map(ex => (
@@ -748,6 +770,22 @@ export function AiChat() {
                 </button>
               </label>
 
+              {/* Component advisor toggle */}
+              <label className="flex items-center justify-between gap-3 cursor-pointer">
+                <div className="min-w-0">
+                  <span className="text-sm text-text">Poradce komponent</span>
+                  <p className="text-[11px] text-overlay1 leading-snug mt-0.5">Radí s výběrem komponent a produktových řad z průvodce kategoriemi</p>
+                </div>
+                <button
+                  role="switch"
+                  aria-checked={componentAdvisor}
+                  onClick={() => setComponentAdvisor(v => !v)}
+                  className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${componentAdvisor ? 'bg-pink' : 'bg-surface2'}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-crust rounded-full shadow transition-transform ${componentAdvisor ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </label>
+
               {/* SYNTH model picker */}
               <div className="flex items-center justify-between gap-3">
                 <span className="text-sm text-text">Model</span>
@@ -805,7 +843,7 @@ export function AiChat() {
             onClick={() => setSettingsOpen(v => !v)}
             title="Nastavení a export"
             className={`rounded-xl px-3 py-2.5 transition-colors ${
-              settingsOpen || webSearchEnabled
+              settingsOpen || webSearchEnabled || componentAdvisor
                 ? 'text-mauve bg-surface1 hover:bg-surface2'
                 : 'text-overlay0 hover:text-subtext1 hover:bg-surface0'
             }`}

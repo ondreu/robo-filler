@@ -94,6 +94,31 @@ export function resolveManufacturerKey(name) {
     /\bmy[24]n?\b/.test(n)              // MY2N, MY4N atd.
   ) return 'omron';
 
+  // LAPP — ÖLFLEX je výhradně LAPP brand
+  if (
+    n.includes('lapp') ||
+    n.includes('olflex') || n.includes('ölflex') ||
+    n.includes('unitronic') ||
+    n.includes('hitronic') ||
+    n.includes('skintop')
+  ) return 'lapp';
+
+  // Helukabel
+  if (
+    n.includes('helukabel') || n.includes('helu') ||
+    n.includes('topflex') ||
+    n.includes('helupower') || n.includes('heludata')
+  ) return 'helukabel';
+
+  // HUBER+SUHNER — RADOX je jejich registrovaný brand
+  if (
+    n.includes('huber') || n.includes('suhner') ||
+    n.includes('radox')
+  ) return 'huber_suhner';
+
+  // Nexans
+  if (n.includes('nexans')) return 'nexans';
+
   return null;
 }
 
@@ -183,6 +208,16 @@ export const MANUFACTURER_CATEGORIES = {
   rcd:          ['abb', 'siemens', 'schneider'],
   rccb:         ['abb', 'siemens', 'schneider'],
   rcbo:         ['abb', 'siemens', 'schneider'],
+
+  // --- Vodiče / Kabely ---
+  vodic:        ['lapp', 'helukabel', 'nexans'],  // vodič
+  kabel:        ['lapp', 'helukabel', 'nexans'],  // kabel
+  litycy:       ['lapp', 'helukabel'],             // stíněný datový kabel LiYCY
+  olflex:       ['lapp'],                          // ÖLFLEX ovládací kabel
+  nyy:          ['lapp', 'helukabel', 'nexans'],   // silový kabel NYY-J
+  h07:          ['lapp', 'helukabel'],             // H07RN-F gumový kabel
+  koaxial:      ['huber_suhner'],                  // koaxiální kabel
+  coax:         ['huber_suhner'],
 };
 
 // ---------------------------------------------------------------------------
@@ -396,6 +431,79 @@ Format: \`[Série][funkce] [průřez] [barva/přípona]\`
 - P2RF-05 = pro G2RS 1pól (5-pin); P2RF-08 = pro G2RS 2pól (8-pin)
 
 **Důležité:** Relé MY a G2R-S vyžadují příslušnou patici — relé samotné bez patice není funkční při DIN montáži.`,
+
+  lapp: `## LAPP — znalostní přehled (vodiče a kabely)
+
+**Firma:** Lapp Group (U.I. Lapp GmbH), Stuttgart, Německo. Přední světový výrobce průmyslových kabelů. Přes 40 000 produktů. Brand ÖLFLEX® = registrovaný název pro ovládací kabely (vynalezl Oskar Lapp v roce 1957).
+
+**Klíčové produktové řady:**
+- **ÖLFLEX® CLASSIC 110** — standardní ovládací kabel PVC, 300/500V, teplotní rozsah -20 až +80°C.
+  Formát: \`ÖLFLEX CLASSIC 110 [počet]G[průřez]\` — 7G1.5 = 7 žil po 1.5mm², G = jedna žíla ZŽ (PE).
+  Varianta bez PE: \`7x1.5\` (bez G). S PUR pláštěm: \`ÖLFLEX CLASSIC 110 CY\` (stíněný).
+- **ÖLFLEX® CHAIN 90** — vysoce ohebný, pro pohyblivé aplikace (e-chain), PVC/PUR.
+- **ÖLFLEX® ROBUST 200** — PUR plášť, odolný olejům, chemikáliím, UV.
+- **ÖLFLEX® HEAT 125** — teplotně odolný, 125°C trvalé zatížení, silikonový.
+- **UNITRONIC®** — datové kabely, sběrnice, Profibus, DeviceNet, AS-Interface.
+  UNITRONIC LiYY = nesíněná datová, UNITRONIC LiYCY = stíněná datová (Cu oplet).
+  Formát: \`UNITRONIC LiYCY [počet]x[průřez]\` — 4x0.25 = 4 žíly × 0.25mm².
+- **HITRONIC®** — optické kabely (duplex, multifiber, pro průmyslové prostředí).
+- **SKINTOP®** — průchodky (Cable Glands) — SKINTOP MS = mosazná, SKINTOP ST = plastová, SKINTOP BS = ohnivzdorná.
+
+**Normy a označení:**
+- Barvy žil (IEC 60446): ZŽ (zelenožlutá PE), BU (modrá N), BN (hnědá L1), BK (černá L2), GY (šedá L3).
+- Průřezy: 0.5, 0.75, 1, 1.5, 2.5, 4, 6, 10, 16, 25mm².
+- Normy: IEC 60227 (PVC), IEC 60245 (gumové), EN 50525 (LV kabely), EN 50395 (elektrické vlastnosti).`,
+
+  helukabel: `## Helukabel — znalostní přehled (vodiče a kabely)
+
+**Firma:** HELUKABEL GmbH, Hemmingen, Německo. Druhý největší výrobce kabelů v Německu. Roční obrat přes 700M€, přes 35 000 typů kabelů.
+
+**Klíčové produktové řady:**
+- **TOPFLEX® 600** — vysoce ohebný ovládací kabel PVC, 300/500V, pro pohyblivé části strojů.
+  Formát: \`TOPFLEX 600 [počet]G[průřez]\` — 5G2.5 = 5 žil, PE žíla, 2.5mm².
+  TOPFLEX® 600-C = stíněný (C = Cu oplet), TOPFLEX® 600 PUR = PUR plášť.
+- **HELUPOWER®** — silové kabely pro pevné uložení, od 1.5 do 300mm².
+  Ekvivalenty: HELUPOWER® 1000 = NYY-J (silový 0.6/1kV), HELUPOWER® 300 = NYAF (flexibilní).
+- **HELUDATA®** — datové kabely, LiYCY (stíněné), LiYY (nestíněné).
+  Formát: \`HELUDATA LiYCY [počet]x[průřez]\` — 4x0.34 = Profibus typ.
+- **JZ-600** — gumový ovládací kabel H05RN-F/H07RN-F, pro vlhké prostředí, venkovní použití.
+  Formát: \`JZ-600 [počet]G[průřez]\` — 3G1.5.
+- **HELUTHERM®** — teplotně odolné kabely, silikonové, až 180°C.
+- **PROFIBUS-DP** — kabel typ A (impedance 150Ω, fialový), typ B (impedance 150Ω, v PVC pláš).
+
+**Normy:** Stejné jako LAPP — IEC 60227, IEC 60245, EN 50525, VDE 0276, UL/CSA pro export.`,
+
+  huber_suhner: `## HUBER+SUHNER — znalostní přehled (RF kabely a optika)
+
+**Firma:** Huber+Suhner AG, Herisau/Pfäffikon, Švýcarsko. Specialista na RF/koaxiální kabely, antény a optické vodiče pro průmysl, železnici, telekomunikace.
+
+**Klíčové produktové řady:**
+- **RADOX®** — registrovaný brand pro sítě/průmyslové kabely s radiačně-síťovanou izolací.
+  RADOX 125 = teplotní odolnost 125°C, bezhalogenový. RADOX 155 = 155°C.
+  Excelentní pro lokomotivy, letadla, obnovitelnou energii.
+- **Koaxiální kabely** — RG-58 (50Ω, Mil-C-17), RG-174 (50Ω, tenký), LMR-195, LMR-400 (nízká ztráta).
+  Impedance: 50Ω (RF přenos), 75Ω (video/SAT), 93Ω (datové sítě starší generace).
+- **Optické kabely** — Bend-insensitive single-mode (G.657), multi-mode OM3/OM4, pro outdoor/indoor.
+- **Solární kabely** — RADOX® SOLAR, certifikace TÜV, UL, pro FV systémy (1kV DC nebo 1.5kV DC).
+
+**Konektory:** N-typ, SMA, BNC, TNC, 4.3-10 (moderní 5G), 7-16 DIN (základnové stanice).`,
+
+  nexans: `## Nexans — znalostní přehled (průmyslové kabely)
+
+**Firma:** Nexans S.A., Paříž, Francie. Jeden z největších světových výrobců kabelů (spolu s Prysmian). Roční obrat ~6 mld. €.
+
+**Klíčové produktové řady:**
+- **NYY-J / NYY-O** — silový kabel PVC 0.6/1kV, pevné uložení (zabetonování, volné uložení).
+  NYY-J = se žlutozelennou ochrannou žílou (J = Juteplášť, dnes PVC). NYY-O = bez PE žíly.
+  Formát: \`NYY-J [počet]x[průřez]\` — 4x16 = 4 žíly × 16mm² (L1+L2+L3+PE).
+- **NHXMH** — bezhalogenový silový kabel, pro budovy s vysokými nároky na požární bezpečnost. 0.6/1kV.
+  Formát: \`NHXMH [počet]x[průřez]\` — 4x1.5 = 4×1.5mm².
+- **LiYCY** — stíněný datový kabel s Cu opletem, pro průmyslové sítě, 250V.
+  Formát: \`LiYCY [počet]x[průřez]\` — 4x0.25 = 4 žíly × 0.25mm².
+- **H07RN-F** — těžký pryžový kabel (gumový), pro mobilní stroje, staveniště, venkovní použití. 450/750V.
+  Formát: \`H07RN-F [počet]G[průřez]\` — 3G1.5 = 3 žíly +PE, 1.5mm².
+
+**Normy:** IEC 60502 (výkonové kabely), IEC 60228 (vodiče), EN 50525, DIN VDE 0276, HD 603.`,
 
   allen_bradley: `## Allen-Bradley (Rockwell Automation) — znalostní přehled
 
