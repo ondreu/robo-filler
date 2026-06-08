@@ -470,6 +470,8 @@ function App() {
                   </button>
                 </div>
 
+                <p className="text-[11px] text-overlay0">Jedná se o umělou inteligenci, která může dělat chyby. Odpovědi si prosím pečlivě zkontrolujte.</p>
+
                 <AiOnboarding />
                 {aiSubMode === 'chat' && <AiChat />}
                 {aiSubMode === 'guided' && <GuidedSearch />}
