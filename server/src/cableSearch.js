@@ -28,15 +28,17 @@ function isNo(val)  { return val === 'NE'; }
 
 /**
  * Filter cables by structured answers (from guided search).
+ * dropKeys: array of answer keys to skip (progressive relaxation).
  * Returns ALL matching cables (no topN limit) — caller should slice.
  */
-export function filterCables(answers) {
+export function filterCables(answers, dropKeys = []) {
   if (allCables.length === 0) return [];
 
   let result = [...allCables];
 
   for (const ans of answers) {
     if (!ans.answer) continue;
+    if (dropKeys.includes(ans.key)) continue;
     const val = ans.answer.trim();
     if (val === 'Bez omezení' || val === 'Bez preference') continue;
 
@@ -79,7 +81,7 @@ export function filterCables(answers) {
       if (val.includes('PUR')) {
         result = result.filter(c => norm(c.materialPlaste).includes('pur'));
       } else if (val.includes('Bezhalogenový') || val.includes('FRNC') || val.includes('LSZH')) {
-        result = result.filter(c => isYes(c.bezhalogenovy) || ['halogen free', 'bezhalogen', 'polyolefin'].some(k => norm(c.materialPlaste).includes(k)));
+        result = result.filter(c => ['halogen free', 'bezhalogen', 'polyolefin'].some(k => norm(c.materialPlaste).includes(k)));
       } else if (val.includes('Gumový') || val.includes('EPR') || val.includes('EPDM')) {
         result = result.filter(c => {
           const mp = norm(c.materialPlaste);
@@ -95,13 +97,8 @@ export function filterCables(answers) {
       if (val.includes('Ano') || val.includes('e-chain') || val.includes('ohebný')) {
         result = result.filter(c => isYes(c.retiez));
       } else if (val.includes('Ne') || val.includes('pevné')) {
+        // null retiez = standard fixed installation (not e-chain)
         result = result.filter(c => isNo(c.retiez) || c.retiez === null);
-      }
-    }
-
-    if (ans.key === 'olej') {
-      if (val.includes('Ano') || val.includes('olejuv')) {
-        result = result.filter(c => isYes(c.olej));
       }
     }
 

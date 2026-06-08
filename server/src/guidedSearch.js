@@ -212,18 +212,44 @@ function virtualQuestionIdx(questions, arrayIdx, answers) {
 // Filter-based wire/cable search (no AI cost, deterministic)
 // ---------------------------------------------------------------------------
 
-function buildFilterAnswer(allAnswers, count, type) {
+// Bonus filters dropped first when 0 results (least → most important)
+const WIRE_BONUS_ORDER  = ['vyrobce', 'wire_typ'];
+const CABLE_BONUS_ORDER = ['retiez', 'materialPlaste', 'stineni', 'kabel_vyrobce'];
+
+const FILTER_KEY_LABELS = {
+  vyrobce:       'výrobce vodiče',
+  wire_typ:      'typ/norma vodiče',
+  retiez:        'použití v e-chain',
+  materialPlaste:'materiál pláště',
+  stineni:       'stínění',
+  kabel_vyrobce: 'výrobce kabelu',
+};
+
+function buildFilterAnswer(allAnswers, count, type, droppedKeys = []) {
   const params = allAnswers
-    .filter(a => a.answer && a.answer !== 'Bez omezení' && a.answer !== 'Bez preference' && a.key !== 'subtype')
+    .filter(a => a.answer && a.answer !== 'Bez omezení' && a.answer !== 'Bez preference' && a.key !== 'subtype' && !droppedKeys.includes(a.key))
     .map(a => `**${a.answer}**`)
     .join(', ');
+
   if (count === 0) {
     return `Žádný ${type} v databázi neodpovídá zadaným parametrům.\n\n`
       + `Zkus méně přísné filtrování — vynech některý z parametrů nebo zvol "Bez omezení".`;
   }
-  const noun = type === 'vodič' ? (count === 1 ? 'vodič' : count < 5 ? 'vodiče' : 'vodičů') : (count === 1 ? 'kabel' : count < 5 ? 'kabely' : 'kabelů');
-  return `Nalezeno **${count} ${noun}**${params ? ' pro ' + params : ''}. `
+
+  const noun = type === 'vodič'
+    ? (count === 1 ? 'vodič' : count < 5 ? 'vodiče' : 'vodičů')
+    : (count === 1 ? 'kabel' : count < 5 ? 'kabely' : 'kabelů');
+  let answer = `Nalezeno **${count} ${noun}**${params ? ' pro ' + params : ''}. `
     + `Zobrazuji prvních ${Math.min(10, count)} — klikni "Zobrazit všechny" pro celý seznam.`;
+
+  if (droppedKeys.length > 0) {
+    const labels = droppedKeys.map(k => FILTER_KEY_LABELS[k] ?? k).join(', ');
+    answer += `\n\n⚠️ **Upozornění:** Pro zadanou kombinaci nebyla nalezena přesná shoda. `
+      + `Filtr${droppedKeys.length > 1 ? 'y' : ''} **${labels}** ${droppedKeys.length > 1 ? 'byly vynechány' : 'byl vynechán'} — databáze neobsahuje dostatek dat. `
+      + `Ověř si shodu ručně podle parametrů v názvu.`;
+  }
+
+  return answer;
 }
 
 // ---------------------------------------------------------------------------
@@ -367,9 +393,24 @@ export async function handleGuidedChat(message, phase, categoryKey, answers, sen
 
       sendEvent('status', { label: `Filtruji databázi ${isWire ? 'vodičů' : 'kabelů'}…` });
 
-      const filtered = isWire ? filterWires(allAnswers) : filterCables(allAnswers);
-      const answer = buildFilterAnswer(allAnswers, filtered.length, type);
+      // Progressive relaxation: if 0 results, drop bonus filters one by one
+      let filtered = isWire ? filterWires(allAnswers) : filterCables(allAnswers);
+      const droppedKeys = [];
 
+      if (filtered.length === 0) {
+        const bonusOrder = isWire ? WIRE_BONUS_ORDER : CABLE_BONUS_ORDER;
+        for (const key of bonusOrder) {
+          // Only drop if the user actually set a non-trivial value for this key
+          const ans = allAnswers.find(a => a.key === key);
+          const isActive = ans && ans.answer !== 'Bez omezení' && ans.answer !== 'Bez preference';
+          if (!isActive) continue;
+          droppedKeys.push(key);
+          filtered = isWire ? filterWires(allAnswers, droppedKeys) : filterCables(allAnswers, droppedKeys);
+          if (filtered.length > 0) break;
+        }
+      }
+
+      const answer = buildFilterAnswer(allAnswers, filtered.length, type, droppedKeys);
       sendEvent('result', {
         answer,
         articles: filtered.slice(0, 10),
