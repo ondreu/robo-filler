@@ -17,6 +17,7 @@ import { BulkSearch } from './components/BulkSearch';
 import { ChatBot } from './components/ChatBot';
 import { AiChat } from './components/AiChat';
 import { AiBomBuilder } from './components/AiBomBuilder';
+import { GuidedSearch } from './components/GuidedSearch';
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -62,9 +63,10 @@ function App() {
 
   // App mode (single / bulk / ai)
   const [appMode, setAppMode] = useState<AppMode>('single');
-  // AI sub-mode: chat = existing Karel Bot, bom = AI BOM builder
-  const [aiSubMode, setAiSubMode] = useState<'chat' | 'bom'>('chat');
+  // AI sub-mode: chat = existing Karel Bot, bom = AI BOM builder, guided = new Řízený režim
+  const [aiSubMode, setAiSubMode] = useState<'chat' | 'bom' | 'guided'>('chat');
   const [showBomWarning, setShowBomWarning] = useState(false);
+  const [showGuidedWarning, setShowGuidedWarning] = useState(false);
 
   // ZBOM tabs — persisted in localStorage so they survive page refresh
   type ZbomTab = { id: string; name: string; importData?: ImportResult };
@@ -438,6 +440,15 @@ function App() {
                     Běžný
                   </button>
                   <button
+                    onClick={() => aiSubMode === 'guided' ? undefined : setShowGuidedWarning(true)}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      aiSubMode === 'guided' ? 'bg-teal text-crust shadow' : 'text-subtext1 hover:text-text'
+                    }`}
+                  >
+                    Řízený
+                    <span className="ml-1.5 text-[10px] font-semibold bg-teal/20 text-teal rounded px-1 py-0.5 leading-none align-middle">BETA</span>
+                  </button>
+                  <button
                     onClick={() => aiSubMode === 'bom' ? undefined : setShowBomWarning(true)}
                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       aiSubMode === 'bom' ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
@@ -449,6 +460,7 @@ function App() {
                 </div>
 
                 {aiSubMode === 'chat' && <AiChat />}
+                {aiSubMode === 'guided' && <GuidedSearch />}
                 {aiSubMode === 'bom' && (
                   <div className="bg-mantle rounded-2xl border border-surface1 p-6">
                     <div className="mb-5">
@@ -462,6 +474,49 @@ function App() {
                         openNewZbomTab(importData);
                       }}
                     />
+                  </div>
+                )}
+
+                {/* Guided search BETA warning modal */}
+                {showGuidedWarning && (
+                  <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-crust/70 backdrop-blur-sm"
+                    onClick={() => setShowGuidedWarning(false)}
+                  >
+                    <div
+                      className="bg-mantle border border-surface1 rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <div className="flex items-start gap-3 mb-4">
+                        <span className="text-teal text-xl leading-none mt-0.5">✦</span>
+                        <div>
+                          <h3 className="text-text font-semibold text-base mb-1">
+                            Řízený režim
+                            <span className="ml-2 text-[10px] font-semibold bg-teal/20 text-teal rounded px-1.5 py-0.5 leading-none align-middle">BETA</span>
+                          </h3>
+                          <p className="text-subtext1 text-sm leading-relaxed">
+                            Průvodce postupnými otázkami pomůže přesně specifikovat komponentu. AI pak vygeneruje desítky vyhledávacích termínů a najde nejlepší shody v databázi.
+                          </p>
+                          <p className="text-overlay0 text-xs leading-relaxed mt-2">
+                            Funkce je ve fázi BETA — každé hledání spotřebuje několik AI volání.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          onClick={() => setShowGuidedWarning(false)}
+                          className="px-4 py-1.5 rounded-lg text-sm font-medium text-subtext1 hover:text-text transition-colors"
+                        >
+                          Zrušit
+                        </button>
+                        <button
+                          onClick={() => { setAiSubMode('guided'); setShowGuidedWarning(false); }}
+                          className="px-4 py-1.5 rounded-lg text-sm font-medium bg-teal text-crust hover:bg-teal/90 transition-colors"
+                        >
+                          Rozumím, spustit
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 )}
 

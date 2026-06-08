@@ -10,6 +10,20 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V080626',
+    date: '8. 6. 2026',
+    major: true,
+    changes: [
+      'Řízený režim (BETA) — nový sub-mód v AI módu pro krok-za-krokem hledání komponent',
+      'Řízený režim: průvodce postupnými otázkami (výrobce, proud, póly, charakteristika…) pro 17 kategorií komponent',
+      'Řízený režim: kategorie — Jistič, Stykač, Pojistka, Napájecí zdroj, Svorky, Frekvenční měnič, Soft Starter, Transformátor, Relé, DIN lišta, Rittal, Hlavní vypínač, Tlačítko, Průchodka, Záslepka, Proudový chránič, Přepěťová ochrana',
+      'Řízený režim: AI vygeneruje 20–35 vyhledávacích termínů (česky + německy + anglicky + typová označení výrobců)',
+      'Řízený režim: znalostní databáze každé kategorie (výrobci, produktové řady, tipová označení, vyhledávací strategie)',
+      'Řízený režim: volba odpovědí jako chip-boxy nebo volný text, výsledky jako AI odpověď + kartičky artiklů',
+      'Řízený režim: historie posledních 20 dotazů v postranním panelu',
+    ],
+  },
+  {
     version: 'V070626',
     date: '7. 6. 2026',
     major: true,

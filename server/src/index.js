@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { handleChat } from './chat.js';
 import { handleBomBuild, checkClarification, postCheckClarification } from './bomBuilder.js';
+import { handleGuidedChat } from './guidedSearch.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -113,6 +114,37 @@ app.post('/api/bom-build', async (req, res) => {
   } catch (err) {
     console.error('[bom-build]', err);
     send('error', { error: 'Chyba při zpracování kusovníku.' });
+  }
+
+  res.end();
+});
+
+app.post('/api/guided-chat', async (req, res) => {
+  const { message = '', phase = 'initial', category = null, answers = [] } = req.body ?? {};
+
+  if (!process.env.MISTRAL_API_KEY) {
+    return res.status(500).json({ error: 'MISTRAL_API_KEY není nastaven.' });
+  }
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const send = (event, data) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
+
+  try {
+    await handleGuidedChat(
+      typeof message === 'string' ? message.trim() : '',
+      phase,
+      category,
+      Array.isArray(answers) ? answers : [],
+      send,
+    );
+  } catch (err) {
+    console.error('[guided-chat]', err);
+    send('error', { error: 'Chyba při zpracování řízeného vyhledávání.' });
   }
 
   res.end();
