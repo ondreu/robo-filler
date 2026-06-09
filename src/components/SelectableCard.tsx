@@ -25,6 +25,7 @@ export function SelectableCard({ result, selected, onSelect }: SelectableCardPro
   };
 
   const getMatchColor = () => {
+    if (result.fromAlt) return 'border-l-peach';
     switch (result.matchType) {
       case 'wildcard': return 'border-l-purple-500';
       case 'exact':    return 'border-l-green';
@@ -77,6 +78,11 @@ export function SelectableCard({ result, selected, onSelect }: SelectableCardPro
             {result.matchType === 'large' && '(Velký rozdíl)'}
             {result.matchType === 'wildcard' && '(Wildcard)'}
           </span>
+          {result.fromAlt && (
+            <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-peach/15 text-peach border border-peach/30">
+              Alt. PN
+            </span>
+          )}
           {result.skupina && (
             <span className="px-1.5 py-0.5 rounded-lg text-xs font-medium bg-teal/15 text-teal">
               Vodič DB

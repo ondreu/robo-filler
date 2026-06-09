@@ -19,6 +19,7 @@ export type DataSource = 'usti' | 'effi' | 'both';
 export interface SearchResult extends Article {
   score: number;
   matchType: 'wildcard' | 'exact' | 'minimal' | 'medium' | 'large';
+  fromAlt?: boolean;
   highlightedFields: {
     typoveOznaceni?: string;
     artikl?: string;
