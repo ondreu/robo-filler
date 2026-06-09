@@ -6,6 +6,8 @@ services:
       - TAVILY_API_KEY=${TAVILY_API_KEY}
       - PORT=3001
       - CORS_ORIGIN=https://ondreu.github.io
+    volumes:
+      - ./logs:/app/logs
     restart: unless-stopped
 
   cloudflared:
