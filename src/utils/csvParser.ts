@@ -57,6 +57,34 @@ export async function loadCSV(filename: string): Promise<CSVLoadResult> {
   }
 }
 
+export interface CableArticle {
+  artikl: string;
+  nazev: string;
+  vyrobce: string;
+  pocetZil: number | null;
+  ochrannyVodic: string | null;
+  prurez: number | null;
+  stineni: 'ANO' | 'NE' | null;
+  retiez: 'ANO' | 'NE' | null;
+  olej: 'ANO' | 'NE' | null;
+  bezhalogenovy: 'ANO' | 'NE' | null;
+  materialPlaste: string | null;
+  barva: string | null;
+}
+
+export async function loadCables(): Promise<CableArticle[]> {
+  try {
+    const baseUrl = import.meta.env.BASE_URL;
+    const response = await fetch(`${baseUrl}cables.json`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    if (!Array.isArray(data)) return [];
+    return data as CableArticle[];
+  } catch {
+    return [];
+  }
+}
+
 export async function loadWires(): Promise<Article[]> {
   try {
     const baseUrl = import.meta.env.BASE_URL;

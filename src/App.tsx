@@ -19,6 +19,7 @@ import { AiChat } from './components/AiChat';
 import { AiBomBuilder } from './components/AiBomBuilder';
 import { AiOnboarding } from './components/AiOnboarding';
 import { AppOnboarding } from './components/AppOnboarding';
+import { WireCableSearch } from './components/WireCableSearch';
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -301,44 +302,58 @@ function App() {
         </header>
 
         {/* Mode tabs */}
-        <div className="flex bg-surface0 rounded-2xl p-1 gap-1 w-fit">
-          <button
-            id="onb-single"
-            onClick={() => setAppMode('single')}
-            className={`px-5 py-2 rounded-xl font-medium transition-all ${
-              appMode === 'single'
-                ? 'bg-mauve text-crust shadow-lg'
-                : 'text-subtext1 hover:text-text'
-            }`}
-          >
-            Jednotlivé
-          </button>
-          <button
-            id="onb-bulk"
-            onClick={() => setAppMode('bulk')}
-            className={`px-5 py-2 rounded-xl font-medium transition-all ${
-              appMode === 'bulk'
-                ? 'bg-mauve text-crust shadow-lg'
-                : 'text-subtext1 hover:text-text'
-            }`}
-          >
-            Hromadné
-          </button>
-          {BACKEND_URL && (
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex bg-surface0 rounded-2xl p-1 gap-1">
             <button
-              id="onb-aimode"
-              onClick={() => setAppMode('ai')}
+              id="onb-single"
+              onClick={() => setAppMode('single')}
               className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                appMode === 'ai'
+                appMode === 'single'
                   ? 'bg-mauve text-crust shadow-lg'
                   : 'text-subtext1 hover:text-text'
               }`}
             >
-              <span className="text-pink">✨</span>
-              <span className={appMode === 'ai' ? 'text-crust' : 'text-mauve font-bold'}> AI </span>
-              <span className="text-pink">✨</span>
+              Jednotlivé
             </button>
-          )}
+            <button
+              id="onb-bulk"
+              onClick={() => setAppMode('bulk')}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${
+                appMode === 'bulk'
+                  ? 'bg-mauve text-crust shadow-lg'
+                  : 'text-subtext1 hover:text-text'
+              }`}
+            >
+              Hromadné
+            </button>
+            {BACKEND_URL && (
+              <button
+                id="onb-aimode"
+                onClick={() => setAppMode('ai')}
+                className={`px-5 py-2 rounded-xl font-medium transition-all ${
+                  appMode === 'ai'
+                    ? 'bg-mauve text-crust shadow-lg'
+                    : 'text-subtext1 hover:text-text'
+                }`}
+              >
+                <span className="text-pink">✨</span>
+                <span className={appMode === 'ai' ? 'text-crust' : 'text-mauve font-bold'}> AI </span>
+                <span className="text-pink">✨</span>
+              </button>
+            )}
+          </div>
+          <div className="flex bg-surface0 rounded-2xl p-1">
+            <button
+              onClick={() => setAppMode('wirecable')}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${
+                appMode === 'wirecable'
+                  ? 'bg-teal text-crust shadow-lg'
+                  : 'text-subtext1 hover:text-text'
+              }`}
+            >
+              🔌 Vodiče &amp; Kabely
+            </button>
+          </div>
         </div>
 
         {/* Data source toggle and advanced settings */}
@@ -527,6 +542,8 @@ function App() {
                 onOpenInZbom={(bulkResults, bulkSelections) => openNewZbomTab(undefined, bulkResults, bulkSelections)}
               />
             )}
+
+            {appMode === 'wirecable' && <WireCableSearch />}
 
             {appMode === 'single' && (
               <>

@@ -49,7 +49,7 @@ export interface BulkQueryResult {
   usedAlt?: boolean;
 }
 
-export type AppMode = 'single' | 'bulk' | 'ai';
+export type AppMode = 'single' | 'bulk' | 'ai' | 'wirecable';
 
 export type BomRowType = 'L' | 'T';
 

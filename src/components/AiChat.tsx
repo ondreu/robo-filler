@@ -691,7 +691,21 @@ export function AiChat() {
                 {greeting}
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-2">
+                <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Poradce komponent</p>
+                {[
+                  'Jaký jistič pro motor 11kW 400V?',
+                  'Doporuč stykač Siemens 16A 24VDC',
+                  'Jaký typ svorky pro skříň?',
+                  'Rozdíl mezi WAGO 2002 a TOPJOB S',
+                ].map(ex => (
+                  <button key={ex} onClick={() => { setInput(ex); inputRef.current?.focus(); }}
+                    className="block w-full text-left px-3 py-2.5 rounded-xl bg-pink/5 border border-pink/20 hover:bg-pink/10 text-subtext1 transition-colors text-sm">
+                    {ex}
+                  </button>
+                ))}
+              </div>
               <div className="space-y-2">
                 <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Hledání artiklů</p>
                 {['záslepka M20', 'ABB pojistka 16A', 'Jistič 16A', 'WAGO svorka 2.5mm²'].map(ex => (
@@ -716,17 +730,6 @@ export function AiChat() {
                 ))}
               </div>
             </div>
-            <button
-              onClick={() => { setGuidedSearchActive(true); }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-teal/10 hover:bg-teal/20 border border-teal/20 hover:border-teal/40 transition-colors text-left group"
-            >
-              <Sparkles size={16} className="text-teal shrink-0" />
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-teal">Spustit Vyhledávání s průvodcem</p>
-                <p className="text-xs text-overlay0 group-hover:text-subtext0 transition-colors">Průvodce krok za krokem — specifikuj díl otázkami a AI najde nejlepší shody</p>
-              </div>
-              <span className="ml-auto text-teal/60 group-hover:text-teal transition-colors text-lg leading-none">→</span>
-            </button>
           </div>
         )}
 
