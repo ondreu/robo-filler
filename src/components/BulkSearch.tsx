@@ -416,6 +416,16 @@ export function BulkSearch({ articles, onOpenInZbom }: BulkSearchProps) {
     });
   };
 
+  const handleMixAlt = (rowIndex: number) => {
+    const row = bulkResults[rowIndex];
+    if (!row?.altQuery) return;
+    const altRaw = search(articles, { mode: 'combined', field: 'all', query: row.altQuery, maxResults: topN * 4 });
+    const altResults = altRaw.map(r => ({ ...r, fromAlt: true as const }));
+    const primary = row.results.filter(r => !r.fromAlt);
+    const mixed = [...primary, ...altResults].sort((a, b) => b.score - a.score);
+    setBulkResults(prev => prev.map((r, i) => i === rowIndex ? { ...r, results: mixed, usedAlt: true } : r));
+  };
+
   return (
     <div className="space-y-6">
       {/* Input panel */}
@@ -579,6 +589,16 @@ export function BulkSearch({ articles, onOpenInZbom }: BulkSearchProps) {
                   {/* Row header */}
                   <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                     <div className="flex items-center gap-2 flex-wrap">
+                      {row.altQuery && !row.usedAlt && (
+                        <button
+                          onClick={() => handleMixAlt(rowIndex)}
+                          title={`Přidat výsledky Alt. typového označení: ${row.altQuery}`}
+                          className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium bg-peach/10 text-peach hover:bg-peach/20 border border-peach/20 transition-colors"
+                        >
+                          <Plus size={10} />
+                          Alt. PN
+                        </button>
+                      )}
                       <span className="text-xs text-overlay1 bg-surface0 rounded-lg px-2 py-0.5 font-mono">
                         #{rowIndex + 1}
                       </span>
