@@ -367,15 +367,22 @@ export function BulkSearch({ articles, onOpenInZbom }: BulkSearchProps) {
       const results: BulkQueryResult[] = activeRows.map(row => {
         const primary = row.typoveOznaceni.trim();
         const alt = row.altTypoveOznaceni.trim();
+        const base = { pocet: row.pocet, oznaceniPristroje: row.oznaceniPristroje, popis: row.popis, vyrobce: row.vyrobce };
 
         if (primary) {
           const primaryResults = doSearch(primary);
-          if (primaryResults.length > 0 || !alt) {
-            return { query: primary, altQuery: alt || undefined, pocet: row.pocet, oznaceniPristroje: row.oznaceniPristroje, popis: row.popis, vyrobce: row.vyrobce, results: primaryResults, usedAlt: false };
+          const allRed = primaryResults.length === 0 || primaryResults.every(r => r.matchType === 'large');
+
+          if (!allRed || !alt) {
+            return { ...base, query: primary, altQuery: alt || undefined, results: primaryResults, usedAlt: false };
           }
-          return { query: primary, altQuery: alt, pocet: row.pocet, oznaceniPristroje: row.oznaceniPristroje, popis: row.popis, vyrobce: row.vyrobce, results: doSearch(alt), usedAlt: true };
+
+          // All red (or empty) + alt available → mix in alt results
+          const altResults = doSearch(alt).map(r => ({ ...r, fromAlt: true as const }));
+          const mixed = [...primaryResults, ...altResults].sort((a, b) => b.score - a.score);
+          return { ...base, query: primary, altQuery: alt, results: mixed, usedAlt: true };
         } else {
-          return { query: alt, pocet: row.pocet, oznaceniPristroje: row.oznaceniPristroje, popis: row.popis, vyrobce: row.vyrobce, results: doSearch(alt), usedAlt: false };
+          return { ...base, query: alt, results: doSearch(alt), usedAlt: false };
         }
       });
 
@@ -407,6 +414,16 @@ export function BulkSearch({ articles, onOpenInZbom }: BulkSearchProps) {
       }
       return { ...prev, [rowIndex]: result };
     });
+  };
+
+  const handleMixAlt = (rowIndex: number) => {
+    const row = bulkResults[rowIndex];
+    if (!row?.altQuery) return;
+    const altRaw = search(articles, { mode: 'combined', field: 'all', query: row.altQuery, maxResults: topN * 4 });
+    const altResults = altRaw.map(r => ({ ...r, fromAlt: true as const }));
+    const primary = row.results.filter(r => !r.fromAlt);
+    const mixed = [...primary, ...altResults].sort((a, b) => b.score - a.score);
+    setBulkResults(prev => prev.map((r, i) => i === rowIndex ? { ...r, results: mixed, usedAlt: true } : r));
   };
 
   return (
@@ -572,13 +589,23 @@ export function BulkSearch({ articles, onOpenInZbom }: BulkSearchProps) {
                   {/* Row header */}
                   <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                     <div className="flex items-center gap-2 flex-wrap">
+                      {row.altQuery && !row.usedAlt && (
+                        <button
+                          onClick={() => handleMixAlt(rowIndex)}
+                          title={`Přidat výsledky Alt. typového označení: ${row.altQuery}`}
+                          className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium bg-peach/10 text-peach hover:bg-peach/20 border border-peach/20 transition-colors"
+                        >
+                          <Plus size={10} />
+                          Alt. PN
+                        </button>
+                      )}
                       <span className="text-xs text-overlay1 bg-surface0 rounded-lg px-2 py-0.5 font-mono">
                         #{rowIndex + 1}
                       </span>
                       <span className="text-mauve font-semibold">{row.query}</span>
                       {row.usedAlt && (
                         <span className="text-xs px-2 py-0.5 rounded-lg bg-peach/15 text-peach border border-peach/20">
-                          Alt: {row.altQuery}
+                          + Alt. PN: {row.altQuery}
                         </span>
                       )}
                       {(row.pocet ?? 1) > 1 && (
