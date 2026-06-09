@@ -4,6 +4,7 @@ import { handleChat } from './chat.js';
 import { handleBomBuild, checkClarification, postCheckClarification } from './bomBuilder.js';
 import { handleGuidedChat } from './guidedSearch.js';
 import { COMPONENT_CATEGORIES } from './componentGuide.js';
+import { logRecord } from './collector.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -35,8 +36,9 @@ app.post('/api/chat', async (req, res) => {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   };
 
+  let chatResult = null;
   try {
-    const result = await handleChat(
+    chatResult = await handleChat(
       message.trim(),
       history,
       (step, label, meta = {}) => send('status', { step, label, ...meta }),
@@ -44,10 +46,12 @@ app.post('/api/chat', async (req, res) => {
       synthModel,
       send,
     );
-    if (result !== null) send('result', result);
+    if (chatResult !== null) send('result', chatResult);
   } catch (err) {
     console.error('[chat]', err);
     send('error', { error: 'Chyba při zpracování dotazu.' });
+  } finally {
+    logRecord({ type: 'chat', message: message.trim(), history, result: chatResult });
   }
 
   res.end();
@@ -104,18 +108,21 @@ app.post('/api/bom-build', async (req, res) => {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   };
 
+  let bomResult = null;
   try {
-    const result = await handleBomBuild(
+    bomResult = await handleBomBuild(
       rows,
       preferences,
       (rowIndex, total, typoveOznaceni, status, mfrName) =>
         send('progress', { rowIndex, total, typoveOznaceni, status, mfrName }),
       answers,
     );
-    send('result', { ...result, produktovaHierarchie, artiklVrcholu });
+    send('result', { ...bomResult, produktovaHierarchie, artiklVrcholu });
   } catch (err) {
     console.error('[bom-build]', err);
     send('error', { error: 'Chyba při zpracování kusovníku.' });
+  } finally {
+    logRecord({ type: 'bom', rows, preferences, produktovaHierarchie, artiklVrcholu, answers, result: bomResult });
   }
 
   res.end();
@@ -136,8 +143,10 @@ app.post('/api/guided-chat', async (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
+  const guidedEvents = [];
   const send = (event, data) => {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    guidedEvents.push({ event, data });
   };
 
   try {
@@ -151,6 +160,8 @@ app.post('/api/guided-chat', async (req, res) => {
   } catch (err) {
     console.error('[guided-chat]', err);
     send('error', { error: 'Chyba při zpracování řízeného vyhledávání.' });
+  } finally {
+    logRecord({ type: 'guided', message, phase, categoryKey: categoryKey ?? category, answers, events: guidedEvents });
   }
 
   res.end();
