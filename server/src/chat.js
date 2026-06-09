@@ -1,6 +1,7 @@
 import { Mistral } from '@mistralai/mistralai';
 import { searchTerm, articleCount } from './search.js';
 import { searchWires } from './wireSearch.js';
+import { searchCables } from './cableSearch.js';
 import { ABBREVIATIONS_CONTEXT } from './abbreviations.js';
 import { resolveManufacturerKey, detectDominantManufacturer } from './manufacturers.js';
 import { buildKnowledgeContext } from './productKnowledge.js';
@@ -10,13 +11,13 @@ function normText(t) {
   return (t ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
-const WIRE_KEYWORDS = ['vodic', 'vodič', 'kabel', 'liy', 'olflex', 'ölflex', 'radox', 'h05v', 'h07v', 'h07z',
+const WIRE_CABLE_KEYWORDS = ['vodic', 'vodič', 'kabel', 'liy', 'olflex', 'ölflex', 'radox', 'h05v', 'h07v', 'h07z',
   'nyy', 'liycy', 'lifey', 'lifý', 'nsgafo', 'nshafo', 'lapp', 'helukabel', 'huber', 'suhner',
   'nexans', 'alphawire', 'unitronic', 'topflex', 'ceeflex', 'mm2', 'průřez', 'prurez', 'žíla', 'zila'];
 
-function isWireQuery(text) {
+function isWireCableQuery(text) {
   const n = normText(text);
-  return WIRE_KEYWORDS.some(kw => n.includes(normText(kw)));
+  return WIRE_CABLE_KEYWORDS.some(kw => n.includes(normText(kw)));
 }
 
 const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
@@ -336,20 +337,15 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
   }
 }
 
-export async function handleChat(userMessage, history, sendStatus, webSearchEnabled = true, synthModel = MODEL_SYNTH, skipGuidedSuggestion = false, sendRaw = null) {
+export async function handleChat(userMessage, history, sendStatus, webSearchEnabled = true, synthModel = MODEL_SYNTH, sendRaw = null) {
   sendStatus('thinking', `Přemýšlím, chvilku strpení — v databázi je momentálně ${articleCount.toLocaleString('cs-CZ')} artiklů.`);
   const expanded = await expandQuery(userMessage, history);
   let type = expanded.type;
   const { terms, manufacturer, query } = expanded;
 
-  // Advisory guided search offer — emit once per conversation, then continue processing
-  if (type === 'search' && !skipGuidedSuggestion && sendRaw) {
-    sendRaw('suggest_guided', {});
-    // Do NOT return — continue with the search
-  }
-
   let articles = [];
   let webResults = [];
+  const wireCableQuery = isWireCableQuery(userMessage);
 
   let webSearchBlocked = false;
   if (type === 'web_search' && !webSearchEnabled) {
@@ -365,23 +361,18 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
     const preview = terms.slice(0, 3).join(', ') + (terms.length > 3 ? '...' : '');
     const mfrLabel = manufacturer ? ` [výrobce: ${manufacturer}]` : '';
     sendStatus('searching', `Hledám v databázi: ${preview}${mfrLabel}`, { terms });
-
-    const wireQuery = isWireQuery(userMessage);
     const seen = new Set();
     for (const term of terms) {
-      if (wireQuery) {
+      if (wireCableQuery) {
         for (const article of searchWires(term, 12, manufacturer)) {
-          if (!seen.has(article.artikl)) {
-            seen.add(article.artikl);
-            articles.push(article);
-          }
+          if (!seen.has(article.artikl)) { seen.add(article.artikl); articles.push(article); }
+        }
+        for (const article of searchCables(term, 12, manufacturer)) {
+          if (!seen.has(article.artikl)) { seen.add(article.artikl); articles.push(article); }
         }
       }
       for (const article of searchTerm(term, 12, manufacturer)) {
-        if (!seen.has(article.artikl)) {
-          seen.add(article.artikl);
-          articles.push(article);
-        }
+        if (!seen.has(article.artikl)) { seen.add(article.artikl); articles.push(article); }
       }
     }
   } else if (type === 'web_search') {
@@ -436,21 +427,17 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
     sendStatus('searching', `Upřesňuji výsledky: ${preview}…`, { terms: refTerms, refinement: true });
 
     const seenArtikls = new Set(articles.map(a => a.artikl));
-    const wireQuery = isWireQuery(userMessage);
     for (const term of refinement.terms.slice(0, 3)) {
-      if (wireQuery) {
+      if (wireCableQuery) {
         for (const article of searchWires(term, 12, manufacturer)) {
-          if (!seenArtikls.has(article.artikl)) {
-            seenArtikls.add(article.artikl);
-            articles.push(article);
-          }
+          if (!seenArtikls.has(article.artikl)) { seenArtikls.add(article.artikl); articles.push(article); }
+        }
+        for (const article of searchCables(term, 12, manufacturer)) {
+          if (!seenArtikls.has(article.artikl)) { seenArtikls.add(article.artikl); articles.push(article); }
         }
       }
       for (const article of searchTerm(term, 12, manufacturer)) {
-        if (!seenArtikls.has(article.artikl)) {
-          seenArtikls.add(article.artikl);
-          articles.push(article);
-        }
+        if (!seenArtikls.has(article.artikl)) { seenArtikls.add(article.artikl); articles.push(article); }
       }
     }
     candidates = articles.slice(0, 60);
