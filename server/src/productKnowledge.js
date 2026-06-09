@@ -3338,3 +3338,76 @@ export function getKnowledgeDoc(categoryKey, mfrKey = null) {
     .filter(Boolean)
     .join('\n\n---\n\n');
 }
+
+/**
+ * Agreguje docs pro daného výrobce přes všechny kategorie kde se vyskytuje.
+ * @param {string} mfrKey
+ * @returns {string}
+ */
+export function getKnowledgeDocByMfr(mfrKey) {
+  const parts = [];
+  for (const cat of Object.values(PRODUCT_KNOWLEDGE)) {
+    if (cat.manufacturers?.[mfrKey]?.doc) {
+      parts.push(cat.manufacturers[mfrKey].doc);
+    }
+  }
+  return parts.join('\n\n---\n\n');
+}
+
+/**
+ * Vrátí klíče výrobců pro kategorii odpovídající textu.
+ * @param {string} text
+ * @returns {string[]}
+ */
+export function resolveManufacturersByCategory(text) {
+  const key = detectCategory(text);
+  if (!key) return [];
+  const cat = PRODUCT_KNOWLEDGE[key];
+  return Object.keys(cat?.manufacturers ?? []);
+}
+
+/**
+ * Vrátí seznam kategorií { key, label } pro zobrazení v průvodci.
+ */
+export function listCategories() {
+  return Object.entries(PRODUCT_KNOWLEDGE).map(([key, cat]) => ({ key, label: cat.label }));
+}
+
+/**
+ * Vrátí pole questions pro danou kategorii (z productKnowledge).
+ */
+export function getCategoryQuestions(key) {
+  return PRODUCT_KNOWLEDGE[key]?.questions ?? [];
+}
+
+/**
+ * Sestaví inject string pro AI na základě detekovaného kontextu zprávy.
+ * Logika: kategorie+výrobce → specifický doc; jen kategorie → všechny docs kategorie;
+ *         jen výrobce → agregace přes kategorie.
+ *
+ * @param {string} text - zpráva uživatele
+ * @param {string|null} mfrKey - klíč výrobce (pokud znám)
+ * @returns {{ doc: string, label: string }}
+ */
+export function buildKnowledgeContext(text, mfrKey = null) {
+  const catKey = detectCategory(text);
+
+  if (catKey && mfrKey) {
+    const cat = PRODUCT_KNOWLEDGE[catKey];
+    const doc = getKnowledgeDoc(catKey, mfrKey);
+    if (doc) return { doc, label: `${cat?.label ?? catKey} — ${mfrKey}`, catKey };
+  }
+
+  if (catKey) {
+    const cat = PRODUCT_KNOWLEDGE[catKey];
+    const doc = getKnowledgeDoc(catKey);
+    if (doc) return { doc, label: cat?.label ?? catKey, catKey };
+  }
+
+  if (mfrKey) {
+    const doc = getKnowledgeDocByMfr(mfrKey);
+    if (doc) return { doc, label: mfrKey, catKey: null };
+  }
+
+  return { doc: '', label: '', catKey: null };
+}

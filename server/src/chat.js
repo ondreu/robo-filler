@@ -2,8 +2,8 @@ import { Mistral } from '@mistralai/mistralai';
 import { searchTerm, articleCount } from './search.js';
 import { searchWires } from './wireSearch.js';
 import { ABBREVIATIONS_CONTEXT } from './abbreviations.js';
-import { resolveManufacturerKey, detectDominantManufacturer, MANUFACTURER_DOCS, resolveManufacturersByCategory } from './manufacturers.js';
-import { COMPONENT_CATEGORIES } from './componentGuide.js';
+import { resolveManufacturerKey, detectDominantManufacturer } from './manufacturers.js';
+import { buildKnowledgeContext } from './productKnowledge.js';
 
 // Normalize for diacritic-insensitive matching
 function normText(t) {
@@ -19,21 +19,6 @@ function isWireQuery(text) {
   return WIRE_KEYWORDS.some(kw => n.includes(normText(kw)));
 }
 
-// Find up to 3 most relevant component categories from query text
-function findRelevantCategories(text) {
-  const n = normText(text);
-  const scored = COMPONENT_CATEGORIES.map(cat => {
-    let score = 0;
-    const labelN = normText(cat.label);
-    if (n.includes(labelN)) score += 10;
-    for (const alias of (cat.aliases ?? [])) {
-      if (n.includes(normText(alias))) { score += 3; break; }
-    }
-    return { cat, score };
-  }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
-  return scored.slice(0, 2).map(s => s.cat);
-}
-
 const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
 const MODEL_EXPAND       = 'mistral-small-latest';
 const MODEL_SYNTH        = 'mistral-small-latest';
@@ -45,6 +30,7 @@ Typy odpovědí:
 • search — vyhledávání dílu v DB (i follow-up "a pro M25?", "kovová?", "zkus IP67")
 • web_search — datasheet, cena, kde koupit, specifikace výrobce
 • support — jak funguje aplikace, proč nenašlo, co je ZBOM, jak exportovat atd.
+• discussion — otázka nebo komentář k PRÁVĚ nalezeným výsledkům (interpretace, srovnání artiklů, proč ten a ne ten), technická diskuze o dílu/kategorii bez nového hledání; VÝHRADNĚ když konverzace obsahuje předchozí výsledky vyhledávání
 • conversation — pozdrav, poděkování, nesouvisející dotaz
 
 SEARCH — termíny:
@@ -105,6 +91,7 @@ WEB: podrobné shrnutí 5–8 vět, markdown zdroje na konci.
 PODPORA: strukturovaná markdown odpověď, konkrétní a praktická.
 ODMÍTNUTÍ: pouze dotazy zcela mimo téma (vaření, politika). Vše průmyslové nebo k aplikaci vždy zodpověz.
 NENALEZENO: stručně co a proč, navrhni alternativní hledání. Žádná typová označení. "selected": [].
+DISCUSSION/FOLLOW-UP: Odpovídej na základě konverzace a znalostní báze. "selected": [] pokud nová hledání neproběhla.
 KRITICKÉ: nikdy nepiš typová označení ani artikl čísla která nejsou v kandidátech.`;
 
 const APP_DOCS = `# Dokumentace aplikace Robo Filler
@@ -182,7 +169,7 @@ Sestavení výstupního kusovníku pro export do výrobního systému. Funguje j
 
 ### Jak otevřít
 - Tlačítko **"Tabulkové zpracování"** na hlavní obrazovce — klikni pro rozevření menu.
-- Pokud máš otevřené kusovníky, kliknutí na tlačítko je rovnou otevře. Číslo v mauve kroužku vedle nápisu = počet otevřených záložek.
+- Pokud máš otevřené kusovníky, kliknutím na tlačítko je rovnou otevře. Číslo v mauve kroužku vedle nápisu = počet otevřených záložek.
 - V menu: **"Pokračovat v práci"** (zobrazí se když máš otevřené záložky), **"Nový kusovník"**, **"Z exportu"** (načíst TXT soubor).
 
 ### Záložky (více kusovníků najednou)
@@ -197,10 +184,6 @@ Sestavení výstupního kusovníku pro export do výrobního systému. Funguje j
 - Potvrzením ✓ se záložka a její data trvale odstraní. Zrušení ✗ ponechá záložku otevřenou.
 - Při zavření poslední záložky se editor automaticky schová.
 
-### Jak skrýt/zobrazit editor
-- Tlačítko **X** v pravém rohu editoru (ne na záložce!) pouze schová editor — záložky zůstanou zachovány.
-- Pro opětovné otevření klikni na "Tabulkové zpracování" v hlavním menu — editor se otevře s přesně tím, co jsi měl naposledy otevřené.
-
 ### Auto-save (automatické ukládání)
 - Editor ukládá veškeré změny automaticky do prohlížeče (localStorage) s prodlevou 500 ms.
 - Pokud zavřeš prohlížeč nebo záložku, data se obnoví při příštím otevření.
@@ -209,49 +192,15 @@ Sestavení výstupního kusovníku pro export do výrobního systému. Funguje j
 ### Záhlaví kusovníku
 - Při vytváření nového kusovníku se zobrazí formulář záhlaví: Číslo vrcholu (povinné), Číslo závodu, Platnost od, Popis, Status, Výrobní dispečer.
 - Záhlaví lze kdykoli upravit tlačítkem "← Záhlaví" v liště editoru.
-- Číslo vrcholu a popis se automaticky použijí jako název záložky.
-
-### Editace buněk
-- Klikni na buňku → editace. Napiš hodnotu, potvrď Enter (přesune dolů) nebo Tab (přesune vpravo).
-- Dvojklik = editace existující hodnoty (nezmaže obsah, kurzor na konec).
-- F2 = vstup do editace vybrané buňky.
-- Escape = zrušit editaci bez uložení.
-
-### Automatické doplnění z databáze
-- Do sloupce **"Artikl"** napiš číslo artiklu a stiskni Enter nebo Tab.
-- Aplikace automaticky doplní "Popis" a "Typové označení" z databáze — buňky krátce zezelenou.
-- Funguje i při vkládání (Ctrl+V) — doplnění proběhne pro všechny vložené artikly najednou.
-- Pokud artikl nenajde, buňky zůstanou prázdné — ověř číslo artiklu v klasickém vyhledávání.
-
-### Výběr a kopírování více buněk
-- Klikni a táhni myší pro výběr rozsahu buněk.
-- Shift+klik = výběr rozsahu od aktuální buňky.
-- Ctrl+A = vyber vše.
-- Ctrl+C zkopíruje vybrané buňky (kompatibilní s Excelem).
-- Ctrl+V vloží z Excelu nebo z jiné části tabulky. Chybějící řádky se přidají automaticky.
-- Delete nebo Backspace = smaže obsah vybraných buněk.
-
-### Přeřazení řádků
-- Vlevo u každého řádku je ikona pro drag & drop (šest teček).
-- Chyť ji myší a přetáhni řádek na nové místo v tabulce.
-
-### Undo (vrácení změn)
-- Ctrl+Z nebo tlačítko "Zpět" v liště vrátí poslední akci. Funguje až 50 kroků zpět.
-- Vrací: editace buněk, vkládání, přeřazení řádků, mazání.
 
 ### Typy řádků: L (materiál) a T (text)
 - **L řádek** = materiálová položka. Má aktivní pole Artikl, Množství, Poznámka 1, Poznámka 2.
 - **T řádek** = textová položka (nadpis nebo poznámka). Pole Artikl je neaktivní; text se píše do Popis.
 - Přepínání: klikni na tlačítko "L" nebo "T" vlevo u řádku.
 
-### Desetinný oddělovač a export
-- Přepínač "1.5" / "1,5" v liště — nastav podle cílového systému (česky obvykle čárka).
+### Export
 - **Export ZBOM .txt** — stáhne soubor kompatibilní s výrobním systémem. Vyžaduje vyplněné Číslo vrcholu v záhlaví.
 - **Excel** — stáhne tabulku ve formátu .xlsx.
-- Stejný TXT soubor lze znovu načíst přes "Z exportu" → zachová se záhlaví i všechny řádky.
-
-### Výběhové díly v kusovníku
-- Artikl se statusem "U" = výběhový díl. V kusovníku se automaticky doplní "Neaktivní materiál" do Poznámky 2.
 
 ---
 
@@ -259,128 +208,21 @@ Sestavení výstupního kusovníku pro export do výrobního systému. Funguje j
 
 Karel Bot je plovoucí chat dostupný z libovolné záložky aplikace.
 
-### Jak otevřít
-- Fialové tlačítko s bublinkou v pravém dolním rohu — klikni pro otevření.
-- Okno lze přesunout přetažením za záhlaví a změnit velikost tažením za levý horní roh (min. 300×300 px).
-
 ### Jak hledat
 - Piš přirozenou češtinou: "nerezová záslepka M20", "ABB pojistka 16A char. B".
 - AI rozumí zkratkám: nerez = A2/A4, MS = mosaz, BK = černá, NO = spínací kontakt, atd.
 - AI rozumí výrobcům — "ABB pojistka" automaticky filtruje jen ABB artikly.
 - Výsledky se zobrazí jako karty pod odpovědí — max 5 nejrelevantnějších.
 
-### Pomoc s aplikací
-- Zeptej se na cokoliv k aplikaci: "jak přidám řádek do kusovníku?", "co je hromadné vyhledávání?", "jak exportovat ZBOM?".
+### Vyhledávání s průvodcem
+- Při prvním dotazu na konkrétní komponent Karel Bot nabídne Vyhledávání s průvodcem.
+- Průvodce krok za krokem specifikuje díl otázkami a AI najde nejlepší shody.
 
-### Teleport do AI módu
-- Tlačítko **ozubené kolečko** → **"Teleportovat do AI módu"** přenese celou konverzaci do záložky AI mód (viz níže).
-- Použij pro delší konverzace nebo když chceš větší pracovní plochu.
+### AI mód (plnohodnotný AI chat)
+Záložka **AI mód** je rozšířená verze Karel Bota pro pohodlnější práci.
 
-### Nový chat
-- Tlačítko tužky (✏) v záhlaví smaže konverzaci a začne novou.
-
-### Nastavení (ozubené kolečko)
-- **Webové vyhledávání** — zapni pro dotazy "kde koupit", "datasheet", "cena". Výchozí: vypnuto.
-- **Model** — přepínač Mistral Small 4 (výchozí, rychlý) / Mistral Medium 3.5 (přesnější, ~10× dražší). Volba vyprší po 24 h a resetuje se na Small.
-- **↩ Obnovit poslední chat** — obnoví předchozí konverzaci po obnovení stránky.
-
----
-
-## AI mód (plnohodnotný AI chat)
-
-Záložka **AI mód** (třetí záložka nahoře vedle "Jednotlivé" a "Hromadné") je rozšířená verze Karel Bota pro pohodlnější práci.
-
-### Rozdíl oproti plovoucímu chatu
-- Zabírá celou šířku obrazovky — vhodné pro delší konverzace.
-- Zprávy jsou plně rozložené, kandidátské artikly jsou přehledněji zobrazeny.
-- Má stejné funkce jako plovoucí chat (vyhledávání, pomoc s aplikací, webové vyhledávání, výběr modelu).
-
-### Zobrazení kandidátů
-- Pod každou odpovědí je tlačítko **"Zobrazit výsledky (N)"** — klikni pro rozbalení všech nalezených kandidátů.
-- Zobrazí se kompaktní karty artiklů se jménem, výrobcem, typovým označením a možností kopírování.
-
-### Export z AI módu (ozubené kolečko)
-- **Konverzace (.md)** — stáhne celou konverzaci jako Markdown soubor.
-- **Nalezené artikly (.csv)** — stáhne všechny kandidátské artikly z posledního hledání jako CSV.
-
-### Jak sem přejít
-- Klikni na záložku **"AI mód"** nahoře — nebo použij Teleport z plovoucího chatu.
-- Konverzace z teleportu se okamžitě zobrazí v AI módu.
-
-### Konverzační kontext
-- AI si pamatuje posledních 6 zpráv (3 výměny otázka–odpověď). Starší kontext se ztratí.
-
-### Limitace
-- AI vybírá max 5 karet z až 60 kandidátů — pro přesné hledání číslem artiklu použij klasické vyhledávání.
-- AI může občas chybně pochopit dotaz — přeformuluj nebo upřesni.
-
----
-
-## Výběhové díly a neaktivní materiály
-- Artikl se statusem "U" = výběhový díl = materiál se přestává vyrábět nebo je nahrazen.
-- Na kartě výsledku se zobrazí červené varování "Materiál není aktivní!".
-- V kusovníku ZBOM se automaticky doplní "Neaktivní materiál" do sloupce Poznámka 2.
-- Pokud vidíš toto varování, ověř náhradní artikl u výrobce nebo v katalogu.
-
----
-
-## Časté chyby a řešení
-
-### "Nic se nenašlo"
-1. Podívej se na sekci "Mysleli jste...?" — aplikace automaticky zobrazí nejbližší přibližné shody.
-2. Zkrať dotaz — hledej jen 1-2 klíčová slova.
-3. Zkus anglický nebo německý ekvivalent (M20 Verschlussstopfen místo M20 záslepka).
-4. Přepni databázi na "Obě".
-5. Zkus Karel Bot — umí synonyma a překlady automaticky.
-
-### "Výsledky jsou úplně jiné než čekám"
-- Některé slovo v dotazu matí vyhledávač — odeber slova jedno po druhém.
-- Použij filtr výrobce pro zúžení výsledků.
-- Zkus režim "Wild Card" místo "Kombinovaného".
-
-### "Artikl se nenašel v kusovníku (ZBOM)"
-- Ověř správné číslo artiklu — bez mezer, bez extra pomlček.
-- Zkontroluj přepínač databáze — artikl může být jen v Ústí nebo jen v Effretikonu.
-
-### "Záložka v kusovníku zmizela po obnovení stránky"
-- To by se nemělo stát — záložky se automaticky ukládají. Zkontroluj, zda prohlížeč nemá zakázaný localStorage (soukromý režim může mít omezení).
-
-### "Export nefunguje"
-- Prohlížeč musí povolovat stahování. Zkontroluj nastavení prohlížeče nebo blokátor stahování.
-- Export ZBOM .txt vyžaduje vyplněné Číslo vrcholu — pokud chybí, aplikace nejprve otevře formulář záhlaví.
-
----
-
-## AI stavba kusovníku (BETA)
-
-Experimentální funkce dostupná v záložce **AI mód** přes přepínač **"AI stavba kusovníku"** (vedle "Běžný").
-
-### K čemu slouží
-Automaticky sestaví kusovník z tabulky typových označení — každou položku vyhledá v databázi a vrátí výsledný kusovník připravený pro ZBOM editor nebo export.
-
-### Jak na to
-1. Přejdi do záložky **AI mód** → klikni na **"AI stavba kusovníku"**.
-2. Potvrď varování (operace je placená).
-3. Vyplň tabulku — povinný sloupec je **Typové označení**. Ostatní (Popis, Výrobce, Počet, Označení přístroje) jsou volitelné.
-4. Volitelně zadej **Pokyny pro AI** (např. preferovat artikly bez zákaznického prefixu).
-5. Klikni **Spustit** — AI prohledá databázi pro každý řádek paralelně.
-
-### Výsledky
-- Záložka **Kusovník**: nalezené artikly jako L-řádky (materiál), nenalezené jako T-řádky (placeholder). Lze otevřít přímo v ZBOM editoru.
-- Záložka **K-Založení**: nenalezené položky připravené pro zakládání nových artiklů, export do CSV.
-- Sloupec Popis s ikonou **AI** = popis byl doplněn nebo odvozen automaticky.
-
-### Funkce
-- **Znalosti výrobců**: pro WAGO, Siemens, ABB, Schneider, Phoenix Contact aj. AI odvodí popis z typového označení pokud je prázdný.
-- **Upřesňující dotazy**: po vyhledávání se AI může zeptat na doplňující informace pro nenalezené položky — odpovědi spustí přehledávání jen těch řádků.
-- **Historie**: posledních 5 sestavení se ukládá — kliknutím na "Nedávné" se okamžitě načte výsledek bez opakování vyhledávání.
-- **Vyčistit**: tlačítko vpravo dole v tabulce smaže obsah a vrátí 3 prázdné řádky.
-- **Excel-like tabulka**: výběr buněk klikem nebo shift+klikem, navigace Tab/Enter/šipky, vkládání z Excelu zachovává prázdné buňky.
-
-### Limity a poznámky
-- Funkce je označena jako **BETA** — může se chovat neočekávaně.
-- Každé vyhledávání je placené — využívejte historii pro opakované dotazy.
-- AI párování nemusí být vždy správné — výsledky zkontrolujte před použitím.`;
+### AI stavba kusovníku (BETA)
+Experimentální funkce v záložce **AI mód** — automaticky sestaví kusovník z tabulky typových označení.`;
 
 async function expandQuery(userMessage, history) {
   const resp = await client.chat.complete({
@@ -395,7 +237,7 @@ async function expandQuery(userMessage, history) {
 
   try {
     const parsed = JSON.parse(resp.choices[0].message.content);
-    const type = ['search', 'web_search', 'support', 'conversation'].includes(parsed.type)
+    const type = ['search', 'web_search', 'support', 'conversation', 'discussion'].includes(parsed.type)
       ? parsed.type
       : 'search';
     return {
@@ -432,23 +274,22 @@ async function webSearch(query) {
   }
 }
 
-async function synthesize(userMessage, articles, webResults, history, type, webSearchBlocked = false, mfrKeys = [], model = MODEL_SYNTH, componentKnowledge = '') {
+async function synthesize(userMessage, articles, webResults, history, type, webSearchBlocked = false, knowledgeContext = '', model = MODEL_SYNTH) {
   let context = '';
   if (webSearchBlocked) {
     context = '\n\n[Poznámka: Uživatel žádal webové vyhledávání, ale není zapnuto. Řekni mu to a nevymýšlej odpověď.]';
   }
 
-  if (componentKnowledge) {
-    context += componentKnowledge;
+  if (knowledgeContext) {
+    context += knowledgeContext;
   }
 
   if (type === 'support') {
     context = `\n\nDokumentace aplikace Robo Filler:\n${APP_DOCS}`;
+  } else if (type === 'discussion') {
+    // Discussion: use knowledge + conversation history, skip candidates section
+    // The history already contains previous search results as text
   } else if (type === 'search') {
-    const mfrDocs = mfrKeys.map(k => MANUFACTURER_DOCS[k]).filter(Boolean);
-    if (mfrDocs.length > 0) {
-      context += '\n\n' + mfrDocs.join('\n\n---\n\n');
-    }
     context += articles.length > 0
       ? `\n\nKandidáti (${articles.length}) — vyber artikl čísla max 5 nejrelevantnějších do "selected":\n` + articles
           .map(a => {
@@ -495,16 +336,16 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
   }
 }
 
-export async function handleChat(userMessage, history, sendStatus, webSearchEnabled = false, synthModel = MODEL_SYNTH, componentAdvisor = false, skipGuidedSuggestion = false, sendRaw = null) {
+export async function handleChat(userMessage, history, sendStatus, webSearchEnabled = true, synthModel = MODEL_SYNTH, _componentAdvisor = false, skipGuidedSuggestion = false, sendRaw = null) {
   sendStatus('thinking', `Přemýšlím, chvilku strpení — v databázi je momentálně ${articleCount.toLocaleString('cs-CZ')} artiklů.`);
   const expanded = await expandQuery(userMessage, history);
   let type = expanded.type;
   const { terms, manufacturer, query } = expanded;
 
-  // Offer guided search for product queries unless caller opted out
+  // Advisory guided search offer — emit once per conversation, then continue processing
   if (type === 'search' && !skipGuidedSuggestion && sendRaw) {
     sendRaw('suggest_guided', {});
-    return null;
+    // Do NOT return — continue with the search
   }
 
   let articles = [];
@@ -518,6 +359,8 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
 
   if (type === 'support') {
     sendStatus('searching', 'Hledám v dokumentaci aplikace...');
+  } else if (type === 'discussion') {
+    sendStatus('thinking', 'Analyzuji kontext konverzace...');
   } else if (type === 'search') {
     const preview = terms.slice(0, 3).join(', ') + (terms.length > 3 ? '...' : '');
     const mfrLabel = manufacturer ? ` [výrobce: ${manufacturer}]` : '';
@@ -553,35 +396,38 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
   sendStatus('generating', 'Formuluji odpověď...');
   let candidates = articles.slice(0, 40);
 
-  // Resolve manufacturer docs: explicit mention, category keywords, dominant articles (follow-up)
+  // Resolve manufacturer key from explicit mention + dominant in results
   const primaryMfrKey = resolveManufacturerKey(manufacturer);
   const dominantVyrobce = (type === 'search' && history.length > 0) ? detectDominantManufacturer(candidates) : null;
   const secondaryMfrKey = resolveManufacturerKey(dominantVyrobce);
-  const categoryMfrKeys = (type === 'search' && !primaryMfrKey) ? resolveManufacturersByCategory(userMessage) : [];
-  const mfrKeys = [...new Set([primaryMfrKey, secondaryMfrKey, ...categoryMfrKeys].filter(Boolean))];
+  const effectiveMfrKey = primaryMfrKey ?? secondaryMfrKey ?? null;
 
-  // Component advisor: inject relevant category knowledge
-  let componentKnowledge = '';
-  if (componentAdvisor) {
-    const relevantCats = findRelevantCategories(userMessage);
-    if (relevantCats.length > 0) {
-      componentKnowledge = '\n\n---\n## Znalosti průvodce komponentami\n' +
-        relevantCats.map(c => `### Kategorie: ${c.label}\n${c.knowledge}`).join('\n\n---\n');
-      sendStatus('knowledge', `Načítám průvodce komponentami: ${relevantCats.map(c => c.label).join(', ')}`);
-    }
+  // For discussion type, also try to extract manufacturer from conversation history
+  let historyMfrKey = effectiveMfrKey;
+  if (type === 'discussion' && !historyMfrKey) {
+    // Look for manufacturer mentions in recent history
+    const recentText = history.slice(-4).map(m => m.content ?? '').join(' ');
+    historyMfrKey = resolveManufacturerKey(recentText.match(/\b(ABB|Siemens|Eaton|Schneider|WAGO|Phoenix|Weidmüller|Rittal|Omron|LAPP|Helukabel|Nexans)\b/i)?.[1] ?? null);
   }
 
-  if (mfrKeys.length > 0) {
-    const MFR_DISPLAY = {
-      wago: 'WAGO', abb: 'ABB', siemens: 'Siemens', phoenix: 'Phoenix Contact',
-      weidmuller: 'Weidmüller', allen_bradley: 'Allen-Bradley', rittal: 'Rittal',
-      eaton: 'Eaton', omron: 'Omron', schneider: 'Schneider Electric',
-    };
-    const names = mfrKeys.map(k => MFR_DISPLAY[k] ?? k);
-    sendStatus('knowledge', `Načítám znalosti výrobce: ${names.join(', ')}`, { mfr: names });
+  // Smart knowledge injection from productKnowledge.js
+  // Detect category from current message; for discussion also scan recent history
+  const queryForCat = type === 'discussion'
+    ? [userMessage, ...history.slice(-4).map(m => m.content ?? '')].join(' ')
+    : userMessage;
+
+  const { doc: knowledgeDoc, label: knowledgeLabel, catKey } = buildKnowledgeContext(queryForCat, historyMfrKey ?? effectiveMfrKey);
+
+  let knowledgeContext = '';
+  if (knowledgeDoc && (type === 'search' || type === 'discussion')) {
+    knowledgeContext = `\n\n---\n## Znalosti produktové kategorie\n${knowledgeDoc}`;
+    const catDisplay = catKey ? `${PRODUCT_KNOWLEDGE_LABELS[catKey] ?? catKey}` : '';
+    const mfrDisplay = (historyMfrKey ?? effectiveMfrKey) ? ` — ${historyMfrKey ?? effectiveMfrKey}` : '';
+    const label = knowledgeLabel || `${catDisplay}${mfrDisplay}`;
+    sendStatus('knowledge', `Inject znalostí: ${label}`, { mfr: label ? [label] : [] });
   }
 
-  let { answer, selected, refinement } = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys, synthModel, componentKnowledge);
+  let { answer, selected, refinement } = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, knowledgeContext, synthModel);
 
   // Two-pass: if SYNTH requests refinement, do a second search and re-synthesize
   if (type === 'search' && refinement?.terms?.length > 0) {
@@ -610,7 +456,7 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
     candidates = articles.slice(0, 60);
 
     sendStatus('generating', 'Formuluji výslednou odpověď…');
-    const second = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, mfrKeys, synthModel, componentKnowledge);
+    const second = await synthesize(userMessage, candidates, webResults, history, type, webSearchBlocked, knowledgeContext, synthModel);
     answer   = second.answer;
     selected = second.selected;
     // refinement from second pass is intentionally ignored
@@ -626,7 +472,6 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
         .map(s => candidates.findIndex(c => c.artikl === s))
         .filter(i => i >= 0)
     );
-    // Auto-include candidates whose typoveOznaceni/artikl/cisloDiluVyrobce appear in the answer text
     if (answer) {
       const answerLower = answer.toLowerCase();
       for (let i = 0; i < candidates.length && autoSelect.size < 5; i++) {
@@ -646,3 +491,18 @@ export async function handleChat(userMessage, history, sendStatus, webSearchEnab
 
   return { answer, articles: pickedArticles, allCandidates: type === 'search' ? candidates : [], expandedTerms: terms, type };
 }
+
+// Human-readable labels for category keys (for status display)
+const PRODUCT_KNOWLEDGE_LABELS = {
+  jistic: 'Jistič', prislusenstvi_jistic: 'Příslušenství jističů',
+  svorka: 'Svorka', prislusenstvi_svorka: 'Příslušenství svorek',
+  stykac: 'Stykač', prislusenstvi_stykac: 'Příslušenství stykačů',
+  nadproudova_spoust: 'Nadproudová spoušť', rele: 'Relé',
+  prislusenstvi_rele: 'Příslušenství relé', casove_rele: 'Časové relé',
+  fazove_rele: 'Fázové relé', tlacitko: 'Tlačítko',
+  nouzove_tlacitko: 'Nouzové tlačítko', hlavni_vypinac: 'Hlavní vypínač',
+  pruchovka: 'Průchodka', zaslepka: 'Záslepka', chranic: 'Chránič',
+  prepetova_ochrana: 'Přepěťová ochrana', frekvencni_menic: 'Frekvenční měnič',
+  pojistka: 'Pojistka', napajeci_zdroj: 'Napájecí zdroj',
+  din_lista: 'DIN lišta', softstarter: 'Softstarter',
+};
