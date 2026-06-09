@@ -30,24 +30,93 @@ Every type number and claim must be verifiable from manufacturer sites or major 
 
 | Category key | Priority | Notes |
 |---|---|---|
-| `svorka` | High | WAGO, Phoenix, Weidmüller — many order numbers |
-| `prislusenstvi_svorka` | High | End brackets, markers, bridges |
-| `prislusenstvi_stykac` | Medium | Mostly checked alongside `stykac` |
-| `rele` | High | Specific coil voltages, order numbers |
-| `prislusenstvi_rele` | Medium | |
-| `casove_rele` | Medium | Timer settings, order numbers |
-| `fazove_rele` | Medium | |
+| `prislusenstvi_stykac` | Low | Mostly checked alongside `stykac` |
+| `casove_rele` | Low | Timer part numbers not deeply checked |
+| `fazove_rele` | Low | Phase relay part numbers not deeply checked |
 | `tlacitko` | Low | |
 | `nouzove_tlacitko` | Low | |
-| `hlavni_vypinac` | Medium | Rotary isolators — order numbers risky |
-| `pruchovka` | Low | Cable glands — standard sizes |
+| `hlavni_vypinac` | Low | OT16F3/OT25F3 order numbers confirmed in Audit #1; remaining not explicitly verified |
+| `pruchovka` | Low | Cable glands — standard sizes, low risk |
 | `zaslepka` | Low | |
-| `chranic` | High | RCDs — trip currents and type codes critical |
-| `prepetova_ochrana` | Medium | SPD levels and order numbers |
-| `rittal` | Medium | Enclosure dimensions |
-| `pojistka` | High | Fuse types and ratings — order numbers risky |
-| `din_lista` | Low | Standard profiles |
-| `frekvencni_menic` (ABB) | Medium | ACS355/ACS580 not verified |
+| `prepetova_ochrana` | Low | VAL-MS and OVR T2 order numbers not deeply checked |
+| `rittal` | Low | Enclosure order numbers not deeply checked |
+
+---
+
+## Audit #2 — 2026-06-09
+
+**Branch:** `claude/happy-franklin-iynvmq`
+**Approach:** 5 parallel research agents covering svorka, rele, chranic, pojistka, frekvencni_menic (ABB), and din_lista.
+
+### Categories audited in Audit #2
+
+| Category key | Status |
+|---|---|
+| `svorka` | ✅ Audited — errors found and fixed |
+| `prislusenstvi_svorka` | ✅ Audited — end bracket fixed |
+| `rele` | ✅ Audited — many errors found and fixed |
+| `prislusenstvi_rele` | ✅ Audited — socket errors fixed |
+| `chranic` | ✅ Audited — ABB type A order numbers fixed, Siemens all confirmed |
+| `pojistka` | ✅ Audited — NH2 max and 690V suffix fixed |
+| `din_lista` | ✅ Audited — Phoenix and Weidmüller errors fixed |
+| `frekvencni_menic` (ABB) | ✅ Audited — ACS355 all confirmed, ACS580 3 wrong numbers fixed |
+
+---
+
+## Errors fixed in Audit #2
+
+### Critical (wrong product / wrong order number)
+
+- **PLC-RSC-24DC/21-AU (2966171)** — 2966171 is the STANDARD relay, not the -AU (gold contact) variant; swapped: 2966171 = standard, 2966265 = -AU
+- **PLC-RSC-24DC/21 (2966011)** — 2966011 doesn't exist; corrected to 2966171 (standard)
+- **PLC-RSC-24DC/21-21 (2966024)** — wrong order number; corrected to **2967060**
+- **PLC-RSC-230AC/21 (2966168)** — 2966168 unverifiable; replaced with **PLC-RSC-230UC/21 (2966207)** (universal coil, current catalog equivalent)
+- **PLC-RPT-24DC/21-21 (2900302)** — wrong; corrected to **2900330**
+- **PLC-RPT-230AC/21 (2900328)** — 2900328 is a completely different product (switch module); entry removed
+- **ABB F202A type A order numbers** — systematic error: all three used non-existent prefix "2CSF202003R"; correct prefix is "2CSF202101R":
+  - F202A-25/0.03: 2CSF202003R1250 → **2CSF202101R1250**
+  - F202A-40/0.03: 2CSF202003R1400 → **2CSF202101R1400**
+  - F202A-63/0.03: 2CSF202003R1630 → **2CSF202101R1630**
+- **ABB ACS580-01-04A8-4** — 480V US variant; 400V 1.5 kW = **ACS580-01-04A1-4**
+- **ABB ACS580-01-07A2-4** — nominally 3 kW (LD) drive, not 2.2 kW; 400V 2.2 kW = **ACS580-01-05A7-4**
+- **ABB ACS580-01-09A5-4** — nominally 4 kW (LD) drive, not 3 kW; 400V 3 kW = **ACS580-01-07A3-4**
+- **Phoenix NS 35/7,5 UNPERF (1201916)** — wrong; corrected to **0801681**
+- **Phoenix NS 35/15 UNPERF (1201929)** — wrong; corrected to **1201714**
+- **Weidmüller TSLD35 2000 (0205200000)** — product designation and order number both wrong; corrected to **TS 35X7.5 2M/ST/ZN (0383400000)**
+- **Weidmüller TRS 24VDC 2CO (1122780000)** — 1122780000 is actually TRS 24VUC 1CO (universal coil, 1CO); TRS 24VDC 2CO = **1123490000** (8 A, not 6 A)
+
+### Systematic errors
+
+- **Omron G2R-1 contact rating** — 10 A throughout → corrected to **16 A** (Ith = 16 A / 250 VAC); G2R-2 (2CO) correctly stays at 5 A
+- **Omron G2R-SN sockets** — P2CF-08 listed for both variants → corrected: G2R-1-SN → **P2RF-05**, G2R-2-SN → **P2RF-08** (P2CF-08 is for MK/H3CR series, not G2R-SN)
+- **Finder series 55 socket** — claimed "série 95" → corrected to **série 94 (94.04)**; 95.05 is an 8-pin socket for series 40 relays (not 14-pin for series 55)
+- **Weidmüller WDU color** — "šedá" (grey) → corrected to **"béžová"** (beige/dark beige) throughout; grey is a newer separate WDU GR range
+
+### Individual errors
+
+- **WAGO 2002-102** end bracket — does not exist; corrected to **2002-1291**
+- **Omron G2R mechanical life** — "10 × 10⁶ cycles" applies to AC coil only; DC coil variants = **20 × 10⁶**; note added
+- **Relpol RM85 socket** — "GZT8-1" does not exist; corrected to **GZT80**
+- **Weidmüller TRS operating temperature** — "–25 °C … +55 °C" → corrected to **–40 °C … +60 °C**
+- **ABB F202 width** — "2 TE (36 mm)" → corrected to **"2 TE (35 mm)"** (actual body is 35 mm)
+- **Phoenix UK 5-MTK-P/P** — description said "5 mm²" (misleading: "5" is body-series name, not conductor size); corrected to "do 4 mm²" with explanatory note
+- **WAGO 2016 rated current** — was missing; added **76 A** to heading
+- **NH2 max current** — heading said "do 315 A" → corrected to **"do 400 A"**; added 400NHG2B entry
+- **NH 690V suffix** — "B6" / "63NHG1B6" format is wrong; correct suffix is **-690** (e.g. 63NHG1B-690)
+- **Phoenix tips "6-ciferné"** — Phoenix Contact order numbers are 7-digit; corrected to "7-místné"
+
+### Confirmed clean (no errors found)
+- WAGO TOPJOB S: all 14 part numbers (2002-2016 series), suffix coding pattern, and current/voltage ratings all confirmed
+- ABB ACS355: all 13 part numbers and kW/A ratings confirmed against new.abb.com
+- Siemens 5SV3 RCDs: all 13 part numbers and the complete suffix decoder table confirmed
+- ABB F202AC type AC: F202AC-25/0.03, -40/0.03, -63/0.03 order numbers confirmed
+- Omron G2R-2-E DC24: 5 A / 250 VAC confirmed (only G2R-1 was wrong)
+- Finder series 40: all four part numbers (40.51/40.52 × 24VDC/230VAC) confirmed
+- Phoenix PLC-RPT-24DC/21 (2900299): confirmed
+- Relpol RM85 part numbers and 16 A rating: confirmed
+- Weidmüller TRS 24VDC 1CO (1122770000): confirmed
+- Eaton Bussmann NH naming pattern [I]NHG[size]B: confirmed
+- All 7 checked NH part numbers: confirmed
 
 ---
 

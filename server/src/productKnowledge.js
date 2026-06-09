@@ -615,18 +615,18 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   2004-1201  = průchozí svorka, šedá, 4 mm²
   2004-1207  = PE zemnicí svorka, zeleno-žlutá, 4 mm²
 
-### Řada 2006 — 6 mm², 41 A
+### Řada 2006 — 6 mm², 41 A, 800 V
 
   2006-1201  = průchozí svorka, šedá, 6 mm²
   2006-1204  = průchozí svorka, modrá (N vodič), 6 mm²
   2006-1207  = PE zemnicí svorka, zeleno-žlutá, 6 mm²
 
-### Řada 2010 — 10 mm², 57 A
+### Řada 2010 — 10 mm², 57 A, 800 V
 
   2010-1201  = průchozí svorka, šedá, 10 mm²
   2010-1207  = PE zemnicí svorka, zeleno-žlutá, 10 mm²
 
-### Řada 2016 — 16 mm²
+### Řada 2016 — 16 mm², 76 A, 800 V
 
   2016-1201  = průchozí svorka, šedá, 16 mm²
   2016-1204  = průchozí svorka, modrá (N vodič), 16 mm²
@@ -639,7 +639,7 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   2002-404   = propojovací mostek (jumper bar) pro řadu 2002, 4-pólový
   2004-404   = propojovací mostek pro řadu 2004
   2002-405   = 5-pólový jumper pro 2002
-  2002-102   = koncový doraz (end bracket/stopper) pro 2002
+  2002-1291  = koncový doraz (end bracket/stopper) pro 2002
 
   Pro jumper bridges platí: kód 4xx = počet pólů (404 = 4 pól, 405 = 5 pól)
 
@@ -721,7 +721,7 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 ### MTK / UK série — Odpojovací svorky
 
   UK 5-MTK   = odpojovací svorka s testem (knife-disconnect, test socket)
-  UK 5-MTK-P/P (3004032) = odpojovací, 5 mm², test zásuvka
+  UK 5-MTK-P/P (3004032) = odpojovací, do 4 mm², test zásuvka (číslo "5" = označení série, nikoliv průřez)
 
 ---
 
@@ -745,7 +745,7 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
   - UT = šroubové, PT = push-in (jinak stejný rozměr, záměnné)
   - Číslo za UT/PT = průřez v mm² (UT 2,5 = 2,5 mm², UT 4 = 4 mm²)
-  - Číslo v závorce = 6-ciferné obj. číslo Phoenix Contact
+  - Číslo v závorce = 7-místné obj. číslo Phoenix Contact
   - UTTB = dvojpodlažní verze (úspora místa na DIN liště)
   - PE varianty mají vždy zeleno-žlutou barvu a přímé uzemnění na lištu
 `,
@@ -769,14 +769,14 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### WDU série — Šroubové průchozí svorky (ověřeno z catalog.weidmueller.com)
 
-  WDU 2,5    (1020000000) = průchozí, šedá,  2,5 mm², šroubové
-  WDU 2,5 GE (1020020000) = průchozí, žlutá, 2,5 mm²
-  WDU 4      (1020100000) = průchozí, šedá,  4 mm²,   šroubové
-  WDU 4 BL   (1020180000) = průchozí, modrá, 4 mm²    (N vodič)
-  WDU 6      (1020200000) = průchozí, šedá,  6 mm²,   šroubové
-  WDU 10     (1020300000) = průchozí, šedá,  10 mm²,  šroubové
-  WDU 16     (1020400000) = průchozí, šedá,  16 mm²,  šroubové
-  WDU 35     (1020500000) = průchozí, šedá,  35 mm²,  šroubové
+  WDU 2,5    (1020000000) = průchozí, béžová,  2,5 mm², šroubové
+  WDU 2,5 GE (1020020000) = průchozí, žlutá,  2,5 mm²
+  WDU 4      (1020100000) = průchozí, béžová,  4 mm²,   šroubové
+  WDU 4 BL   (1020180000) = průchozí, modrá,   4 mm²    (N vodič)
+  WDU 6      (1020200000) = průchozí, béžová,  6 mm²,   šroubové
+  WDU 10     (1020300000) = průchozí, béžová,  10 mm²,  šroubové
+  WDU 16     (1020400000) = průchozí, béžová,  16 mm²,  šroubové
+  WDU 35     (1020500000) = průchozí, béžová,  35 mm²,  šroubové
 
   Formát obj. čísla: 10[průřez_kód][barva_kód]0000
     Průřez kódy: 2=2.5mm², 21=4mm², 22=6mm², 23=10mm², 24=16mm², 25=35mm²
@@ -866,8 +866,8 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### Koncové dorazy a příchytky
 
-  2002-102   = koncový doraz pro řadu 2002
-  2004-102   = koncový doraz pro řadu 2004
+  2002-1291  = koncový doraz pro řadu 2002
+  2004-102   = koncový doraz pro řadu 2004 (ověřit v katalogu)
   249-197    = boční přepážka / separator
 
 ### Identifikace
@@ -1715,37 +1715,40 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### Schéma: G2R-[póly]-[varianta] [napětí_cívky]
 
-  Počet pólů: 1 = 1CO (SPDT, 10 A), 2 = 2CO (DPDT, 5 A)
+  Počet pólů: 1 = 1CO (SPDT, 16 A), 2 = 2CO (DPDT, 5 A)
   Varianta: E = PCB montáž, SN = pro patici + LED + testovací tlačítko
 
 ### PCB montáž (varianta E)
 
-  G2R-1-E DC24  = 1CO, 24 VDC, PCB, 10 A / 250 VAC
-  G2R-1-E DC12  = 1CO, 12 VDC, PCB, 10 A / 250 VAC
-  G2R-1-E AC230 = 1CO, 230 VAC, PCB, 10 A / 250 VAC
+  G2R-1-E DC24  = 1CO, 24 VDC, PCB, 16 A / 250 VAC
+  G2R-1-E DC12  = 1CO, 12 VDC, PCB, 16 A / 250 VAC
+  G2R-1-E AC230 = 1CO, 230 VAC, PCB, 16 A / 250 VAC
   G2R-2-E DC24  = 2CO, 24 VDC, PCB, 5 A / 250 VAC
   G2R-2-E DC12  = 2CO, 12 VDC, PCB, 5 A / 250 VAC
   G2R-2-E AC230 = 2CO, 230 VAC, PCB, 5 A / 250 VAC
 
 ### Patice montáž (varianta SN, pro DIN lištu)
 
-  G2R-1-SN DC24  = 1CO, 24 VDC, patice P2CF-08, LED + test button
-  G2R-1-SN DC12  = 1CO, 12 VDC, patice P2CF-08
-  G2R-1-SN AC230 = 1CO, 230 VAC, patice P2CF-08
-  G2R-2-SN DC24  = 2CO, 24 VDC, patice P2CF-08
-  G2R-2-SN DC12  = 2CO, 12 VDC, patice P2CF-08
-  G2R-2-SN AC230 = 2CO, 230 VAC, patice P2CF-08
+  G2R-1-SN DC24  = 1CO, 24 VDC, patice P2RF-05, LED + test button
+  G2R-1-SN DC12  = 1CO, 12 VDC, patice P2RF-05
+  G2R-1-SN AC230 = 1CO, 230 VAC, patice P2RF-05
+  G2R-2-SN DC24  = 2CO, 24 VDC, patice P2RF-08
+  G2R-2-SN DC12  = 2CO, 12 VDC, patice P2RF-08
+  G2R-2-SN AC230 = 2CO, 230 VAC, patice P2RF-08
 
 ### Parametry kontaktů
 
-  G2R-1 (1CO): Ith = 10 A, 250 VAC / 30 VDC
+  G2R-1 (1CO): Ith = 16 A, 250 VAC / 30 VDC
   G2R-2 (2CO): Ith = 5 A, 250 VAC / 30 VDC
-  Mechanická životnost: 10 × 10⁶ cyklů
+  Mechanická životnost (DC cívka): 20 × 10⁶ cyklů
+  Mechanická životnost (AC cívka): 10 × 10⁶ cyklů
   Elektrická životnost: 100 × 10³ cyklů (jmenovité zatížení)
 
 ### Patice (příslušenství)
 
-  P2CF-08 = 8-pin oktalová patice pro G2R-1-SN / G2R-2-SN, DIN 35 mm, šroubové svorky
+  P2RF-05 = 5-pin patice pro G2R-1-SN, DIN 35 mm, šroubové svorky
+  P2RF-08 = 8-pin patice pro G2R-2-SN, DIN 35 mm, šroubové svorky
+  POZOR: P2CF-08 je oktalová patice pro série MK/H3CR — není kompatibilní s G2R-SN!
 `,
       },
       phoenix_contact: {
@@ -1754,16 +1757,15 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### PLC-RSC (šroubové svorky, přímá DIN montáž)
 
-  PLC-RSC-24DC/21-AU (2966171) = 1CO, 24 VDC, šroubové svorky, 6 A / 250 VAC
-  PLC-RSC-24DC/21    (2966011) = 1CO, 24 VDC, šroubové svorky, 6 A / 250 VAC
-  PLC-RSC-24DC/21-21 (2966024) = 2CO, 24 VDC, šroubové svorky, 6 A / 250 VAC
-  PLC-RSC-230AC/21   (2966168) = 1CO, 230 VAC, šroubové svorky, 6 A
+  PLC-RSC-24DC/21    (2966171) = 1CO, 24 VDC, šroubové svorky, 6 A / 250 VAC
+  PLC-RSC-24DC/21-AU (2966265) = 1CO, 24 VDC, šroubové svorky, 6 A / 250 VAC (Au kontakty)
+  PLC-RSC-24DC/21-21 (2967060) = 2CO, 24 VDC, šroubové svorky, 6 A / 250 VAC
+  PLC-RSC-230UC/21   (2966207) = 1CO, 230 V AC/DC (univerzální cívka), šroubové svorky, 6 A
 
 ### PLC-RPT (push-in svorky, přímá DIN montáž)
 
   PLC-RPT-24DC/21    (2900299) = 1CO, 24 VDC, push-in svorky, 6 A / 250 VAC
-  PLC-RPT-24DC/21-21 (2900302) = 2CO, 24 VDC, push-in svorky, 6 A / 250 VAC
-  PLC-RPT-230AC/21   (2900328) = 1CO, 230 VAC, push-in svorky, 6 A
+  PLC-RPT-24DC/21-21 (2900330) = 2CO, 24 VDC, push-in svorky, 6 A / 250 VAC
 
 ### Parametry
 
@@ -1794,10 +1796,11 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### Série 55 – Řídicí relé 4CO
 
-  55.34.9.024.0040 = 4CO, 24 VDC, 7 A, pro patici série 95
-  55.34.9.230.0040 = 4CO, 230 VAC, 7 A, pro patici série 95
+  55.34.9.024.0040 = 4CO, 24 VDC, 7 A, pro patici série 94 (94.04)
+  55.34.9.230.0040 = 4CO, 230 VAC, 7 A, pro patici série 94 (94.04)
 
-  Pin konfigurace: 14-pin (pro patici 95.05)
+  Pin konfigurace: 14-pin (pro patici 94.04)
+  POZOR: série 95 patice jsou pro relé série 40 (8-pin oktal) — ne pro série 55!
 `,
       },
       weidmuller: {
@@ -1807,14 +1810,14 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 ### TRS – miniaturní relé pro přímou DIN montáž
 
   TRS 24VDC 1CO (1122770000) = 1CO, 24 VDC, 6 A / 250 VAC, DIN 35 mm
-  TRS 24VDC 2CO (1122780000) = 2CO, 24 VDC, 6 A / 250 VAC, DIN 35 mm
+  TRS 24VDC 2CO (1123490000) = 2CO, 24 VDC, 8 A / 250 VAC, DIN 35 mm
   TRS 230VAC 1CO              = 1CO, 230 VAC, 6 A / 250 VAC, DIN 35 mm
 
 ### Parametry
 
-  Kontakty: 6 A / 250 VAC
+  Kontakty: 6 A (1CO) / 8 A (2CO) / 250 VAC
   LED indikace: ano
-  Pracovní teplota: –25 °C … +55 °C
+  Pracovní teplota: –40 °C … +60 °C
   Číslo v závorce = objednací číslo Weidmüller
 `,
       },
@@ -1826,9 +1829,9 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
   Schéma: RM85-2011-35-[napětí_cívky]
 
-  RM85-2011-35-1024 = 1CO, 24 VDC cívka, 16 A / 250 VAC, pro patici GZT8-1
-  RM85-2011-35-5230 = 1CO, 230 VAC cívka, 16 A / 250 VAC, pro patici GZT8-1
-  RM85-2011-35-1012 = 1CO, 12 VDC cívka, 16 A / 250 VAC, pro patici GZT8-1
+  RM85-2011-35-1024 = 1CO, 24 VDC cívka, 16 A / 250 VAC, pro patici GZT80
+  RM85-2011-35-5230 = 1CO, 230 VAC cívka, 16 A / 250 VAC, pro patici GZT80
+  RM85-2011-35-1012 = 1CO, 12 VDC cívka, 16 A / 250 VAC, pro patici GZT80
 
 ### Parametry RM85
 
@@ -1836,7 +1839,7 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   Jmenovitý proud kontaktů: 16 A / 250 VAC
   Materiál kontaktů: AgSnO2
   Mechanická životnost: 30 × 10⁶ cyklů
-  Montáž: výhradně do patice GZT8-1 (DIN 35 mm) nebo GZT8-2 (přímá montáž PCB)
+  Montáž: výhradně do patice GZT80 (DIN 35 mm) nebo GZT80E (PCB montáž)
   Pracovní teplota: –40 °C … +70 °C
   Norma: IEC 61810-1
 `,
@@ -1859,18 +1862,17 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
     manufacturers: {
       omron: {
         label: 'Omron',
-        doc: `## Omron – Patice série P2CF pro relé G2R
+        doc: `## Omron – Patice série P2RF pro relé G2R
 
-  P2CF-08  = 8-pin oktalová patice, DIN 35 mm, šroubové svorky
-             Pro relé: G2R-1-SN, G2R-2-SN
-             Rozměry: 27,5 × 33 × 36,2 mm
+  P2RF-05  = 5-pin patice, DIN 35 mm, šroubové svorky — pro G2R-1-SN (1CO)
+  P2RF-08  = 8-pin patice, DIN 35 mm, šroubové svorky — pro G2R-2-SN (2CO)
 
-  P2RF-08  = 8-pin oktalová patice, PCB montáž (plošný spoj)
+  POZOR: P2CF-08 je oktalová patice pro série MK a H3CR — není pro G2R-SN!
 
 ### Kompatibilita
 
-  G2R-1-SN → P2CF-08 (8-pin oktal)
-  G2R-2-SN → P2CF-08 (8-pin oktal)
+  G2R-1-SN → P2RF-05 (5-pin, DIN 35 mm)
+  G2R-2-SN → P2RF-08 (8-pin, DIN 35 mm)
   G2R-1-E / G2R-2-E → PCB přímá montáž (bez patice)
 `,
       },
@@ -1884,35 +1886,38 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   94.72.2 = 8-pin, DIN 35 mm, šroubové svorky + aretace relé
   94.02.1 = 8-pin, PCB montáž
 
-### Série 95 – pro relé Finder 55 (14-pin)
+### Série 94 – pro relé Finder 55 (14-pin) a Finder 40 (8-pin)
 
-  95.05   = 14-pin, DIN 35 mm, šroubové svorky
-  95.05.2 = 14-pin, DIN 35 mm + aretace relé
+  94.04   = 14-pin, DIN 35 mm, šroubové svorky — pro série 55 (4CO relé)
+  95.05   = 8-pin oktal, DIN 35 mm — pro série 40 (1CO/2CO relé)
+  95.05.2 = 8-pin oktal, DIN 35 mm + aretace relé
+
+  POZOR: 95.05 je 8-pin patice pro série 40, nikoliv 14-pin pro série 55!
 
 ### Kompatibilita
 
-  Finder 40.51 / 40.52 (1CO / 2CO, 8-pin) → patice série 94
-  Finder 55.34 (4CO, 14-pin)               → patice série 95
+  Finder 40.51 / 40.52 (1CO / 2CO, 8-pin) → patice série 95 (95.05)
+  Finder 55.34 (4CO, 14-pin)               → patice série 94 (94.04)
 `,
       },
       relpol: {
         label: 'Relpol',
         doc: `## Relpol – Patice GZT8 pro relé RM85
 
-### GZT8-1 – DIN 35 mm patice pro RM85 (8-pin)
+### GZT80 – DIN 35 mm patice pro RM85 (8-pin)
 
-  GZT8-1  = 8-pin, DIN 35 mm, šroubové svorky
+  GZT80   = 8-pin, DIN 35 mm, šroubové svorky
              Kompatibilní s: RM85 (1CO, 16 A)
              Šroubové svorky max. průřez: 2,5 mm²
 
-### GZT14-1 – DIN 35 mm patice pro RM15 / R15 (14-pin)
+### GZT14-1 – DIN 35 mm patice pro R15 (14-pin)
 
   GZT14-1 = 14-pin, DIN 35 mm, šroubové svorky
              Kompatibilní s: R15 série (4CO)
 
 ### Kompatibilita
 
-  Relpol RM85 (1CO, 8-pin) → GZT8-1 (DIN)
+  Relpol RM85 (1CO, 8-pin) → GZT80 (DIN)
   Relpol R15  (4CO, 14-pin) → GZT14-1 (DIN)
 `,
       },
@@ -2519,9 +2524,9 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   F202AC-63/0.1                     = 2P, 63 A, 100 mA, typ AC
   F202AC-63/0.3                     = 2P, 63 A, 300 mA, typ AC
   F202AC-100/0.5                    = 2P, 100 A, 500 mA, typ AC
-  F202A-25/0.03   (2CSF202003R1250) = 2P, 25 A, 30 mA, typ A
-  F202A-40/0.03   (2CSF202003R1400) = 2P, 40 A, 30 mA, typ A
-  F202A-63/0.03   (2CSF202003R1630) = 2P, 63 A, 30 mA, typ A
+  F202A-25/0.03   (2CSF202101R1250) = 2P, 25 A, 30 mA, typ A
+  F202A-40/0.03   (2CSF202101R1400) = 2P, 40 A, 30 mA, typ A
+  F202A-63/0.03   (2CSF202101R1630) = 2P, 63 A, 30 mA, typ A
 
 ### F204 – 4-pólové
 
@@ -2538,7 +2543,7 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
   Napětí: 230/400 V AC (50/60 Hz)
   Montáž: DIN 35 mm lišta
-  Šířka: F202 = 2 TE (36 mm), F204 = 4 TE (72 mm)
+  Šířka: F202 = 2 TE (35 mm), F204 = 4 TE (72 mm)
   Norma: IEC/EN 61008-1 (RCCB)
   Objednací čísla v závorce = ABB čísla
 
@@ -2817,13 +2822,13 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   ACS355-03E-31A0-4 = 15 kW,   31,0 A
   ACS355-03E-44A0-4 = 22 kW,   44,0 A
 
-### ACS580 – střední série (0,75–500 kW)
+### ACS580 – střední série (0,75–500 kW), 3× 380–480 V
 
-  ACS580-01-02A7-4 = 0,75 kW, 3× 380–480 V
+  ACS580-01-02A7-4 = 0,75 kW
   ACS580-01-03A4-4 = 1,1 kW
-  ACS580-01-04A8-4 = 1,5 kW
-  ACS580-01-07A2-4 = 2,2 kW
-  ACS580-01-09A5-4 = 3,0 kW
+  ACS580-01-04A1-4 = 1,5 kW   ← pozor: ne -04A8-4 (to je US 480V varianta)
+  ACS580-01-05A7-4 = 2,2 kW
+  ACS580-01-07A3-4 = 3,0 kW
 
 ### Parametry ACS355
 
@@ -2985,13 +2990,14 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   200NHG1B   = 200 A, NH 1, 500 V AC, gG
   250NHG1B   = 250 A, NH 1, 500 V AC, gG
 
-### Velikost NH 2 (do 315 A)
+### Velikost NH 2 (do 400 A)
 
   100NHG2B   = 100 A, NH 2, 500 V AC, gG
   160NHG2B   = 160 A, NH 2, 500 V AC, gG
   200NHG2B   = 200 A, NH 2, 500 V AC, gG
   250NHG2B   = 250 A, NH 2, 500 V AC, gG
   315NHG2B   = 315 A, NH 2, 500 V AC, gG
+  400NHG2B   = 400 A, NH 2, 500 V AC, gG
 
 ### Velikost NH 3 (do 630 A)
 
@@ -3016,8 +3022,8 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### Varianta 690 V AC
 
-  Pro vyšší napětí (690 V AC): přidá se kód B6 místo B
-  Příklad: 63NHG1B6 = 63 A, NH 1, 690 V AC, gG
+  Pro vyšší napětí (690 V AC): přidá se přípona -690 (ne "6")
+  Příklad: 63NHG1B-690 = 63 A, NH 1, 690 V AC, gG
 `,
       },
     },
@@ -3128,8 +3134,8 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### NS 35 – Standardní DIN 35 lišta (EN 60715)
 
-  NS 35/ 7,5 UNPERF 2000MM (1201916) = 35×7,5 mm, ocel, 2000 mm, neperforovaná
-  NS 35/15 UNPERF 2000MM    (1201929) = 35×15 mm, ocel, 2000 mm, neperforovaná
+  NS 35/ 7,5 UNPERF 2000MM (0801681) = 35×7,5 mm, ocel, 2000 mm, neperforovaná
+  NS 35/15 UNPERF 2000MM    (1201714) = 35×15 mm, ocel, 2000 mm, neperforovaná
   NS 35/ 7,5 PERF 2000MM   (0801733) = 35×7,5 mm, ocel, 2000 mm, perforovaná (otvory Ø6,3 mm á 25 mm)
 
 ### Parametry
@@ -3160,11 +3166,11 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
       },
       weidmuller: {
         label: 'Weidmüller',
-        doc: `## Weidmüller – DIN lišty TSLD35
+        doc: `## Weidmüller – DIN lišty TS 35X7.5
 
-### TSLD35 – 35 mm standardní DIN lišta
+### TS 35X7.5 – 35 mm standardní DIN lišta
 
-  TSLD35 2000 (0205200000) = 35×7,5 mm, pozinkovaná ocel, 2000 mm, neperforovaná
+  TS 35X7.5 2M/ST/ZN (0383400000) = 35×7,5 mm, pozinkovaná ocel, 2000 mm, neperforovaná
 
 ### Parametry
 
