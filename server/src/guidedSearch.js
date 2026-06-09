@@ -2,7 +2,7 @@ import { Mistral } from '@mistralai/mistralai';
 import { searchTerm } from './search.js';
 import { searchWires, filterWires, wireArticleCount } from './wireSearch.js';
 import { filterCables, cableArticleCount } from './cableSearch.js';
-import { MANUFACTURER_DOCS } from './manufacturers.js';
+import { getKnowledgeDoc } from './productKnowledge.js';
 import { COMPONENT_CATEGORIES, detectCategory, getCategoryByKey, listCategoryLabels } from './componentGuide.js';
 
 const client = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
@@ -52,12 +52,31 @@ async function generateSearchTerms(category, answers) {
     .map(a => `- ${a.question}: ${a.answer}`)
     .join('\n');
 
+  // Detect manufacturer from answers for targeted knowledge injection
+  const mfrAnswer = answers.find(a => a.key === 'mfr');
+  const mfrKey = mfrAnswer
+    ? Object.keys(
+        // Map label → key heuristic
+        { abb: 'ABB', siemens: 'Siemens', eaton: 'Eaton', schneider: 'Schneider Electric',
+          wago: 'WAGO', phoenix: 'Phoenix Contact', weidmuller: 'Weidmüller', lapp: 'LAPP',
+          helukabel: 'Helukabel', nexans: 'Nexans', huber_suhner: 'Huber+Suhner',
+          omron: 'Omron', rittal: 'Rittal', allen_bradley: 'Allen-Bradley' }
+      ).find(k =>
+        mfrAnswer.answer.toLowerCase().includes(k.replace('_', ' ')) ||
+        mfrAnswer.answer.toLowerCase().includes(k)
+      ) ?? null
+    : null;
+
+  // Prefer targeted productKnowledge doc; fall back to componentGuide.js knowledge
+  const pkDoc = getKnowledgeDoc(category.key, mfrKey);
+  const knowledgeText = pkDoc || category.knowledge || '';
+
   const systemPrompt = `Jsi expert na průmyslovou elektrotechniku a vyhledávání v databázi průmyslových artiklů.
 
 Databáze je česká, obsahuje průmyslové díly. Hledáš vždy v polích: název, typové označení, výrobce.
 
 Znalosti o kategorii "${category.label}":
-${category.knowledge}
+${knowledgeText}
 
 ÚKOL: Z parametrů poskytnutých uživatelem vygeneruj 20–35 různorodých vyhledávacích termínů.
 
@@ -114,7 +133,10 @@ Vygeneruj 20–35 vyhledávacích termínů. Začni konkrétními typovými ozna
 async function synthesize(category, answers, articles, mfrKeys) {
   const answerSummary = answers.map(a => `${a.question}: ${a.answer}`).join('; ');
 
-  const mfrDocs = mfrKeys.map(k => MANUFACTURER_DOCS[k]).filter(Boolean);
+  // Use targeted productKnowledge docs (category+mfr specific)
+  const mfrDocs = mfrKeys
+    .map(k => getKnowledgeDoc(category.key, k))
+    .filter(Boolean);
   let context = '';
   if (mfrDocs.length > 0) {
     context += '\n\n' + mfrDocs.join('\n\n---\n\n');
