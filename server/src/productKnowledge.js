@@ -2029,40 +2029,42 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
         label: 'Siemens',
         doc: `## Siemens – Monitorovací relé 3UG45xx
 
-### 3UG4511-1AN20 – Základní fázové relé (pevné prahy)
+### 3UG4511-1AP20 – Základní fázové relé (pevné prahy)
 
-  3UG4511-1AN20 = 3× 320–500 V AC, 1CO, pevná asymetrie 10 %, auto reset
+  3UG4511-1AP20 = 3× 320–500 V AC, 1CO, sled fází + výpadek fáze, auto reset
 
-  Funkce: sledování sledu fází, výpadku fáze
+  Funkce: sledování sledu fází, výpadku fáze (bez sledování asymetrie)
   Výstup: 1CO (přepínací), 3 A / 240 VAC
-  Reakce: výpad < 150 ms
+  Reakce: výpad < 450 ms
   Montáž: DIN 35 mm, šířka 22,5 mm
+
+  Pozn.: 3UG4511-1AN20 = varianta 160–260 V AC; pro 400V síť použít -1AP20
 
 ### 3UG4512-1AR20 – Rozšířené fázové relé (nastavitelné prahy)
 
   3UG4512-1AR20 = 3× 160–690 V AC, 1CO, nastavitelná asymetrie + podpětí, auto/ruční reset
 
-  Funkce: sled fází, výpadek fáze, nastavitelná asymetrie (2–15 %),
+  Funkce: sled fází, výpadek fáze, nastavitelná asymetrie (0–20 %),
           nastavitelné podpětí
   Vstupní napětí: 160–690 V AC (50/60 Hz)
   Výstup: 1CO, 3 A / 240 VAC
   Montáž: DIN 35 mm, šířka 22,5 mm
 
-### 3UG4513-1BR20 – Digitálně nastavitelné fázové relé
+### 3UG4513-1BR20 – Rozšířené fázové relé s 2CO výstupy
 
-  3UG4513-1BR20 = 3× 160–690 V AC, 2CO, digitální nastavení, LED displej, auto/ruční reset
+  3UG4513-1BR20 = 3× 160–690 V AC, 2CO, analogové nastavení potenciometrem, auto/ruční reset
 
-  Funkce: vše jako 3UG4512 + digitální zobrazení napětí a asymetrie
+  Funkce: vše jako 3UG4512 (sled fází, výpadek, nastavitelná asymetrie + podpětí)
   Výstup: 2CO (2× přepínací), 3 A / 240 VAC
-  Nastavení: rotační kodér + LED displej
+  Nastavení: potenciometry (analogové) — není digitální displej
   Montáž: DIN 35 mm, šířka 22,5 mm
 
 ### Kódování sufixu 3UG45xx
 
-  3UG4511: základní (1CO, pevné prahy)
-  3UG4512: rozšířené (1CO, nastavitelné)
-  3UG4513: digitální (2CO, displej)
-  N = vstup 320–500 V, R = vstup 160–690 V
+  3UG4511: základní (1CO, pevné prahy, sled/výpadek bez asymetrie)
+  3UG4512: rozšířené (1CO, nastavitelná asymetrie + podpětí)
+  3UG4513: rozšířené s 2CO výstupy
+  N = vstup 160–260 V, P = vstup 320–500 V, R = vstup 160–690 V
   A = auto reset, B = auto + ruční reset
 `,
       },
@@ -2072,13 +2074,13 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### CM-PFE.2 – Kontrola fází třífázové sítě
 
-  CM-PFE.2 (2CSS2012400R1800) = 3× 200–500 V AC, 1CO, DIN 35 mm, šířka 22,5 mm
+  CM-PFE.2 (1SVR550826R9100) = 3× 200–500 V AC, 1CO, DIN 35 mm, šířka 22,5 mm
 
 ### Funkce
 
-  Sleduje: sled fází (nesprávné pořadí L1-L2-L3), výpadek fáze (asymetrie >50 %)
+  Sleduje: sled fází (nesprávné pořadí L1-L2-L3), výpadek fáze
   Výstup: 1CO (přepínací), 4 A / 250 VAC
-  Reakce: < 500 ms při výpadku fáze
+  Reakce: 500 ms při výpadku fáze (ts = tv = 500 ms, pevná hodnota)
 
 ### Parametry
 
@@ -2086,7 +2088,7 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   Napájení měřicí části: z měřené sítě (bez externího napájení)
   Reset: automatický při obnovení správného stavu fází
   Montáž: DIN 35 mm lišta, šířka 22,5 mm (1 TE)
-  Pracovní teplota: –20 °C … +55 °C
+  Pracovní teplota: –20 °C … +60 °C
   Norma: IEC 60255-1
   Objednací číslo v závorce = ABB číslo
 `,
