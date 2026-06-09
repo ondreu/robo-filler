@@ -336,7 +336,7 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
   }
 }
 
-export async function handleChat(userMessage, history, sendStatus, webSearchEnabled = true, synthModel = MODEL_SYNTH, _componentAdvisor = false, skipGuidedSuggestion = false, sendRaw = null) {
+export async function handleChat(userMessage, history, sendStatus, webSearchEnabled = true, synthModel = MODEL_SYNTH, skipGuidedSuggestion = false, sendRaw = null) {
   sendStatus('thinking', `Přemýšlím, chvilku strpení — v databázi je momentálně ${articleCount.toLocaleString('cs-CZ')} artiklů.`);
   const expanded = await expandQuery(userMessage, history);
   let type = expanded.type;
