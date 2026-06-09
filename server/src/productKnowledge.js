@@ -332,24 +332,26 @@ export const PRODUCT_KNOWLEDGE = {
 
 ### Klíčová typová označení (ověřeno z se.com)
 
-  A9F74106  = iC60N, 1P, B křivka,  6 A
-  A9F74110  = iC60N, 1P, B křivka, 10 A  (pozn.: "44" prefix = Disbo varianta)
-  A9F74206  = iC60N, 2P, C křivka,  6 A,  10 kA
+  A9F73106  = iC60N, 1P, B křivka,  6 A
+  A9F73110  = iC60N, 1P, B křivka, 10 A
+  A9F73116  = iC60N, 1P, B křivka, 16 A
+  A9F74106  = iC60N, 1P, C křivka,  6 A
+  A9F74110  = iC60N, 1P, C křivka, 10 A
+  A9F74206  = iC60N, 2P, C křivka,  6 A
   A9F74210  = iC60N, 2P, C křivka, 10 A
-  A9F79210  = iC60N, 2P, C křivka, 10 A  (jiná série, stejný výkon)
   A9F74316  = iC60N, 3P, C křivka, 16 A
+  A9F74325  = iC60N, 3P, C křivka, 25 A
+  A9F74332  = iC60N, 3P, C křivka, 32 A
   A9F75316  = iC60N, 3P, D křivka, 16 A
   A9F74610  = iC60N, 1P+N, C křivka, 10 A
-
-  POZNÁMKA: Catalog number "44xxx" = iC60N Disbo (jiná kabelová konfigurace)
-  vs. "74xxx" = iC60N standard. Obě jsou iC60N ale různé vstupní terminály.
 
 ---
 
 ### Příslušenství (A9 kompatibilní)
 
   OF (pomocný kontakt):    A9A26924 = 1NO+1NC pro iC60N
-                           A9A26926 = 2NO
+                           A9A26925 = 2NO
+                           A9A26926 = 2NC
   MX (dálkové vypnutí):    A9A26476 = 12 V DC
                            A9A26477 = 24 V DC
                            A9A26479 = 110–415 V AC
@@ -1031,13 +1033,12 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
   **Přetěžovací relé (Overload Relay):**
   TA25DU-[proud]  = tepelné relé pro AF09–AF38
-    TA25DU-0.1  = nastavení 0,1 A
-    TA25DU-1.0  = nastavení 1,0 A
-    TA25DU-4    = nastavení 2,8–4 A
+    TA25DU-1.0  = nastavení 0,63–1,0 A
+    TA25DU-4    = nastavení 2,8–4,0 A
     TA25DU-6,5  = nastavení 4,5–6,5 A
     TA25DU-11   = nastavení 7,5–11 A
     TA25DU-19   = nastavení 13–19 A
-    TA25DU-32   = nastavení 22–32 A
+    TA25DU-32   = nastavení 24–32 A
   TA42DU-[proud]  = tepelné relé pro AF38–AF65
   TA75DU-[proud]  = tepelné relé pro AF52–AF96
 `,
@@ -1076,7 +1077,7 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
   Velikost S2 (3RT2035, 3RT2036):
     3RT2035  = 40 A, 18,5 kW  (S2)
-    3RT2036  = 50 A, 22,0 kW  (S2)
+    3RT2036  = 51 A, 22,0 kW  (S2)
 
   Velikost S3 (3RT2044 – 3RT2046):
     3RT2044  = 65 A, 30,0 kW  (S3)
@@ -1209,15 +1210,15 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### Klíčová typová označení (ověřeno z eaton.com, rsdelivers.com)
 
-  DILM7-10(230V50HZ)      = 7A/3kW,  1NO aux, 230V AC    (ID: 276566)
-  DILM7-01(230V50HZ)      = 7A/3kW,  1NC aux, 230V AC    (ID: 276585)
+  DILM7-10(230V50HZ,240V60HZ) = 7A/3kW,  1NO aux, 230V AC    (ID: 276550)
+  DILM7-01(230V50HZ,240V60HZ) = 7A/3kW,  1NC aux, 230V AC    (ID: 276585)
   DILM7-01(24VDC)         = 7A/3kW,  1NC aux, 24V DC     (ID: 276600)
-  DILM9-10(230V50HZ)      = 9A/4kW,  1NO aux, 230V AC    (ID: 276690)
+  DILM9-10(230V50HZ,240V60HZ) = 9A/4kW,  1NO aux, 230V AC    (ID: 276690)
   DILM9-10(24VDC)         = 9A/4kW,  1NO aux, 24V DC     (ID: 276705)
-  DILM9-01(230V50HZ)      = 9A/4kW,  1NC aux, 230V AC    (ID: 276725)
+  DILM9-01(230V50HZ,240V60HZ) = 9A/4kW,  1NC aux, 230V AC    (ID: 276725)
   DILM9-01(24VDC)         = 9A/4kW,  1NC aux, 24V DC     (ID: 276740)
-  DILM12-10(230V50HZ)     = 12A/5,5kW, 1NO, 230V AC      (ID: 276845)
-  DILM12-01(24VDC)        = 12A/5,5kW, 1NC, 24V DC
+  DILM12-10(230V50HZ,240V60HZ) = 12A/5,5kW, 1NO, 230V AC     (ID: 276830)
+  DILM12-10(24VDC)        = 12A/5,5kW, 1NO, 24V DC       (ID: 276845)
   DILM25-10(230V50HZ,240V60HZ) = 25A/11kW, 1NO, 230V AC  (ID: 277132)
   DILM32-01(RDC24)        = 32A/15kW, 1NC, 24V DC        (ID: 277306)
   DILM50(400V50HZ,440V60HZ)   = 50A/22kW, bez aux, 400V AC (ID: 277832)
@@ -1296,8 +1297,8 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
       E7  = 48 V AC 50/60 Hz
       F7  = 110 V AC 50/60 Hz
       G7  = 120 V AC 60 Hz (US)
-      M7  = 220–230 V AC 50/60 Hz
-      P7  = 230–240 V AC 50/60 Hz  ← nejběžnější AC varianta v EU
+      M7  = 220 V AC 50/60 Hz
+      P7  = 230 V AC 50/60 Hz      ← nejběžnější AC varianta v EU
       Q7  = 380 V AC 50/60 Hz
       S7  = 200 V AC 50 Hz
 
@@ -1306,12 +1307,12 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 ### Klíčová typová označení (ověřeno z se.com)
 
   LC1D09BD   = 9A/4kW,   24V DC cívka
-  LC1D09M7   = 9A/4kW,   220–230V AC cívka
-  LC1D09P7   = 9A/4kW,   230–240V AC cívka
+  LC1D09M7   = 9A/4kW,   220V AC cívka
+  LC1D09P7   = 9A/4kW,   230V AC cívka
   LC1D12BD   = 12A/5,5kW, 24V DC cívka
-  LC1D12M7   = 12A/5,5kW, 220–230V AC cívka
+  LC1D12M7   = 12A/5,5kW, 220V AC cívka
   LC1D18BD   = 18A/7,5kW, 24V DC cívka
-  LC1D18M7   = 18A/7,5kW, 220–230V AC cívka
+  LC1D18M7   = 18A/7,5kW, 220V AC cívka
   LC1D25BD   = 25A/11kW,  24V DC cívka
   LC1D32BD   = 32A/15kW,  24V DC cívka
   LC1D40ABD  = 40A/18,5kW, 24V DC cívka (přípona A = 40A varianta)
@@ -1324,18 +1325,19 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   **Přetěžovací relé (Overload Relay) — LRD série:**
   LRD01    = nastavení 0,1–0,16 A
   LRD02    = nastavení 0,16–0,25 A
-  LRD04    = nastavení 0,25–0,4 A
-  LRD05    = nastavení 0,4–0,63 A
-  LRD06    = nastavení 0,63–1 A
-  LRD07    = nastavení 1–1,6 A
-  LRD08    = nastavení 1,6–2,5 A
+  LRD03    = nastavení 0,25–0,4 A
+  LRD04    = nastavení 0,4–0,63 A
+  LRD05    = nastavení 0,63–1 A
+  LRD06    = nastavení 1–1,6 A
+  LRD07    = nastavení 1,6–2,5 A
+  LRD08    = nastavení 2,5–4 A
   LRD10    = nastavení 4–6 A
   LRD12    = nastavení 5,5–8 A
   LRD14    = nastavení 7–10 A
   LRD16    = nastavení 9–13 A
   LRD21    = nastavení 12–18 A
   LRD22    = nastavení 16–24 A
-  LRD35    = nastavení 30–40 A
+  LRD35    = nastavení 30–38 A
 
   Přímá montáž na LC1D kontaktor (do velikosti LC1D38 = 45 mm šířka)
   Pro LC1D40A a větší = 55 mm šířka bloku LRD
@@ -1534,7 +1536,7 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   TA25DU-14     = nastavení 9–14 A
   TA25DU-19     = nastavení 13–19 A
   TA25DU-25     = nastavení 18–25 A
-  TA25DU-32     = nastavení 22–32 A
+  TA25DU-32     = nastavení 24–32 A
 
 ### TA42DU a TA75DU — vyšší proudy
 
@@ -1662,11 +1664,11 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   LRD01    = 0,1–0,16 A
   LRD02    = 0,16–0,25 A
   LRD03    = 0,25–0,4 A
-  LRD04    = 0,25–0,4 A   (alternativa)
-  LRD05    = 0,4–0,63 A
-  LRD06    = 0,63–1 A
-  LRD07    = 1–1,6 A
-  LRD08    = 1,6–2,5 A
+  LRD04    = 0,4–0,63 A
+  LRD05    = 0,63–1 A
+  LRD06    = 1–1,6 A
+  LRD07    = 1,6–2,5 A
+  LRD08    = 2,5–4 A
   LRD10    = 4–6 A
   LRD12    = 5,5–8 A
   LRD14    = 7–10 A
@@ -2283,18 +2285,15 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### OTxF3 – 3-pólové odpínače
 
-  OT16F3  (1SCA104811R1001) = 3P, 20 A / 600 VAC, DIN 35 mm nebo přímá montáž
+  OT16F3  (1SCA104811R1001) = 3P, 16 A (IEC) / 20 A (UL) / 600 VAC, DIN 35 mm nebo přímá montáž
   OT25F3  (1SCA104857R1001) = 3P, 25 A / 600 VAC
   OT40F3  (1SCA104902R1001) = 3P, 40 A / 600 VAC
-  OT63F3  (1SCA104945R1001) = 3P, 63 A / 600 VAC
-  OT100F3 (1SCA104988R1001) = 3P, 100 A / 600 VAC
-
-  Poznámka: OT16F3 má Ith = 20 A dle IEC 60947-3 přestože kód série je „16".
-            Vždy ověřit v datovém listu ABB.
+  OT63F3                    = 3P, 63 A / 600 VAC  (objednací č. ověřit v katalogu ABB)
+  OT100F3                   = 3P, 100 A / 600 VAC (objednací č. ověřit v katalogu ABB)
 
 ### OTxF4 – 4-pólové odpínače (3P+N)
 
-  OT16F4  = 4P, 20 A / 600 VAC
+  OT16F4  = 4P, 16 A (IEC) / 600 VAC
   OT25F4  = 4P, 25 A / 600 VAC
   OT40F4  = 4P, 40 A / 600 VAC
   OT63F4  = 4P, 63 A / 600 VAC
@@ -2713,27 +2712,32 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
         label: 'Siemens',
         doc: `## Siemens – SINAMICS G120C (kompaktní VFD)
 
-### Schéma: 6SL3210-1KE[xx]-[xxx]
+### Schéma: 6SL3210-1KE[xx]-[yZ][verze]
 
   6SL3210 = SINAMICS produktová řada
   1KE     = G120C (kompaktní)
-  [xx]    = kód výkonu
-  Suffix U = USS/Modbus, B = PROFIBUS DP
+  [xx]    = kód výkonu (11=0,55kW, 12=0,75kW, 13=1,1kW, 14=1,5kW, 15=2,2kW ...)
 
-### Katalogová čísla G120C (3× 380–480 V AC)
+  Suffix [yZ]:
+    y (1. písmeno) = EMC filtr: U = bez integrovaného filtru, A = s filtrem třídy A
+    Z (2. písmeno) = komunikace: B = USS/Modbus RTU, P = PROFIBUS DP, F = PROFINET/EtherNet/IP
 
-  Suffix: U = bez filtru; P = PROFIBUS DP, F = PROFINET, B = USS/Modbus RTU; 1/2 = revize
+  Příklady: UB = bez filtru + USS/Modbus, UP = bez filtru + PROFIBUS, UF = bez filtru + PROFINET
+            AB = s filtrem + USS/Modbus, AP = s filtrem + PROFIBUS, AF = s filtrem + PROFINET
 
-  6SL3210-1KE11-8AP0 = 0,55 kW, IP20
-  6SL3210-1KE13-2AP0 = 1,1 kW,  IP20
-  6SL3210-1KE14-3UF1 = 1,5 kW,  IP20, USS/Modbus
-  6SL3210-1KE15-8UP1 = 2,2 kW,  IP20, PROFIBUS DP
-  6SL3210-1KE17-5UF1 = 3,0 kW,  IP20, USS/Modbus
-  6SL3210-1KE18-8UB1 = 4,0 kW,  IP20, PROFIBUS DP
-  6SL3210-1KE21-3UF1 = 5,5 kW,  IP20, USS/Modbus
-  6SL3210-1KE21-7UP1 = 7,5 kW,  IP20, PROFIBUS DP
-  6SL3210-1KE22-6UB0 = 11 kW,   IP20
-  6SL3210-1KE24-3UF0 = 18,5 kW, IP20
+### Katalogová čísla G120C (3× 380–480 V AC, ověřeno z Kempston Controls, Parmley Graham, RS)
+
+  6SL3210-1KE11-8AP0 = 0,55 kW  (PROFIBUS DP, s filtrem A)
+  6SL3210-1KE12-3AF2 = 0,75 kW  (PROFINET, s filtrem A)
+  6SL3210-1KE13-2AP0 = 1,1 kW   (PROFIBUS DP, s filtrem A)
+  6SL3210-1KE14-3UF1 = 1,5 kW   (PROFINET, bez filtru)
+  6SL3210-1KE15-8UP1 = 2,2 kW   (PROFIBUS DP, bez filtru)
+  6SL3210-1KE17-5UF1 = 3,0 kW   (PROFINET, bez filtru)
+  6SL3210-1KE18-8UB1 = 4,0 kW   (USS/Modbus RTU, bez filtru)
+  6SL3210-1KE21-3UF1 = 5,5 kW   (PROFINET, bez filtru)
+  6SL3210-1KE21-7UP1 = 7,5 kW   (PROFIBUS DP, bez filtru)
+  6SL3210-1KE22-6UB0 = 11 kW    (USS/Modbus RTU, bez filtru)
+  6SL3210-1KE23-8UF1 = 18,5 kW  (PROFINET, bez filtru)  ← pozor: KE23, nikoli KE24!
 
 ### Parametry G120C
 
@@ -2757,7 +2761,7 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### Schéma: ATV320[U/D][kód_výkonu][kód_napětí][topologie]
 
-  U = standard IP20, D = duální zásobník (IP20)
+  U = výkonový rozsah 0,18–7,5 kW; D = výkonový rozsah 11–22 kW
   Kód napětí: M2 = 200–240 V 1F, M3 = 200–240 V 3F, N4 = 380–500 V 3F
   Topologie: C = kompakt, B = book (tenký, 35 mm šířka)
 
@@ -3051,16 +3055,16 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
     QUINT4-PS/1AC/24DC/20 (2904602) = 20 A / 480 W
 
   Třífázový vstup (3× 400–500 V AC):
-    QUINT4-PS/3AC/24DC/20 (2904603) = 20 A / 480 W
-    QUINT4-PS/3AC/24DC/40 (2904605) = 40 A / 960 W
+    QUINT4-PS/3AC/24DC/20 (2904622) = 20 A / 480 W
+    QUINT4-PS/3AC/24DC/40 (2904623) = 40 A / 960 W
 
-### TRIO-PS – Kompaktní DIN PSU (24 V DC výstup)
+### TRIO-PS-2G – Kompaktní DIN PSU, 2. generace (24 V DC výstup)
 
-  Schéma: TRIO-PS/[vstup]/[výstup]/[proud]
+  Schéma: TRIO-PS-2G/[vstup]/[výstup]/[proud]
 
   Jednofázový vstup (100–240 V AC):
-    TRIO-PS/1AC/24DC/5  (2903148) =  5 A / 120 W
-    TRIO-PS/1AC/24DC/10 (2903149) = 10 A / 240 W
+    TRIO-PS-2G/1AC/24DC/5  (2903148) =  5 A / 120 W
+    TRIO-PS-2G/1AC/24DC/10 (2903149) = 10 A / 240 W
 
 ### Vlastnosti QUINT4-PS
 
@@ -3228,13 +3232,13 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
   Schéma: PSR[proud]- [verze]
 
-  PSR3-600-11  (1SFA896105R1100) =  3 A,  0,75 kW (400 V), 24–690 V AC vstup
-  PSR6-600-11  (1SFA896106R1100) =  6 A,  1,5 kW (400 V)
-  PSR9-600-11  (1SFA896107R1100) =  9 A,  4,0 kW (400 V)
-  PSR16-600-11 (1SFA896108R1100) = 16 A,  7,5 kW (400 V)
-  PSR25-600-11 (1SFA896109R1100) = 25 A, 11,0 kW (400 V)
+  PSR3-600-11  (1SFA896103R1100) =  3 A,  1,5 kW (400 V), 208–600 V AC vstup
+  PSR6-600-11  (1SFA896104R1100) =  6 A,  3,0 kW (400 V)
+  PSR9-600-11  (1SFA896105R1100) =  9 A,  4,0 kW (400 V)
+  PSR16-600-11 (1SFA896107R1100) = 16 A,  7,5 kW (400 V)
+  PSR25-600-11 (1SFA896108R1100) = 25 A, 11,0 kW (400 V)
   PSR37-600-11 (1SFA896110R1100) = 37 A, 18,5 kW (400 V)
-  PSR60-600-11 (1SFA896111R1100) = 60 A, 30,0 kW (400 V)
+  PSR60-600-11 (1SFA896112R1100) = 60 A, 30,0 kW (400 V)
 
 ### Parametry PSR
 
