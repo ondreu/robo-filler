@@ -103,3 +103,48 @@ Po vydání nové verze aktualizuj:
 - **Vodiče/Kabely** — nová kategorie `vodic_kabel` v `componentGuide.js`; výrobci LAPP, Helukabel, HUBER+SUHNER, Nexans s plnými `MANUFACTURER_DOCS`
 - **Vodič DB** — `public/wires.json` (639 artiklů), načítána frontend i backend; frontend mergeuje do `articles` state (wire artikly nesmí přepsat hlavní DB); backend `wireSearch.js` pro Karel Bot a řízený mód; wire karty mají badge "Vodič DB" + prurez/barva; `Article` type má volitelná pole `prurez`, `barva`, `skupina`
 - **Řízený mód doporučení** — když DB nenajde nic, AI doporučí konkrétní typové označení z knowledge báze kategorie
+
+## Plánovaný refaktoring: Unifikovaná knowledge báze
+
+### Problém
+`manufacturers.js` injectuje celé docs výrobce (např. vše o WAGO), i když dotaz je specifický ("WAGO svorka"). Zbytečný šum v kontextu AI.
+
+### Řešení
+Sloučit `manufacturers.js` a `componentGuide.js` do jednoho souboru `productKnowledge.js` s hierarchickou strukturou:
+
+```
+kategorie → výrobce → produktové řady → detaily/příklady typových označení
+```
+
+```js
+const KNOWLEDGE = {
+  svorky: {
+    label: 'Svorky',
+    aliases: ['svorka', 'svorky', ...],
+    questions: [...],           // pro řízený mód
+    manufacturers: {
+      wago: {
+        label: 'WAGO',
+        doc: `### CAGE CLAMP\n...\n### TOPJOB S\n...`
+      },
+      weidmuller: { ... }
+    }
+  },
+  jistice: { ... }
+}
+```
+
+### Injection logika po refaktoringu
+- Kategorie + výrobce detekováni → `KNOWLEDGE[cat].manufacturers[mfr].doc` (přesný průsečík)
+- Jen kategorie → všechny `manufacturers[*].doc` dané kategorie
+- Jen výrobce → agregace přes všechny kategorie daného výrobce
+
+### Dopad na soubory
+- `chat.js` — upravit injection logiku
+- `guidedSearch.js` — upravit injection logiku
+- `bomBuilder.js` — používá `MANUFACTURER_DOCS` bez znalosti kategorie → přidat fallback (agregace přes kategorie)
+- `manufacturers.js` + `componentGuide.js` → smazat, nahradit `productKnowledge.js`
+
+### Poznámky
+- Výrobce může být ve více kategoriích (WAGO: svorky, I/O moduly, napájení) — správně, je to záměr
+- Migrace obsahu (~3 200 řádků) je ruční práce, dělat postupně po kategoriích
