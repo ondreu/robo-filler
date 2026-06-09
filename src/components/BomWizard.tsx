@@ -156,8 +156,8 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
     if (importData) return importData.rows;
     return bulkResults.map((r, i) => {
       const sel = selections[i];
-      if (sel) return { id: genId(), type: 'L' as const, artikl: sel.vybehovyDil || sel.artikl, popis: sel.nazev, typoveOznaceni: sel.typoveOznaceni, mnozstvi: 1, poznamka1: '', poznamka2: sel.status === 'U' ? 'Neaktivní materiál' : '' };
-      return { id: genId(), type: 'T' as const, artikl: '', popis: '', typoveOznaceni: '', mnozstvi: 1, poznamka1: r.query, poznamka2: '' };
+      if (sel) return { id: genId(), type: 'L' as const, artikl: sel.vybehovyDil || sel.artikl, popis: sel.nazev, typoveOznaceni: sel.typoveOznaceni, mnozstvi: r.pocet ?? 1, poznamka1: '', poznamka2: r.oznaceniPristroje || (sel.status === 'U' ? 'Neaktivní materiál' : '') };
+      return { id: genId(), type: 'T' as const, artikl: '', popis: '', typoveOznaceni: '', mnozstvi: r.pocet ?? 1, poznamka1: r.query, poznamka2: r.oznaceniPristroje ?? '' };
     });
   });
 
