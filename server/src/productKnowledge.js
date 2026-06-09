@@ -145,40 +145,40 @@ export const PRODUCT_KNOWLEDGE = {
       // -----------------------------------------------------------------------
       siemens: {
         label: 'Siemens',
-        doc: `## Siemens — Jističe SENTRON 5SY / 5SL
+        doc: `## Siemens — Jističe SENTRON 5SY6 / 5SY7
 
 ### Produktové řady
 
-**5SY6** — Standardní SENTRON MCB, Icn = 6 kA
-  Norma: IEC/EN 60898-1, IEC/EN 60947-2
+**5SY6** — Standardní SENTRON MCB, Icn = 6 kA (IEC/EN 60898-1)
   Charakteristiky: B, C, D
   Konfigurace: 1P, 2P, 3P, 4P (a 1P+N, 3P+N)
   Šířka: 1 modul = 18 mm na pól
 
-**5SY7** — Průmyslový MCB, Icn = 10 kA
+**5SY7** — Průmyslový MCB, Icu = 15 kA (IEC/EN 60947-2)
   Charakteristiky: B, C, D
-  Vhodné pro průmyslové napájení a generátory
-
-**5SY8** — Vysoký zkrat, Icn = 15 kA (Icu = 25 kA dle IEC 60947-2)
-  Pro datová centra, transformátory, napájecí rozvaděče
-
-**5SL6** — Komunikační MCB (s měřením a COM modulem)
-  Doplněk řady 5SY6 s možností dálkového odečtu
+  Vhodné pro průmyslové napájení, generátory, těžký průmysl
 
 ---
 
-### Formát typového označení
+### Formát typového označení (ověřeno z RS Components, Siemens Mall)
 
-  5SY[série][póly][kód_proudu]-[varianta]
+  5SY[série][P][AA]-[X]
 
   Kde:
-    série:       6 = 6 kA, 7 = 10 kA, 8 = 15 kA
-    póly:        1 = 1P, 2 = 2P, 3 = 3P, 4 = 4P
-    kód_proudu:  dvě číslice — přímá hodnota proudu (04 = 4 A, 16 = 16 A, 63 = 63 A)
-                 POZNÁMKA: charakteristika B/C/D je součástí kódu proudu,
-                 ale přesné dekódování vyžaduje katalog (každá kombinace
-                 charakteristika × proud má unikátní dvouciferný kód)
-    varianta:    -7 = šroubové svorky (standard), -6 = jiná verze
+    série:  6 = 5SY6 (6 kA), 7 = 5SY7 (15 kA)
+    P:      počet pólů (1 = 1P, 2 = 2P, 3 = 3P, 4 = 4P)
+    AA:     jmenovitý proud — přímá 2-ciferná hodnota
+              06 = 6 A, 10 = 10 A, 13 = 13 A, 16 = 16 A,
+              20 = 20 A, 25 = 25 A, 32 = 32 A, 40 = 40 A, 63 = 63 A
+    -X:     vypínací charakteristika v sufixu
+              -6 = křivka B  (3–5×In)
+              -7 = křivka C  (5–10×In)  ← nejběžnější
+              -8 = křivka D  (10–20×In)
+
+  Příklady:
+    5SY6316-7 = 5SY6, 3P, C křivka, 16 A
+    5SY7325-7 = 5SY7, 3P, C křivka, 25 A
+    5SY6106-6 = 5SY6, 1P, B křivka, 6 A
 
 ---
 
@@ -188,25 +188,35 @@ export const PRODUCT_KNOWLEDGE = {
 
 ---
 
-### Ověřená typová označení (z datasheetů Siemens)
+### Klíčová typová označení — 5SY6 (6 kA, ověřeno z RS Components / Siemens Mall)
 
-  5SY6204-7  = 5SY6 (6 kA), 2P, C křivka, 4 A,  šroubové svorky
-  5SY7263-7  = 5SY7 (10 kA), 2P, C křivka, 63 A, šroubové svorky
-  5SY5102-6  = 5SY5, 1P, B křivka, 2 A
-  5SY6106-7  = 5SY6 (6 kA), 1P, B křivka, 6 A
-  5SY8503-7  = 5SY8 (15 kA), 5P? — nestandardní konfigurace
+  1P (šroubové):
+    5SY6106-6  = 1P, B, 6 A     5SY6110-6  = 1P, B, 10 A    5SY6116-6  = 1P, B, 16 A
+    5SY6106-7  = 1P, C, 6 A     5SY6110-7  = 1P, C, 10 A    5SY6116-7  = 1P, C, 16 A
+    5SY6125-7  = 1P, C, 25 A    5SY6110-8  = 1P, D, 10 A    5SY6116-8  = 1P, D, 16 A
 
-  Pro kompletní přehled kódů viz Siemens SENTRON Configuration Manual
-  (MAN_L1V30914799-04_en_en-US.pdf)
+  2P:
+    5SY6206-6  = 2P, B, 6 A     5SY6210-6  = 2P, B, 10 A    5SY6216-6  = 2P, B, 16 A
+    5SY6206-7  = 2P, C, 6 A     5SY6210-7  = 2P, C, 10 A    5SY6216-7  = 2P, C, 16 A
+    5SY6225-7  = 2P, C, 25 A
 
----
+  3P:
+    5SY6306-6  = 3P, B, 6 A     5SY6310-6  = 3P, B, 10 A    5SY6316-6  = 3P, B, 16 A
+    5SY6306-7  = 3P, C, 6 A     5SY6310-7  = 3P, C, 10 A    5SY6316-7  = 3P, C, 16 A
+    5SY6325-7  = 3P, C, 25 A    5SY6332-7  = 3P, C, 32 A
+    5SY6306-8  = 3P, D, 6 A     5SY6316-8  = 3P, D, 16 A
 
-### Identifikace z typového označení
+  4P:
+    5SY6406-6  = 4P, B, 6 A
+    5SY6410-7  = 4P, C, 10 A    5SY6416-7  = 4P, C, 16 A    5SY6425-7  = 4P, C, 25 A
 
-  Série 5SY6 = levnější, 6 kA → pro standardní průmyslové panely
-  Série 5SY7 = robustnější, 10 kA → pro generátory, průmysl
-  Přípona -7 = šroubové svorky (nejčastější)
-  Přípona bez -7 = jiné varianty terminálu
+### Klíčová typová označení — 5SY7 (15 kA, ověřeno z RS Components)
+
+    5SY7106-6  = 1P, B, 6 A     5SY7116-6  = 1P, B, 16 A
+    5SY7106-7  = 1P, C, 6 A     5SY7116-7  = 1P, C, 16 A
+    5SY7206-6  = 2P, B, 6 A     5SY7206-7  = 2P, C, 6 A     5SY7210-7  = 2P, C, 10 A
+    5SY7306-7  = 3P, C, 6 A     5SY7310-7  = 3P, C, 10 A    5SY7316-7  = 3P, C, 16 A
+    5SY7325-7  = 3P, C, 25 A    5SY7332-7  = 3P, C, 32 A
 `,
       },
 
@@ -583,21 +593,42 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ---
 
-### Řada 2002 — 2,5 mm² (nejpoužívanější)
+### Kódování typových čísel (platí pro všechny řady TOPJOB S)
 
-  2002-1401  = průchozí svorka, šedá, Push-in CAGE CLAMP®
-  2002-1207  = PE zemnicí svorka, zeleno-žlutá
-  2002-2201  = dvoupodlažní (double-deck) svorka, šedá
-  2002-1201  = 2-vodičová průchozí svorka (alternativní verze)
+  Kód za pomlčkou určuje funkci svorky (stejný vzor přes všechny průřezy):
+    xx01  = průchozí (feed-through), šedá
+    xx04  = modrá (neutrální vodič N)
+    xx07  = zeleno-žlutá (PE — ochranný/zemnicí vodič)
+    xx01  (verze bez konektoru) a další varianty dle řady
 
-  Barvy (varianta za pomlčkou se mění):
-    Šedá  = standard (průchozí)
-    Modrá = N (neutrální vodič)
-    Zeleno-žlutá = PE (ochranný vodič) — kód 1207
+### Řada 2002 — 2,5 mm², 24 A, 800 V (nejpoužívanější)
 
-### Řada 2004 — 4 mm²
+  2002-1201  = průchozí svorka, šedá, 2,5 mm², Push-in CAGE CLAMP®
+  2002-1204  = průchozí svorka, modrá (N vodič), 2,5 mm²
+  2002-1207  = PE zemnicí svorka, zeleno-žlutá, 2,5 mm²
+  2002-2201  = dvoupodlažní (double-deck) svorka, šedá, 2,5 mm²
 
-  2004-1401  = průchozí svorka, 4 mm², šedá, 32 A, 800 V
+### Řada 2004 — 4 mm², 32 A, 800 V
+
+  2004-1201  = průchozí svorka, šedá, 4 mm²
+  2004-1207  = PE zemnicí svorka, zeleno-žlutá, 4 mm²
+
+### Řada 2006 — 6 mm², 41 A
+
+  2006-1201  = průchozí svorka, šedá, 6 mm²
+  2006-1204  = průchozí svorka, modrá (N vodič), 6 mm²
+  2006-1207  = PE zemnicí svorka, zeleno-žlutá, 6 mm²
+
+### Řada 2010 — 10 mm², 57 A
+
+  2010-1201  = průchozí svorka, šedá, 10 mm²
+  2010-1207  = PE zemnicí svorka, zeleno-žlutá, 10 mm²
+
+### Řada 2016 — 16 mm²
+
+  2016-1201  = průchozí svorka, šedá, 16 mm²
+  2016-1204  = průchozí svorka, modrá (N vodič), 16 mm²
+  2016-1207  = PE zemnicí svorka, zeleno-žlutá, 16 mm²
 
 ---
 
@@ -632,8 +663,9 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 ### Tipy pro identifikaci
 
   - TOPJOB S = moderní průmyslová svorka, push-in (bez šroubku)
-  - Číslo řady udává průřez: 2002=2,5mm², 2004=4mm², 2006=6mm²
+  - Číslo řady udává průřez: 2002=2,5mm², 2004=4mm², 2006=6mm², 2010=10mm², 2016=16mm²
   - Kód 1207 = PE terminál (zeleno-žlutá) v dané řadě
+  - Kód 1204 = modrá (neutrální N) ve stejné řadě
   - Kód 2201 = dvoupodlažní varianta
 `,
       },
@@ -2306,25 +2338,35 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
       },
       schneider: {
         label: 'Schneider Electric',
-        doc: `## Schneider Electric – Odpínače TeSys Vario VCF
+        doc: `## Schneider Electric – Odpínače TeSys Vario VCF / VBF
 
-### VCF – kompaktní odpojovač se svorkami, 3P, přímý pohon
+### VCF – odpojovač + nouzový stop, montáž na dveře skříně (ověřeno z se.com)
 
-  VCF0 (GV7RE025) = 3P, 25 A, TeSys Vario, DIN 35 mm
-  VCF1 (GV7RE032) = 3P, 32 A
-  VCF3 (GV7RE040) = 3P, 40 A
+  VCF0 = 3P, 25 A, 690 V AC, AC-23A, pro montáž na dveře
+  VCF1 = 3P, 32 A, 690 V AC, AC-23A
+  VCF2 = 3P, 40 A, 690 V AC, AC-23A
+  VCF3 = 3P, 63 A, 690 V AC, AC-23A
 
-  Poznámka: Čísla GV7RExx jsou základní varianty bez ovládacích prvků dveří.
-            Pro montáž na dveře skříně se používají doplňkové rukojeti GV7A/GV7E.
+  VCF = žluto-červená rukojeť (kombinace hlavní vypínač + nouzový stop)
+  Kategorie: IEC 60947-3 (odpojovač) + IEC 60947-5-5 (nouzový stop)
 
-### Parametry VCF
+### VBF – čistý odpojovač (jen hlavní vypínač), montáž na dveře
 
-  Napětí: do 690 V AC
-  Spínací kategorie: AC-23A
-  Montáž: DIN 35 mm nebo přímá montáž
+  VBF0 = 3P, 25 A, černá rukojeť
+  VBF1 = 3P, 32 A, černá rukojeť
+  VBF2 = 3P, 40 A, černá rukojeť
+  VBF3 = 3P, 63 A, černá rukojeť
+
+### Parametry TeSys Vario VCF/VBF
+
+  Napětí: do 690 V AC (50/60 Hz)
+  Spínací kategorie: AC-23A (motorové + odporové zátěže)
+  Montáž: na přední dveře rozvaděče (šrouby z přední strany)
   Norma: IEC/EN 60947-3
   Vhodné jako hlavní vypínač dle IEC 61439
-  Objednací číslo v závorce = Schneider číslo
+
+  Poznámka: GV7 je motorový jistič (IEC 60947-4-1, AC-3) — NENÍ odpojovač.
+            Pro hlavní vypínač vždy použít VCF nebo VBF.
 `,
       },
     },
@@ -2511,22 +2553,58 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
       },
       siemens: {
         label: 'Siemens',
-        doc: `## Siemens – Proudové chrániče 5SV3 série
+        doc: `## Siemens – Proudové chrániče 5SV3
 
-### Příklady 2-pólových (ověřeno z více zdrojů)
+### Formát typového označení (ověřeno z RS Components, Siemens Mall)
 
-  5SV3111-6 = 2P, 16 A, 10 mA, typ A, DIN 35 mm
-  5SV3314-6 = 2P, 40 A, 30 mA, typ A, DIN 35 mm
+  5SV3 [XX] [Y] - [Z]
+    XX = kód citlivosti + konfigurace pólů:
+         11 = 2P, 10 mA
+         31 = 2P, 30 mA    |  34 = 4P, 30 mA
+         41 = 2P, 100 mA
+         61 = 2P, 300 mA   |  64 = 4P, 300 mA
+    Y  = proud: 1=16A, 2=25A, 4=40A, 6=63A
+    -Z = typ: -6 = Typ A (standard)
+
+### 2P — 30 mA, Typ A (230 V AC)
+
+  5SV3311-6  = 2P, 16 A, 30 mA, Typ A
+  5SV3312-6  = 2P, 25 A, 30 mA, Typ A
+  5SV3314-6  = 2P, 40 A, 30 mA, Typ A
+  5SV3316-6  = 2P, 63 A, 30 mA, Typ A
+
+### 2P — 10 mA, Typ A (citlivý, pro zdravotnictví, koupelny)
+
+  5SV3111-6  = 2P, 16 A, 10 mA, Typ A
+
+### 2P — 100 mA, Typ A
+
+  5SV3412-6  = 2P, 25 A, 100 mA, Typ A
+  5SV3416-6  = 2P, 63 A, 100 mA, Typ A
+
+### 2P — 300 mA, Typ A (selektivní / požární ochrana)
+
+  5SV3614-6  = 2P, 40 A, 300 mA, Typ A
+
+### 4P — 30 mA, Typ A (400 V AC, třífázové obvody)
+
+  5SV3342-6  = 4P, 25 A, 30 mA, Typ A
+  5SV3344-6  = 4P, 40 A, 30 mA, Typ A
+  5SV3346-6  = 4P, 63 A, 30 mA, Typ A
+
+### 4P — 300 mA, Typ A
+
+  5SV3642-6  = 4P, 25 A, 300 mA, Typ A
+  5SV3646-6  = 4P, 63 A, 300 mA, Typ A
 
 ### Parametry 5SV3
 
-  Napětí: 230/400 V AC (50/60 Hz)
+  Napětí: 230 V AC (2P) / 400 V AC (4P), 50/60 Hz
   Montáž: DIN 35 mm lišta
   Norma: IEC/EN 61008-1
-  Typ A: citlivý na AC + pulsující DC
-
-  Poznámka: Pro přesné katalogové číslo dle In a IΔn vždy ověřit
-            v aktuálním katalogu Siemens (5SV3 produktová stránka).
+  Typ A: citlivý na AC + pulsující DC (standard pro průmyslové panely)
+  Poznámka: Siemens 5SV3 nerozlišuje „typ AC" a „typ A" — aktuální produkty
+            jsou vždy Typ A (-6 suffix), který splňuje požadavky obou.
 `,
       },
     },
@@ -2644,12 +2722,16 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### Katalogová čísla G120C (3× 380–480 V AC)
 
+  Suffix: U = bez filtru; P = PROFIBUS DP, F = PROFINET, B = USS/Modbus RTU; 1/2 = revize
+
   6SL3210-1KE11-8AP0 = 0,55 kW, IP20
   6SL3210-1KE13-2AP0 = 1,1 kW,  IP20
   6SL3210-1KE14-3UF1 = 1,5 kW,  IP20, USS/Modbus
+  6SL3210-1KE15-8UP1 = 2,2 kW,  IP20, PROFIBUS DP
   6SL3210-1KE17-5UF1 = 3,0 kW,  IP20, USS/Modbus
   6SL3210-1KE18-8UB1 = 4,0 kW,  IP20, PROFIBUS DP
   6SL3210-1KE21-3UF1 = 5,5 kW,  IP20, USS/Modbus
+  6SL3210-1KE21-7UP1 = 7,5 kW,  IP20, PROFIBUS DP
   6SL3210-1KE22-6UB0 = 11 kW,   IP20
   6SL3210-1KE24-3UF0 = 18,5 kW, IP20
 
@@ -2728,6 +2810,8 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   ACS355-03E-12A5-4 = 5,5 kW,  12,5 A
   ACS355-03E-15A6-4 = 7,5 kW,  15,6 A
   ACS355-03E-23A1-4 = 11 kW,   23,1 A
+  ACS355-03E-31A0-4 = 15 kW,   31,0 A
+  ACS355-03E-44A0-4 = 22 kW,   44,0 A
 
 ### ACS580 – střední série (0,75–500 kW)
 
@@ -2767,35 +2851,56 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
         label: 'Rittal',
         doc: `## Rittal – Rozvaděčové skříně a příslušenství
 
-### TS 8 – stojaté baying skříně (série 8606/8604)
+### VX25 – moderní stojaté baying skříně (nástupce TS 8)
 
-  8606.500 = TS8, H2000 × W600 × D600 mm, ocel, RAL 7035, IP55
-  8606.510 = TS8, H2000 × W600 × D400 mm, ocel, RAL 7035, IP55
-  8606.520 = TS8, H2000 × W800 × D600 mm, ocel, RAL 7035, IP55
-  8606.530 = TS8, H2000 × W1000 × D600 mm, ocel, RAL 7035, IP55
-  8604.500 = TS8, H1800 × W600 × D600 mm, ocel, RAL 7035, IP55
-  8604.510 = TS8, H1800 × W600 × D400 mm, ocel, RAL 7035, IP55
+  Parametry: ocel (tl. 1,5 mm), RAL 7035, IP 55 / NEMA 12
+  Katalogová čísla (ověřeno z rittal.com, RS Components, IEC Supply):
 
-  Krytí: IP55 (standard), IP54 s ventilací
-  Montáž DIN lišt: SZ příslušenství nebo DK řada
-  Přívod kabelů: zdola nebo shora
+  H2000 × W600:
+    8604.000 = H2000 × W600 × D400 mm
+    8606.000 = H2000 × W600 × D600 mm
 
-### AX – kompaktní nástěnné skříně (série 1xxx, ocel, IP66)
+  H2000 × W800:
+    8804.000 = H2000 × W800 × D400 mm
+    8806.000 = H2000 × W800 × D600 mm
 
-  AX 1030.100 = H300 × W300 × D150 mm, ocel, IP66
-  AX 1040.200 = H400 × W300 × D200 mm, ocel, IP66
-  AX 1050.200 = H500 × W400 × D200 mm, ocel, IP66
-  AX 1060.300 = H600 × W600 × D250 mm, ocel, IP66
+  H2000 × W1000:
+    8004.000 = H2000 × W1000 × D400 mm
+    8006.000 = H2000 × W1000 × D600 mm
 
-### KX – kompaktní nástěnné skříně z nerezové oceli
+  H1800 × W600:
+    8684.000 = H1800 × W600 × D400 mm
+    8686.000 = H1800 × W600 × D600 mm
 
+  H1800 × W800:
+    8886.000 = H1800 × W800 × D600 mm
+
+  Formát katalogu: 4-místné číslo bez prefixu + .000 (příklad: 8606.000)
+  VX25 využívá 25mm instalační mřížku; příslušenství SZ/DK kompatibilní
+
+### AX – kompaktní nástěnné skříně (ocel, IP 66 / IK 10)
+
+  Katalogová čísla (ověřeno z RS Components, automation24, Rittal.com):
+
+  1033.000 = H300 × W300 × D210 mm, ocel, IP 66  ← min. hloubka je 210 mm
+  1034.000 = H400 × W300 × D210 mm, ocel, IP 66
+  1045.000 = H500 × W400 × D210 mm, ocel, IP 66
+  1054.000 = H600 × W600 × D250 mm, ocel, IP 66
+  1058.000 = H800 × W600 × D250 mm, ocel, IP 66
+  1059.000 = H800 × W600 × D400 mm, ocel, IP 66  (větší hloubka)
+
+  Formát: 4-místné číslo + .000 (příklad: 1033.000)
+
+### KX – kompaktní nástěnné skříně z nerezové oceli (AISI 304)
+
+  KX 1575.000 = H300 × W300 × D155 mm, nerez, IP 66  (nejmenší hloubka 155 mm)
   KX = jako AX série, ale z nerezové oceli AISI 304
   Vhodné pro potravinářský, farmaceutický průmysl
 
 ### SZ – příslušenství pro skříně
 
   SZ2309.000 = konzola pro DIN 35 mm lištu (clip, snap-on)
-  SZ2471.000 = vnitřní montážní panel (montageplatte pro TS8)
+  SZ2471.000 = vnitřní montážní panel (montageplatte pro VX25)
   SZ2482.600 = průchodkový otvor / interface flap
   SZ2561.500 = plastová deska pro průchodky (kabelové pole)
   SZ2584.000 = vnitřní osvětlení LED
@@ -2808,9 +2913,10 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### Poznámky
 
-  TS 8 katalogová čísla: formát 8xxx.xxx (6místné s tečkou)
-  AX / KX katalogová čísla: formát 1xxx.xxx
-  Vždy ověřovat aktuální katalog na rittal.com (produktová řada VX25 nahrazuje TS 8)
+  VX25: 4-místné číslo + .000 (příklad: 8606.000) — nástupce TS 8
+  AX/KX: 4-místné číslo + .000 (příklad: 1033.000)
+  AX minimalní hloubka = 210 mm; pro 155 mm hloubku → KX 1575.000
+  Příslušenství SZ/DK je kompatibilní s VX25 i AX
 `,
       },
     },
