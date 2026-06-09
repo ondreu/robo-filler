@@ -302,7 +302,6 @@ export function AiChat() {
   const [currentStatusLog, setCurrentStatusLog] = useState<Status[]>([]);
   const statusLogRef = useRef<Status[]>([]);
   const [webSearchEnabled, setWebSearchEnabled] = useState(true);
-  const [componentAdvisor, setComponentAdvisor] = useState(false);
   const [synthModel, setSynthModelState] = useState<string>(() => {
     try {
       const { model, ts } = JSON.parse(localStorage.getItem(SYNTH_MODEL_KEY) ?? '{}');
@@ -316,8 +315,6 @@ export function AiChat() {
   const [lastAllCandidates, setLastAllCandidates] = useState<Article[]>([]);
   const [showUsageWarning, setShowUsageWarning] = useState(false);
   const [guidedSearchActive, setGuidedSearchActive] = useState(false);
-  // Non-blocking popup visible state
-  const [guidedOfferPopupVisible, setGuidedOfferPopupVisible] = useState(false);
   const [activeGuidedResult, setActiveGuidedResult] = useState<GuidedResultSnapshot | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>(() => loadSessions());
@@ -332,8 +329,6 @@ export function AiChat() {
   })());
   const skipSaveRef = useRef(false);
   const requestCounterRef = useRef(0);
-  // Tracks whether guided search offer was shown this session (ref avoids stale closures in async callbacks)
-  const guidedOfferShownRef = useRef(false);
 
   useEffect(() => {
     sessionStorage.setItem(AI_CHAT_KEY, JSON.stringify(messages));
@@ -386,8 +381,6 @@ export function AiChat() {
     setCurrentStatusLog([]);
     statusLogRef.current = [];
     
-    guidedOfferShownRef.current = false;
-    setGuidedOfferPopupVisible(false);
     sessionStorage.removeItem(AI_CHAT_KEY);
     try { sessionStorage.removeItem(SESSION_ID_KEY); } catch {}
   };
@@ -407,9 +400,6 @@ export function AiChat() {
     setCurrentStatusLog([]);
     setIsLoading(false);
     statusLogRef.current = [];
-    
-    guidedOfferShownRef.current = false;
-    setGuidedOfferPopupVisible(false);
   };
 
   const deleteSession = (id: string, e: React.MouseEvent) => {
@@ -525,8 +515,6 @@ export function AiChat() {
           history,
           webSearchEnabled,
           synthModel,
-          componentAdvisor,
-          skipGuidedSuggestion: guidedOfferShownRef.current,
         }),
       });
 
@@ -551,16 +539,7 @@ export function AiChat() {
           } else if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
-              if (eventType === 'suggest_guided') {
-                if (!isCurrentRequest()) { abandoned = true; break; }
-                // Non-blocking popup: only show once per conversation session
-                if (!guidedOfferShownRef.current) {
-                  guidedOfferShownRef.current = true;
-                  
-                  setGuidedOfferPopupVisible(true);
-                }
-                // Search continues regardless — do NOT stop here
-              } else if (eventType === 'status') {
+              if (eventType === 'status') {
                 if (!isCurrentRequest()) { abandoned = true; break; }
                 const newLog = [...statusLogRef.current, data as Status];
                 statusLogRef.current = newLog;
@@ -611,7 +590,7 @@ export function AiChat() {
     } finally {
       if (isCurrentRequest()) setIsLoading(false);
     }
-  }, [webSearchEnabled, synthModel, componentAdvisor]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [webSearchEnabled, synthModel]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function sendMessage() {
     const text = input.trim();
@@ -626,21 +605,6 @@ export function AiChat() {
 
     await executeChatRequest(text, nextMessages, { guidedContext: activeGuidedResult });
   }
-
-  // Accept guided search from the popup — abort current request and open guided mode
-  const acceptGuidedSearch = useCallback(() => {
-    abortControllerRef.current?.abort();
-    setGuidedOfferPopupVisible(false);
-    setIsLoading(false);
-    statusLogRef.current = [];
-    setCurrentStatusLog([]);
-    setGuidedSearchActive(true);
-  }, []);
-
-  // Decline guided search popup — just close it, let current response arrive
-  const declineGuidedSearch = useCallback(() => {
-    setGuidedOfferPopupVisible(false);
-  }, []);
 
   const handleGuidedResult = useCallback((result: GuidedResultSnapshot) => {
     setActiveGuidedResult(result);
@@ -716,11 +680,6 @@ export function AiChat() {
             <Globe size={11} /> Web
           </span>
         )}
-        {componentAdvisor && (
-          <span className="ml-1 flex items-center gap-1 text-xs text-pink bg-pink/10 rounded-full px-2 py-0.5">
-            <Sparkles size={11} /> Poradce komponent
-          </span>
-        )}
       </div>
 
       {/* Messages */}
@@ -732,23 +691,7 @@ export function AiChat() {
                 {greeting}
               </div>
             </div>
-            <div className={`grid gap-4 ${componentAdvisor ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
-              {componentAdvisor && (
-                <div className="space-y-2">
-                  <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Poradce komponent</p>
-                  {[
-                    'Jaký jistič pro motor 11kW 400V?',
-                    'Doporuč stykač Siemens 16A 24VDC',
-                    'Jaký typ svorky pro skříň?',
-                    'Rozdíl mezi WAGO 2002 a TOPJOB S',
-                  ].map(ex => (
-                    <button key={ex} onClick={() => { setInput(ex); inputRef.current?.focus(); }}
-                      className="block w-full text-left px-3 py-2.5 rounded-xl bg-pink/5 border border-pink/20 hover:bg-pink/10 text-subtext1 transition-colors text-sm">
-                      {ex}
-                    </button>
-                  ))}
-                </div>
-              )}
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <p className="text-subtext0 text-xs uppercase tracking-wide font-medium px-1">Hledání artiklů</p>
                 {['záslepka M20', 'ABB pojistka 16A', 'Jistič 16A', 'WAGO svorka 2.5mm²'].map(ex => (
@@ -774,7 +717,7 @@ export function AiChat() {
               </div>
             </div>
             <button
-              onClick={() => { guidedOfferShownRef.current = true;  setGuidedSearchActive(true); }}
+              onClick={() => { setGuidedSearchActive(true); }}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-teal/10 hover:bg-teal/20 border border-teal/20 hover:border-teal/40 transition-colors text-left group"
             >
               <Sparkles size={16} className="text-teal shrink-0" />
@@ -905,37 +848,6 @@ export function AiChat() {
         </div>
       </div>
 
-      {/* Guided search suggestion banner — non-blocking, shown once per conversation */}
-      {guidedOfferPopupVisible && (
-        <div className="shrink-0 mx-4 mb-1 mt-0 border border-teal/30 rounded-xl bg-teal/5 overflow-hidden">
-          <div className="px-4 py-2.5 flex items-center gap-3">
-            <Sparkles size={14} className="text-teal shrink-0" />
-            <div className="flex-1 min-w-0">
-              <span className="text-sm text-text font-medium">Zkusit Vyhledávání s průvodcem?</span>
-              <span className="text-xs text-subtext1 ml-2">Přesnější výsledky krok za krokem.</span>
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <button
-                onClick={acceptGuidedSearch}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-teal/20 hover:bg-teal/30 text-teal border border-teal/30 transition-colors"
-              >
-                <Sparkles size={11} />
-                Spustit
-              </button>
-              <button
-                onClick={declineGuidedSearch}
-                className="px-2.5 py-1 rounded-lg text-xs font-medium bg-surface1 hover:bg-surface2 text-subtext1 transition-colors"
-              >
-                Ne díky
-              </button>
-              <button onClick={declineGuidedSearch} className="text-overlay1 hover:text-text transition-colors p-0.5 ml-1">
-                <X size={12} />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Input */}
       <div className="border-t border-surface1 bg-mantle p-3 shrink-0">
         <div className="flex gap-2 relative">
@@ -955,22 +867,6 @@ export function AiChat() {
                   className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${webSearchEnabled ? 'bg-mauve' : 'bg-surface2'}`}
                 >
                   <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-crust rounded-full shadow transition-transform ${webSearchEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
-                </button>
-              </label>
-
-              {/* Component advisor toggle */}
-              <label className="flex items-center justify-between gap-3 cursor-pointer">
-                <div className="min-w-0">
-                  <span className="text-sm text-text">Poradce komponent</span>
-                  <p className="text-[11px] text-overlay1 leading-snug mt-0.5">Technická diskuze o komponentech, srovnání produktových řad</p>
-                </div>
-                <button
-                  role="switch"
-                  aria-checked={componentAdvisor}
-                  onClick={() => setComponentAdvisor(v => !v)}
-                  className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${componentAdvisor ? 'bg-pink' : 'bg-surface2'}`}
-                >
-                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-crust rounded-full shadow transition-transform ${componentAdvisor ? 'translate-x-5' : 'translate-x-0'}`} />
                 </button>
               </label>
 
@@ -1031,7 +927,7 @@ export function AiChat() {
             onClick={() => setSettingsOpen(v => !v)}
             title="Nastavení a export"
             className={`rounded-xl px-3 py-2.5 transition-colors ${
-              settingsOpen || webSearchEnabled || componentAdvisor
+              settingsOpen || webSearchEnabled
                 ? 'text-mauve bg-surface1 hover:bg-surface2'
                 : 'text-overlay0 hover:text-subtext1 hover:bg-surface0'
             }`}
@@ -1039,7 +935,7 @@ export function AiChat() {
             <Settings size={16} />
           </button>
           <button
-            onClick={() => { guidedOfferShownRef.current = true; setGuidedSearchActive(true); }}
+            onClick={() => { setGuidedSearchActive(true); }}
             disabled={isLoading}
             title="Spustit řízené vyhledávání"
             className="flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-teal hover:bg-teal/10 disabled:opacity-40 transition-colors text-xs font-medium whitespace-nowrap"

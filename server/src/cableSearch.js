@@ -137,3 +137,156 @@ export function filterCables(answers, dropKeys = []) {
 
   return result.map(c => ({ ...c, _matchType: 'filter', _db: 'cables' }));
 }
+
+// ─── Text search (BM25 + wildcard) ────────────────────────────────────────────
+
+function removeDiacritics(str) {
+  return (str ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+function tokenize(text) {
+  return removeDiacritics(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9.]/g, ' ')
+    .split(/\s+/)
+    .filter(t => t.length >= 1);
+}
+
+const BM25_K1 = 1.5;
+const BM25_B  = 0.75;
+
+function buildCableBM25Index() {
+  const N = allCables.length;
+  const invertedIndex = new Map();
+  const docLengths = new Int32Array(N);
+
+  for (let i = 0; i < N; i++) {
+    const c = allCables[i];
+    const tokens = tokenize([
+      c.nazev, c.artikl, c.vyrobce,
+      c.materialPlaste,
+      c.barva,
+      c.prurez != null ? String(c.prurez) : '',
+      c.pocetZil != null ? String(c.pocetZil) : '',
+    ].join(' '));
+    docLengths[i] = tokens.length;
+
+    const tf = {};
+    for (const t of tokens) tf[t] = (tf[t] ?? 0) + 1;
+    for (const [t, freq] of Object.entries(tf)) {
+      if (!invertedIndex.has(t)) invertedIndex.set(t, []);
+      invertedIndex.get(t).push({ idx: i, tf: freq });
+    }
+  }
+
+  const avgDL = docLengths.reduce((s, v) => s + v, 0) / N;
+  const sortedTokens = [...invertedIndex.keys()].sort();
+  console.log(`[cableSearch] BM25 index: ${sortedTokens.length} tokens, avgDL=${avgDL.toFixed(1)}`);
+  return { invertedIndex, sortedTokens, docLengths, avgDL, N };
+}
+
+const cableBM25 = allCables.length > 0 ? buildCableBM25Index() : null;
+
+function bm25SearchCables(query, topN, mfrFilter) {
+  if (!cableBM25) return [];
+  const { invertedIndex, sortedTokens, docLengths, avgDL, N } = cableBM25;
+  const queryTokens = tokenize(query);
+  if (!queryTokens.length) return [];
+
+  const scores    = new Map();
+  const tokenHits = new Map();
+
+  for (const qt of queryTokens) {
+    const usePrefix = qt.length >= 2;
+    let lo = 0, hi = sortedTokens.length;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (sortedTokens[mid] < qt) lo = mid + 1; else hi = mid; }
+    const start = lo;
+    lo = start; hi = sortedTokens.length;
+    const fence = usePrefix ? qt + '￿' : null;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (fence && sortedTokens[mid] < fence) lo = mid + 1; else hi = mid; }
+    const end = usePrefix ? lo : start + 1;
+
+    const hitSet = new Set();
+    for (let ti = start; ti < end; ti++) {
+      const t = sortedTokens[ti];
+      if (!usePrefix && t !== qt) continue;
+      const postings = invertedIndex.get(t);
+      if (!postings) continue;
+      const df  = postings.length;
+      const idf = Math.log((N - df + 0.5) / (df + 0.5) + 1);
+      for (const { idx, tf } of postings) {
+        const dl    = docLengths[idx];
+        const denom = tf + BM25_K1 * (1 - BM25_B + BM25_B * dl / avgDL);
+        scores.set(idx, (scores.get(idx) ?? 0) + idf * (tf * (BM25_K1 + 1)) / denom);
+        hitSet.add(idx);
+      }
+    }
+    for (const idx of hitSet) tokenHits.set(idx, (tokenHits.get(idx) ?? 0) + 1);
+  }
+
+  if (!scores.size) return [];
+
+  const required = queryTokens.length;
+  let entries = [...scores.entries()]
+    .filter(([idx]) => (tokenHits.get(idx) ?? 0) >= required);
+
+  if (mfrFilter) {
+    const mfr = removeDiacritics(mfrFilter).toLowerCase();
+    entries = entries.filter(([idx]) =>
+      removeDiacritics(allCables[idx].vyrobce ?? '').toLowerCase().includes(mfr)
+    );
+  }
+
+  entries.sort((a, b) => b[1] - a[1]);
+  const maxScore = entries[0]?.[1] ?? 1;
+  return entries.slice(0, topN).map(([idx, score]) => ({
+    ...allCables[idx],
+    _score: score / maxScore,
+    _matchType: 'bm25',
+    _db: 'cables',
+  }));
+}
+
+function wildcardSearchCables(corpus, query) {
+  const words   = query.trim().split(/\s+/).filter(Boolean);
+  const regexes = words.map(w => new RegExp(removeDiacritics(w), 'i'));
+  return corpus
+    .filter(c => {
+      const haystack = removeDiacritics([
+        c.nazev, c.artikl, c.vyrobce, c.materialPlaste, c.barva,
+        c.prurez != null ? String(c.prurez) : '',
+        c.pocetZil != null ? String(c.pocetZil) : '',
+      ].join(' '));
+      return regexes.every(re => re.test(haystack));
+    })
+    .map(c => ({ ...c, _score: 1.0, _matchType: 'wildcard', _db: 'cables' }));
+}
+
+/**
+ * Search cables by free text query (BM25 + wildcard).
+ * Returns articles with _score (0–1), _matchType, _db='cables'.
+ */
+export function searchCables(query, topN = 5, manufacturerFilter = null) {
+  let corpus = allCables;
+  if (manufacturerFilter) {
+    const mfr = removeDiacritics(manufacturerFilter).toLowerCase();
+    const filtered = allCables.filter(c =>
+      removeDiacritics(c.vyrobce ?? '').toLowerCase().includes(mfr)
+    );
+    if (filtered.length > 0) corpus = filtered;
+  }
+
+  const wildcard = wildcardSearchCables(corpus, query);
+  const bm25     = bm25SearchCables(query, topN * 2, manufacturerFilter);
+
+  const seen    = new Set();
+  const results = [];
+  for (const c of [...wildcard, ...bm25]) {
+    if (!seen.has(c.artikl)) {
+      seen.add(c.artikl);
+      results.push(c);
+      if (results.length >= topN) break;
+    }
+  }
+  return results;
+}

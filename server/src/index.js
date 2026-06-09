@@ -17,7 +17,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.post('/api/chat', async (req, res) => {
-  const { message, history = [], webSearchEnabled = true, synthModel, componentAdvisor = false, skipGuidedSuggestion = false } = req.body ?? {};
+  const { message, history = [], webSearchEnabled = true, synthModel } = req.body ?? {};
 
   if (!message || typeof message !== 'string' || !message.trim()) {
     return res.status(400).json({ error: 'Chybí parametr message.' });
@@ -42,8 +42,6 @@ app.post('/api/chat', async (req, res) => {
       (step, label, meta = {}) => send('status', { step, label, ...meta }),
       !!webSearchEnabled,
       synthModel,
-      !!componentAdvisor,
-      !!skipGuidedSuggestion,
       send,
     );
     if (result !== null) send('result', result);
