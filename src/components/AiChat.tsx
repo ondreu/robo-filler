@@ -317,9 +317,7 @@ export function AiChat() {
   const [showUsageWarning, setShowUsageWarning] = useState(false);
   const [pendingQuery, setPendingQuery] = useState<string | null>(null);
   const [guidedSearchActive, setGuidedSearchActive] = useState(false);
-  // Track whether the guided search suggestion popup was shown this conversation session
-  const [guidedOfferShown, setGuidedOfferShown] = useState(false);
-  // Non-blocking popup visible state (separate from whether it was shown)
+  // Non-blocking popup visible state
   const [guidedOfferPopupVisible, setGuidedOfferPopupVisible] = useState(false);
   const [activeGuidedResult, setActiveGuidedResult] = useState<GuidedResultSnapshot | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -335,7 +333,7 @@ export function AiChat() {
   })());
   const skipSaveRef = useRef(false);
   const requestCounterRef = useRef(0);
-  // Ref mirrors guidedOfferShown for use in async callbacks (avoids stale closure)
+  // Tracks whether guided search offer was shown this session (ref avoids stale closures in async callbacks)
   const guidedOfferShownRef = useRef(false);
 
   useEffect(() => {
@@ -388,7 +386,7 @@ export function AiChat() {
     setLastAllCandidates([]);
     setCurrentStatusLog([]);
     statusLogRef.current = [];
-    setGuidedOfferShown(false);
+    
     guidedOfferShownRef.current = false;
     setGuidedOfferPopupVisible(false);
     setPendingQuery(null);
@@ -411,7 +409,7 @@ export function AiChat() {
     setCurrentStatusLog([]);
     setIsLoading(false);
     statusLogRef.current = [];
-    setGuidedOfferShown(false);
+    
     guidedOfferShownRef.current = false;
     setGuidedOfferPopupVisible(false);
   };
@@ -560,7 +558,7 @@ export function AiChat() {
                 // Non-blocking popup: only show once per conversation session
                 if (!guidedOfferShownRef.current) {
                   guidedOfferShownRef.current = true;
-                  setGuidedOfferShown(true);
+                  
                   setPendingQuery(text);
                   setGuidedOfferPopupVisible(true);
                 }
@@ -781,7 +779,7 @@ export function AiChat() {
               </div>
             </div>
             <button
-              onClick={() => { guidedOfferShownRef.current = true; setGuidedOfferShown(true); setGuidedSearchActive(true); }}
+              onClick={() => { guidedOfferShownRef.current = true;  setGuidedSearchActive(true); }}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-teal/10 hover:bg-teal/20 border border-teal/20 hover:border-teal/40 transition-colors text-left group"
             >
               <Sparkles size={16} className="text-teal shrink-0" />
@@ -1046,7 +1044,7 @@ export function AiChat() {
             <Settings size={16} />
           </button>
           <button
-            onClick={() => { setGuidedOfferDismissed(true); setGuidedSearchActive(true); }}
+            onClick={() => { guidedOfferShownRef.current = true; setGuidedSearchActive(true); }}
             disabled={isLoading}
             title="Spustit řízené vyhledávání"
             className="flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-teal hover:bg-teal/10 disabled:opacity-40 transition-colors text-xs font-medium whitespace-nowrap"
