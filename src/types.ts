@@ -39,7 +39,13 @@ export interface SearchOptions {
 
 export interface BulkQueryResult {
   query: string;
+  altQuery?: string;
+  pocet?: number;
+  oznaceniPristroje?: string;
+  popis?: string;
+  vyrobce?: string;
   results: SearchResult[];
+  usedAlt?: boolean;
 }
 
 export type AppMode = 'single' | 'bulk' | 'ai';
