@@ -252,8 +252,10 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
 
   // ── row mutations ────────────────────────────────────────────────────────────
   const dragIdx = useRef<number | null>(null);
+  const dragBulkRangeRef = useRef<{ r1: number; r2: number } | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const [dragRowIdx, setDragRowIdx] = useState<number | null>(null);
+  const [dragBulkRows, setDragBulkRows] = useState<{ r1: number; r2: number } | null>(null);
 
   const addLRow = () => {
     pushHistory();
@@ -565,27 +567,71 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
   }, [startEdit]);
 
   // ── drag-row reorder ──────────────────────────────────────────────────────────
-  const handleRowDragStart = (idx: number) => { dragIdx.current = idx; setDragRowIdx(idx); };
+  const handleRowDragStart = (idx: number) => {
+    dragIdx.current = idx;
+    setDragRowIdx(idx);
+    if (sel) {
+      const { r1, r2 } = norm(sel);
+      if (r2 > r1 && idx >= r1 && idx <= r2) {
+        dragBulkRangeRef.current = { r1, r2 };
+        setDragBulkRows({ r1, r2 });
+      } else {
+        dragBulkRangeRef.current = null;
+        setDragBulkRows(null);
+      }
+    } else {
+      dragBulkRangeRef.current = null;
+      setDragBulkRows(null);
+    }
+  };
   const handleRowDragOver = (e: React.DragEvent, idx: number) => {
     e.preventDefault();
+    const bulk = dragBulkRangeRef.current;
+    if (bulk && idx >= bulk.r1 && idx <= bulk.r2 + 1) return;
     if (dragIdx.current !== idx) setDragOverIdx(idx);
   };
   const handleRowDrop = (idx: number) => {
     const from = dragIdx.current;
-    if (from === null || from === idx) { setDragOverIdx(null); setDragRowIdx(null); return; }
-    pushHistory();
-    setRows(prev => {
-      const arr = [...prev];
-      const [d] = arr.splice(from, 1);
-      arr.splice(idx, 0, d);
-      return arr;
-    });
-    setSel(null);
-    dragIdx.current = null;
-    setDragOverIdx(null);
-    setDragRowIdx(null);
+    if (from === null) {
+      dragBulkRangeRef.current = null;
+      setDragOverIdx(null); setDragRowIdx(null); setDragBulkRows(null);
+      return;
+    }
+    const bulk = dragBulkRangeRef.current;
+    if (bulk) {
+      const { r1, r2 } = bulk;
+      const count = r2 - r1 + 1;
+      if (idx >= r1 && idx <= r2 + 1) {
+        dragIdx.current = null; dragBulkRangeRef.current = null;
+        setDragOverIdx(null); setDragRowIdx(null); setDragBulkRows(null);
+        return;
+      }
+      pushHistory();
+      setRows(prev => {
+        const arr = [...prev];
+        const bulkRows = arr.splice(r1, count);
+        const insertAt = idx < r1 ? idx : idx - count;
+        arr.splice(Math.max(0, insertAt), 0, ...bulkRows);
+        return arr;
+      });
+      setSel(null);
+    } else if (from !== idx) {
+      pushHistory();
+      setRows(prev => {
+        const arr = [...prev];
+        const [d] = arr.splice(from, 1);
+        arr.splice(idx, 0, d);
+        return arr;
+      });
+      setSel(null);
+    }
+    dragIdx.current = null; dragBulkRangeRef.current = null;
+    setDragOverIdx(null); setDragRowIdx(null); setDragBulkRows(null);
   };
-  const handleRowDragEnd = () => { dragIdx.current = null; setDragOverIdx(null); setDragRowIdx(null); };
+  const handleRowDragEnd = () => {
+    dragIdx.current = null; dragBulkRangeRef.current = null;
+    setDragOverIdx(null); setDragRowIdx(null); setDragBulkRows(null);
+  };
 
   const updateHeader = (f: keyof BomHeader, v: string) => setHeader(h => ({ ...h, [f]: v }));
 
@@ -821,7 +867,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
                   : row.type === 'T' ? 'border-surface0 bg-yellow/5'
                   : ri % 2 === 0 ? 'border-surface0 bg-base'
                   : 'border-surface0 bg-mantle/40'
-                } ${dragRowIdx === ri ? 'opacity-40' : ''}`}
+                } ${dragRowIdx === ri || (dragBulkRows !== null && ri >= dragBulkRows.r1 && ri <= dragBulkRows.r2) ? 'opacity-40' : ''}`}
               >
                 {/* Drag handle */}
                 <td className="border-r border-surface1 text-center cursor-grab active:cursor-grabbing px-1 py-0.5">

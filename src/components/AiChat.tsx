@@ -1014,6 +1014,15 @@ export function AiChat() {
             <Settings size={16} />
           </button>
           <button
+            onClick={() => { setGuidedOfferDismissed(true); setGuidedSearchActive(true); }}
+            disabled={isLoading}
+            title="Spustit řízené vyhledávání"
+            className="flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-teal hover:bg-teal/10 disabled:opacity-40 transition-colors text-xs font-medium whitespace-nowrap"
+          >
+            <Sparkles size={14} />
+            Průvodce
+          </button>
+          <button
             onClick={sendMessage}
             disabled={isLoading || !input.trim()}
             className="bg-mauve hover:bg-pink disabled:opacity-40 text-crust rounded-xl px-4 py-2.5 transition-colors"
