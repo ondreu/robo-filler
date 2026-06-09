@@ -315,7 +315,6 @@ export function AiChat() {
   const [expandedTraces, setExpandedTraces] = useState<Set<number>>(new Set());
   const [lastAllCandidates, setLastAllCandidates] = useState<Article[]>([]);
   const [showUsageWarning, setShowUsageWarning] = useState(false);
-  const [pendingQuery, setPendingQuery] = useState<string | null>(null);
   const [guidedSearchActive, setGuidedSearchActive] = useState(false);
   // Non-blocking popup visible state
   const [guidedOfferPopupVisible, setGuidedOfferPopupVisible] = useState(false);
@@ -389,7 +388,6 @@ export function AiChat() {
     
     guidedOfferShownRef.current = false;
     setGuidedOfferPopupVisible(false);
-    setPendingQuery(null);
     sessionStorage.removeItem(AI_CHAT_KEY);
     try { sessionStorage.removeItem(SESSION_ID_KEY); } catch {}
   };
@@ -559,7 +557,6 @@ export function AiChat() {
                 if (!guidedOfferShownRef.current) {
                   guidedOfferShownRef.current = true;
                   
-                  setPendingQuery(text);
                   setGuidedOfferPopupVisible(true);
                 }
                 // Search continues regardless — do NOT stop here
@@ -634,7 +631,6 @@ export function AiChat() {
   const acceptGuidedSearch = useCallback(() => {
     abortControllerRef.current?.abort();
     setGuidedOfferPopupVisible(false);
-    setPendingQuery(null);
     setIsLoading(false);
     statusLogRef.current = [];
     setCurrentStatusLog([]);
@@ -644,7 +640,6 @@ export function AiChat() {
   // Decline guided search popup — just close it, let current response arrive
   const declineGuidedSearch = useCallback(() => {
     setGuidedOfferPopupVisible(false);
-    setPendingQuery(null);
   }, []);
 
   const handleGuidedResult = useCallback((result: GuidedResultSnapshot) => {
