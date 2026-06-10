@@ -20,6 +20,7 @@ import { AiBomBuilder } from './components/AiBomBuilder';
 import { AiOnboarding } from './components/AiOnboarding';
 import { AppOnboarding } from './components/AppOnboarding';
 import { WireCableSearch } from './components/WireCableSearch';
+import { KanbanSearch } from './components/KanbanSearch';
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -342,7 +343,7 @@ function App() {
               </button>
             )}
           </div>
-          <div className="flex bg-surface0 rounded-2xl p-1">
+          <div className="flex bg-surface0 rounded-2xl p-1 gap-1">
             <button
               onClick={() => setAppMode('wirecable')}
               className={`px-5 py-2 rounded-xl font-medium transition-all ${
@@ -352,6 +353,16 @@ function App() {
               }`}
             >
               🔌 Vodiče &amp; Kabely
+            </button>
+            <button
+              onClick={() => setAppMode('kanban')}
+              className={`px-5 py-2 rounded-xl font-medium transition-all ${
+                appMode === 'kanban'
+                  ? 'bg-peach text-crust shadow-lg'
+                  : 'text-subtext1 hover:text-text'
+              }`}
+            >
+              📦 Sypký materiál
             </button>
           </div>
         </div>
@@ -544,6 +555,8 @@ function App() {
             )}
 
             {appMode === 'wirecable' && <WireCableSearch />}
+
+            {appMode === 'kanban' && <KanbanSearch />}
 
             {appMode === 'single' && (
               <>

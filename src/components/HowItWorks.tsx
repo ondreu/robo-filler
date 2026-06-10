@@ -63,6 +63,13 @@ export function HowItWorks() {
                     Prohledává se automaticky vedle hlavní databáze — výsledky z Vodič DB jsou označeny zeleným odznakem. V řízeném režimu (kategorie Vodič / Kabel) má Vodič DB přednost.
                   </p>
                 </div>
+                <div className="flex items-start gap-2 bg-surface0 rounded-xl p-3 mt-2">
+                  <span className="text-xs font-semibold px-1.5 py-0.5 bg-peach/15 text-peach rounded-lg shrink-0 mt-0.5">Kanban DB</span>
+                  <p className="text-xs text-subtext1">
+                    <span className="text-text font-medium">Databáze sypkého materiálu</span> — přes <span className="text-text font-medium">500 artiklů</span> kanban materiálu (dutinky, kabelová oka, fastony, smršťovací bužírky, stahovací pásky a další).
+                    Najdeš ji v kartě <span className="text-text font-medium">📦 Sypký materiál</span> vedle Vodičů &amp; Kabelů — filtruje se po kategoriích a podskupinách, karta artiklu ukazuje i pozici v kanbanu.
+                  </p>
+                </div>
               </section>
 
               {/* Klasické vyhledávání */}
