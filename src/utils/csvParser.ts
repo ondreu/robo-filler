@@ -57,19 +57,55 @@ export async function loadCSV(filename: string): Promise<CSVLoadResult> {
   }
 }
 
+export interface WireArticle {
+  artiklStroj: string;
+  skupinaDleTypu: string | null;
+  skupinaDlePouziti: string | null;
+  artiklRucni: string | null;
+  typ: string | null;
+  prurez: number | null;
+  barva: string | null;
+  vyrobce: string | null;
+  objednaciCislo: string | null;
+  baleni: number | null;
+  nazev: string | null;
+}
+
 export interface CableArticle {
   artikl: string;
-  nazev: string;
-  vyrobce: string;
-  pocetZil: number | null;
+  objCislo1: string | null;
+  objCislo2: string | null;
+  objCislo3: string | null;
+  objCislo4: string | null;
+  dodavatel: string | null;
+  nazevKatalog: string | null;
+  nazev: string | null;
+  pocetZil: string | null;
   ochrannyVodic: string | null;
-  prurez: number | null;
+  prurez: number | string | null;
+  ce: string | null;
+  ul: string | null;
+  cULus: string | null;
+  csa: string | null;
+  ukca: string | null;
+  ru: string | null;
+  cRUus: string | null;
+  rohs: string | null;
+  har: string | null;
+  vde: string | null;
+  profibus: string | null;
+  ulStyle: string | null;
   stineni: 'ANO' | 'NE' | null;
+  pletezenePary: 'ANO' | 'NE' | null;
+  znaceniVodicu: string | null;
+  teplotniRozsah: string | null;
+  jmenoviteNapeti: string | null;
   retiez: 'ANO' | 'NE' | null;
   olej: 'ANO' | 'NE' | null;
   bezhalogenovy: 'ANO' | 'NE' | null;
   materialPlaste: string | null;
   barva: string | null;
+  prumer: number | string | null;
 }
 
 export async function loadCables(): Promise<CableArticle[]> {
@@ -85,26 +121,31 @@ export async function loadCables(): Promise<CableArticle[]> {
   }
 }
 
-export async function loadWires(): Promise<Article[]> {
+export async function loadWiresRaw(): Promise<WireArticle[]> {
   try {
     const baseUrl = import.meta.env.BASE_URL;
     const response = await fetch(`${baseUrl}wires.json`);
     if (!response.ok) return [];
     const data = await response.json();
     if (!Array.isArray(data)) return [];
-    return data.map((w: Record<string, unknown>) => ({
-      typoveOznaceni: String(w.typoveOznaceni ?? ''),
-      artikl: String(w.artikl ?? ''),
-      vyrobce: String(w.vyrobce ?? ''),
-      nazev: String(w.nazev ?? ''),
-      cisloDiluVyrobce: String(w.cisloDiluVyrobce ?? ''),
-      vybehovyDil: '',
-      status: String(w.status ?? ''),
-      prurez: typeof w.prurez === 'number' ? w.prurez : null,
-      barva: String(w.barva ?? ''),
-      skupina: String(w.skupina ?? ''),
-    }));
+    return data as WireArticle[];
   } catch {
     return [];
   }
+}
+
+export async function loadWires(): Promise<Article[]> {
+  const raw = await loadWiresRaw();
+  return raw.map(w => ({
+    typoveOznaceni: w.typ ?? w.skupinaDleTypu ?? '',
+    artikl: w.artiklStroj ?? w.artiklRucni ?? '',
+    vyrobce: w.vyrobce ?? '',
+    nazev: w.nazev ?? '',
+    cisloDiluVyrobce: w.objednaciCislo ?? '',
+    vybehovyDil: '',
+    status: '',
+    prurez: w.prurez,
+    barva: w.barva ?? '',
+    skupina: w.skupinaDleTypu ?? '',
+  }));
 }
