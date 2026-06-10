@@ -27,7 +27,7 @@ const WIRE_SKUPINY: SkupinaGroup[] = [
   { key: 'olflex', label: 'ÖLFLEX HEAT',  match: s => s.startsWith('ÖLFLEX HEAT') },
   { key: 'ptfe',   label: 'PTFE',         match: s => s.startsWith('DESCAFLEX') },
   { key: 'alpha',  label: 'ALPHAWIRE',    match: s => s.startsWith('ALPHAWIRE') },
-  { key: 'solar',  label: 'Solární',      match: s => s === 'SOLAR' },
+  { key: 'solar',  label: 'Solar',        match: s => s === 'SOLAR' },
   { key: 'ul',     label: 'UL',           match: s => s.startsWith('UL_') },
   { key: 'hvsil',  label: 'HV Silikon',   match: s => s === 'HV Silikon' },
   { key: 'nsg',    label: 'NSGAFÖU',      match: s => s.startsWith('NSGAFÖU') },
@@ -284,7 +284,7 @@ function WireCard({ w, onClick }: { w: WireArticle; onClick: () => void }) {
         </div>
         <span className="text-subtext0 text-[10px] shrink-0 truncate max-w-[60px]">{w.vyrobce}</span>
       </div>
-      {w.typ && w.typ !== w.skupinaDleTypu && (
+      {w.typ && (
         <div className="text-subtext1 text-[10px] font-medium truncate">{w.typ}</div>
       )}
       <div className="text-text text-xs font-medium leading-snug line-clamp-2">{w.nazev}</div>
