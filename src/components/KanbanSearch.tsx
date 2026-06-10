@@ -100,6 +100,13 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 
 function KanbanDetailModal({ item, onClose }: { item: KanbanArticle; onClose: () => void }) {
   const kat = kategorieOf(item.skupina);
+  const isDutinka = kategorieOf(item.skupina).key === 'dutinky';
+  const prurez = isDutinka ? parsePrurezFromTyp(item.typ) : null;
+  const delka  = isDutinka ? parseDelkaFromTyp(item.typ)  : null;
+  const prurezLabel = prurez !== null
+    ? (Number.isInteger(prurez) ? `${prurez} mm²` : `${String(prurez).replace('.', ',')} mm²`)
+    : null;
+  const delkaLabel = delka !== null ? `${delka} mm` : null;
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
@@ -148,6 +155,8 @@ function KanbanDetailModal({ item, onClose }: { item: KanbanArticle; onClose: ()
           {/* Zařazení */}
           <div className="space-y-1.5">
             <InfoRow label="Typ" value={item.typ} />
+            <InfoRow label="Průřez" value={prurezLabel} />
+            <InfoRow label="Délka" value={delkaLabel} />
             <InfoRow label="Kategorie" value={kat.label} />
             <InfoRow label="Skupina" value={item.skupina} />
             <InfoRow label="Provedení" value={item.varianta} />
@@ -185,6 +194,13 @@ function KanbanDetailModal({ item, onClose }: { item: KanbanArticle; onClose: ()
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
 function KanbanCard({ item, onClick }: { item: KanbanArticle; onClick: () => void }) {
+  const isDutinka = kategorieOf(item.skupina).key === 'dutinky';
+  const prurez = isDutinka ? parsePrurezFromTyp(item.typ) : null;
+  const delka  = isDutinka ? parseDelkaFromTyp(item.typ)  : null;
+  const prurezLabel = prurez !== null
+    ? (Number.isInteger(prurez) ? `${prurez} mm²` : `${String(prurez).replace('.', ',')} mm²`)
+    : null;
+  const delkaLabel = delka !== null ? `${delka} mm` : null;
   return (
     <div
       onClick={onClick}
@@ -209,6 +225,16 @@ function KanbanCard({ item, onClick }: { item: KanbanArticle; onClick: () => voi
         <span className="text-[10px] bg-peach/10 text-peach border border-peach/20 rounded px-1.5 py-0.5 font-medium">
           {skupinaLabel(item.skupina)}
         </span>
+        {prurezLabel && (
+          <span className="text-[10px] bg-peach/10 text-peach border border-peach/20 rounded px-1.5 py-0.5 font-medium">
+            {prurezLabel}
+          </span>
+        )}
+        {delkaLabel && (
+          <span className="text-[10px] bg-surface1 text-subtext0 rounded px-1.5 py-0.5">
+            L={delkaLabel}
+          </span>
+        )}
         {item.varianta && (
           <span className="text-[10px] bg-surface1 text-subtext0 rounded px-1.5 py-0.5">{item.varianta}</span>
         )}
@@ -292,8 +318,99 @@ function RadioChips<T extends string>({
   );
 }
 
+// Kategorie — single-select (kliknutí na stejnou = zrušit výběr)
+function SingleChips({
+  label, values, selected, onChange, format,
+}: {
+  label: string;
+  values: string[];
+  selected: string;
+  onChange: (v: string) => void;
+  format?: (v: string) => string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <p className="text-[11px] text-overlay0 font-semibold uppercase tracking-wide">{label}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {values.map(v => {
+          const active = selected === v;
+          return (
+            <button
+              key={v}
+              onClick={() => onChange(active ? '' : v)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors border ${
+                active
+                  ? 'bg-peach/20 text-peach border-peach/40'
+                  : 'bg-surface0 text-subtext1 border-surface2 hover:bg-surface1 hover:text-text'
+              }`}
+            >
+              {format ? format(v) : v}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function toggle(arr: string[], val: string): string[] {
   return arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val];
+}
+
+function toggleNum(arr: number[], val: number): number[] {
+  return arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val];
+}
+
+// ─── Průřez parser ────────────────────────────────────────────────────────────
+// Extrahuje průřez (mm²) z typového označení pro dutinky a kabelová oka.
+// Podporované formáty:
+//   DN/DI/DID/AI + mezera + číslo + (-) → "DN 0,25-7", "DI 1-8", "AI 35 -18"
+//   H + číslo + / → "H0,5/14D"
+//   číslo + x → "2,5x5 KU-SP", "16X10 KU-SP"
+//   ONMC + mezera + číslo → "ONMC 4-M 6"
+
+const NUM = String.raw`(\d+[.,]\d+|\d+)`;
+
+function parsePrurezFromTyp(typ: string | null): number | null {
+  if (!typ) return null;
+  const t = typ.trim();
+
+  let m: RegExpMatchArray | null;
+
+  // DN/DI/DID/AI format — "DI 0,5-8", "AI 35 -18 červená", "DI 0.75-8"
+  m = t.match(new RegExp(`^[AD][NID]+\\s+${NUM}\\s*[-/]`, 'i'));
+  if (m) return parseFloat(m[1].replace(',', '.'));
+
+  // H format — "H0,5/14D"
+  m = t.match(new RegExp(`^H${NUM}/`, 'i'));
+  if (m) return parseFloat(m[1].replace(',', '.'));
+
+  // Kabelové oko — "2,5x5 KU-SP", "16X10 KU-SP"
+  m = t.match(new RegExp(`^${NUM}[xX]`));
+  if (m) return parseFloat(m[1].replace(',', '.'));
+
+  // ONMC — "ONMC 4-M 6"
+  m = t.match(new RegExp(`^ONMC\\s+${NUM}`, 'i'));
+  if (m) return parseFloat(m[1].replace(',', '.'));
+
+  return null;
+}
+
+// Délka dutinky (mm) — druhé číslo za pomlčkou: "DN 0,5-10" → 10, "AI 35 -18" → 18
+function parseDelkaFromTyp(typ: string | null): number | null {
+  if (!typ) return null;
+  const t = typ.trim();
+  let m: RegExpMatchArray | null;
+
+  // D[NI]/DID/AI — "DI 0,5-10 bílá", "AI 35 -18 červená"
+  m = t.match(new RegExp(`^[AD][NID]+\\s+${NUM}\\s*-\\s*(\\d+)`, 'i'));
+  if (m) return parseInt(m[2], 10);
+
+  // H format — "H0,5/14D W BD GSP" → 14
+  m = t.match(new RegExp(`^H${NUM}\\/(\\d+)`, 'i'));
+  if (m) return parseInt(m[2], 10);
+
+  return null;
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -305,11 +422,13 @@ export function KanbanSearch() {
 
   // Filters
   const [query, setQuery] = useState('');
-  const [kategorie, setKategorie] = useState<string[]>([]);
+  const [kategorie, setKategorie] = useState('');  // single-select
   const [skupiny, setSkupiny] = useState<string[]>([]);
   const [varianty, setVarianty] = useState<string[]>([]);
   const [din, setDin] = useState<'' | 'ANO' | 'NE'>('');
   const [kanban, setKanban] = useState<'' | 'ANO' | 'NE'>('');
+  const [prurezFilter, setPrurezFilter] = useState<number[]>([]);
+  const [delkaFilter, setDelkaFilter] = useState<number[]>([]);
 
   useEffect(() => {
     setLoading(true);
@@ -326,28 +445,27 @@ export function KanbanSearch() {
 
   // Podskupiny dostupné v rámci vybraných kategorií (zobrazí se až po výběru kategorie)
   const skupinaOptions = useMemo(() => {
-    if (!kategorie.length) return [];
-    const inCat = items.filter(i => kategorie.includes(kategorieOf(i.skupina).key));
+    if (!kategorie) return [];
+    const inCat = items.filter(i => kategorieOf(i.skupina).key === kategorie);
     return [...new Set(inCat.map(i => i.skupina))].sort((a, b) => skupinaLabel(a).localeCompare(skupinaLabel(b), 'cs'));
   }, [items, kategorie]);
 
   // Provedení (varianta) — jen hodnoty vyskytující se v aktuálním výběru kategorií
   const variantaOptions = useMemo(() => {
-    const pool = kategorie.length ? items.filter(i => kategorie.includes(kategorieOf(i.skupina).key)) : items;
+    const pool = kategorie ? items.filter(i => kategorieOf(i.skupina).key === kategorie) : items;
     return [...new Set(pool.map(i => i.varianta).filter((v): v is string => Boolean(v)))].sort((a, b) => a.localeCompare(b, 'cs'));
   }, [items, kategorie]);
 
   const dinAvailable = useMemo(() => {
-    const pool = kategorie.length ? items.filter(i => kategorie.includes(kategorieOf(i.skupina).key)) : items;
+    const pool = kategorie ? items.filter(i => kategorieOf(i.skupina).key === kategorie) : items;
     return pool.some(i => i.din != null);
   }, [items, kategorie]);
 
-  // ── Filtering ──────────────────────────────────────────────────────────
+  // ── Filtering — bez průřezu/délky (aby options reflektovaly aktuální kontext) ─
 
-  const filtered = useMemo(() => {
+  const filteredBase = useMemo(() => {
     let r = items;
     if (query) {
-      // Každé slovo dotazu se musí vyskytovat v některém z polí (AND přes slova)
       const words = query.toLowerCase().split(/\s+/).filter(Boolean);
       r = r.filter(i => {
         const haystack = [i.artikl, i.novyArtikl, i.elkov, i.objednaciCislo, i.typ, i.popis, i.vyrobce]
@@ -355,30 +473,53 @@ export function KanbanSearch() {
         return words.every(w => haystack.includes(w));
       });
     }
-    if (kategorie.length) r = r.filter(i => kategorie.includes(kategorieOf(i.skupina).key));
-    if (skupiny.length)   r = r.filter(i => skupiny.includes(i.skupina));
-    if (varianty.length)  r = r.filter(i => i.varianta != null && varianty.includes(i.varianta));
-    if (din)              r = r.filter(i => i.din === din);
-    if (kanban)           r = r.filter(i => (kanban === 'ANO') === i.vKanbanu);
+    if (kategorie) r = r.filter(i => kategorieOf(i.skupina).key === kategorie);
+    if (skupiny.length)  r = r.filter(i => skupiny.includes(i.skupina));
+    if (varianty.length) r = r.filter(i => i.varianta != null && varianty.includes(i.varianta));
+    if (din)             r = r.filter(i => i.din === din);
+    if (kanban)          r = r.filter(i => (kanban === 'ANO') === i.vKanbanu);
     return r;
   }, [items, query, kategorie, skupiny, varianty, din, kanban]);
+
+  // Průřez a délka — pouze pro kategorii Dutinky
+  const prurezOptions = useMemo(() => {
+    if (kategorie !== 'dutinky') return [];
+    const vals = new Set<number>();
+    filteredBase.forEach(i => { const p = parsePrurezFromTyp(i.typ); if (p !== null) vals.add(p); });
+    return [...vals].sort((a, b) => a - b);
+  }, [filteredBase, kategorie]);
+
+  const delkaOptions = useMemo(() => {
+    if (kategorie !== 'dutinky') return [];
+    const vals = new Set<number>();
+    filteredBase.forEach(i => { const d = parseDelkaFromTyp(i.typ); if (d !== null) vals.add(d); });
+    return [...vals].sort((a, b) => a - b);
+  }, [filteredBase, kategorie]);
+
+  const showPrurezFilter = kategorie === 'dutinky' && prurezOptions.length >= 2;
+  const showDelkaFilter  = kategorie === 'dutinky' && delkaOptions.length >= 2;
+
+  const filtered = useMemo(() => {
+    let r = filteredBase;
+    if (prurezFilter.length) r = r.filter(i => { const p = parsePrurezFromTyp(i.typ); return p !== null && prurezFilter.includes(p); });
+    if (delkaFilter.length)  r = r.filter(i => { const d = parseDelkaFromTyp(i.typ); return d !== null && delkaFilter.includes(d); });
+    return r;
+  }, [filteredBase, prurezFilter, delkaFilter]);
 
   // ── Reset ─────────────────────────────────────────────────────────────
 
   const resetFilters = () => {
-    setQuery(''); setKategorie([]); setSkupiny([]); setVarianty([]); setDin(''); setKanban('');
+    setQuery(''); setKategorie(''); setSkupiny([]); setVarianty([]); setDin(''); setKanban('');
+    setPrurezFilter([]); setDelkaFilter([]);
   };
-  const filtersActive = !!(query || kategorie.length || skupiny.length || varianty.length || din || kanban);
+  const filtersActive = !!(query || kategorie || skupiny.length || varianty.length || din || kanban || prurezFilter.length || delkaFilter.length);
 
-  // Při změně kategorií zruš podskupiny/provedení, které už nejsou k dispozici
+  // Kategorie — single-select; přepnutí na jinou zruší podskupiny a průřez/délku
   const onToggleKategorie = (key: string) => {
-    const next = toggle(kategorie, key);
-    setKategorie(next);
-    if (next.length) {
-      setSkupiny(prev => prev.filter(s => next.includes(kategorieOf(s).key)));
-    } else {
-      setSkupiny([]);
-    }
+    setKategorie(key);
+    setSkupiny([]);
+    setPrurezFilter([]);
+    setDelkaFilter([]);
   };
 
   const total = filtered.length;
@@ -426,11 +567,11 @@ export function KanbanSearch() {
 
       {/* Filters */}
       <div className="bg-mantle rounded-2xl p-4 space-y-4">
-        <Chips
+        <SingleChips
           label="Kategorie"
           values={kategorieOptions}
           selected={kategorie}
-          onToggle={onToggleKategorie}
+          onChange={onToggleKategorie}
           format={v => KATEGORIE.find(k => k.key === v)?.label ?? v}
         />
         {skupinaOptions.length > 1 && (
@@ -449,6 +590,53 @@ export function KanbanSearch() {
             selected={varianty}
             onToggle={v => setVarianty(toggle(varianty, v))}
           />
+        )}
+        {showPrurezFilter && (
+          <div className="space-y-1.5">
+            <p className="text-[11px] text-overlay0 font-semibold uppercase tracking-wide">Průřez (mm²)</p>
+            <div className="flex flex-wrap gap-1.5">
+              {prurezOptions.map(p => {
+                const active = prurezFilter.includes(p);
+                const label = Number.isInteger(p) ? String(p) : String(p).replace('.', ',');
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setPrurezFilter(prev => toggleNum(prev, p))}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors border ${
+                      active
+                        ? 'bg-peach/20 text-peach border-peach/40'
+                        : 'bg-surface0 text-subtext1 border-surface2 hover:bg-surface1 hover:text-text'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {showDelkaFilter && (
+          <div className="space-y-1.5">
+            <p className="text-[11px] text-overlay0 font-semibold uppercase tracking-wide">Délka (mm)</p>
+            <div className="flex flex-wrap gap-1.5">
+              {delkaOptions.map(d => {
+                const active = delkaFilter.includes(d);
+                return (
+                  <button
+                    key={d}
+                    onClick={() => setDelkaFilter(prev => toggleNum(prev, d))}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors border ${
+                      active
+                        ? 'bg-peach/20 text-peach border-peach/40'
+                        : 'bg-surface0 text-subtext1 border-surface2 hover:bg-surface1 hover:text-text'
+                    }`}
+                  >
+                    {d}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         )}
         {dinAvailable && (
           <RadioChips
