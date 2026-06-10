@@ -31,15 +31,116 @@ Every type number and claim must be verifiable from manufacturer sites or major 
 | Category key | Priority | Notes |
 |---|---|---|
 | `prislusenstvi_stykac` | Low | Mostly checked alongside `stykac` |
-| `casove_rele` | Low | Timer part numbers not deeply checked |
-| `fazove_rele` | Low | Phase relay part numbers not deeply checked |
-| `tlacitko` | Low | |
-| `nouzove_tlacitko` | Low | |
-| `hlavni_vypinac` | Low | OT16F3/OT25F3 order numbers confirmed in Audit #1; remaining not explicitly verified |
-| `pruchovka` | Low | Cable glands — standard sizes, low risk |
-| `zaslepka` | Low | |
-| `prepetova_ochrana` | Low | VAL-MS and OVR T2 order numbers not deeply checked |
-| `rittal` | Low | Enclosure order numbers not deeply checked |
+| `casove_rele` | ✅ Audited in Audit #3 |
+| `fazove_rele` | ✅ Audited in Audit #3 |
+| `tlacitko` | ✅ Audited in Audit #3 |
+| `nouzove_tlacitko` | ✅ Audited in Audit #3 |
+| `hlavni_vypinac` | ✅ Audited in Audit #3 |
+| `pruchovka` | ⚠️ Not audited — cable gland diameter ranges low risk, no specific order numbers |
+| `zaslepka` | ⚠️ Not audited — no specific order numbers to verify |
+| `prepetova_ochrana` | ✅ Audited in Audit #3 |
+| `rittal` | ✅ Audited in Audit #3 |
+
+---
+
+## Audit #3 — 2026-06-09
+
+**Branch:** `claude/kind-planck-4s3zsw`
+**Commits:** `03fde3e` (fazove_rele), `6a74f8b` (all others)
+**Approach:** 5 parallel research agents covering all remaining unaudited categories.
+
+### Categories audited in Audit #3
+
+| Category key | Status |
+|---|---|
+| `fazove_rele` | ✅ Audited — many errors found and fixed |
+| `casove_rele` | ✅ Audited — errors found and fixed |
+| `tlacitko` | ✅ Audited — many errors found and fixed |
+| `nouzove_tlacitko` | ✅ Audited — errors found and fixed |
+| `hlavni_vypinac` | ✅ Audited — errors found and fixed |
+| `prepetova_ochrana` | ✅ Audited — errors found and fixed |
+| `rittal` | ✅ Audited — errors found and fixed |
+| `pruchovka` | ⚠️ Not audited (low risk: no specific order numbers to verify) |
+| `zaslepka` | ⚠️ Not audited (low risk: no specific order numbers to verify) |
+
+---
+
+## Errors fixed in Audit #3
+
+### casove_rele
+
+- **Siemens 3RP2505-1AW30 function count** — 27 functions → **13** (27 = sibling -1BW30)
+- **Siemens 3RP2505-1AW30 outputs** — "2CO, 5A/250VAC" → **1CO (SPDT), switching 3A; Ith=5A**
+- **Siemens 3RP2505-1AW30 width** — "35 mm (2 TE)" → **17.5 mm (1 TE)**
+- **ABB CT-MFD.21 order number** — 1SVR500012R2100 unverifiable → **1SVR500020R1100** (CT-MFD.21 screw); S suffix = spring-clamp, order number must be verified in ABB catalog
+- **ABB CT-MFD.21 width** — 35 mm → **17.5 mm**
+- **ABB CT-MFD.21 temperature** — +55 °C → **+60 °C**
+- **Finder 88.02 function labels** — "A1–A7" with star-triangle → **AI/DI/GI/SW/BE/CE/DE**; star-triangle NOT a function of 88.02 (belongs to series 80)
+- **Finder 88.02 supply voltage** — "12–240 V AC/DC" → **24–230 V AC/DC**
+- **Finder 88.02 time ranges** — 9 ranges → **16 ranges**
+- **Finder 88.02 form factor** — "DIN rail, 22.5 mm wide" → **48×48 mm panel-mount plug-in** (DIN rail requires separate socket, e.g. 94.62)
+
+### fazove_rele
+
+- **Siemens 3UG4511 suffix N/P** — N and P transposed: **N = 160–260 V, P = 320–500 V** (file had them reversed)
+- **Siemens 3UG4511-1AN20** — this is the 160–260 V variant; correct part for 400 V system = **3UG4511-1AP20**
+- **Siemens 3UG4511 asymmetry** — false claim of "fixed asymmetry 10%" removed; 3UG4511 does NOT monitor asymmetry
+- **Siemens 3UG4511 response time** — < 150 ms → **< 450 ms**
+- **Siemens 3UG4512 asymmetry range** — 2–15 % → **0–20 %**
+- **Siemens 3UG4513-1BR20** — falsely called "digital with LED display"; corrected to **analog with potentiometers**
+- **ABB CM-PFE.2 order number** — 2CSS2012400R1800 → **1SVR550826R9100**
+- **ABB CM-PFE.2 response time** — "< 500 ms" → **exactly 500 ms** (ts = tv = 500 ms, fixed)
+- **ABB CM-PFE.2 temperature** — +55 °C → **+60 °C**
+
+### tlacitko
+
+- **Schneider XB4BD21** — this is a 2-position selector switch, NOT a green pushbutton; correct green 1NO button = **XB4BA31**
+- **Schneider XB5AD21** — same error; correct green 1NO XB5 = **XB5AA31**
+- **Schneider AC-15 rating** — 4 A / 240 VAC → **3 A / 240 VAC**; full rating is 10 A / 600 VAC
+- **Schneider ZB4BZ103** — "1NO + 1NC" → **2NO**
+- **Eaton M22-D-B** — "černá (black)" → **modrá (blue)**; black head = **M22-D-S**
+- **Eaton M22 contact rating** — "10 A / 230 VAC (AC-15: 4 A)" → **6 A / 500 VAC (AC-15: 6 A / 230 VAC)**
+- **Siemens 3SB3001-0AA21** — color "černé" → **červené**; confirmed red by RS, TME, Kempston
+- **Siemens 3SB3 color suffix scheme** — "A=black, B=green, D=red" completely wrong; color encoded in numeric digit position (AA21=red, AA31=yellow, AA41=green, AA51=blue, AA61=white); spurious part numbers removed
+
+### nouzove_tlacitko
+
+- **XB4BS54441** — part number doesn't exist; corrected to **XB4BS84441** (2NC+1NO, not 1NC+1NO)
+- **XB4BS8444** — contacts "1NC+1NO" → **2NC**; release mechanism unconfirmed (removed key-release claim)
+- **ZB4BZ103** — "1NO+1NC" → **2NO** (same error as in tlacitko)
+
+### hlavni_vypinac
+
+- **ABB OT voltage** — "600 V AC" → **690 V AC (IEC)** / 600 V AC (UL)
+- **ABB OT25F3 UL rating** — missing: IEC=25 A, **UL=30 A**
+- **ABB OT63F3/OT100F3** — order numbers added: **1SCA105332R1001** and **1SCA105004R1001**
+- **ABB OT 4-pole designations** — plain OT16F4 etc. not in current catalog; correct current = **OT16F4N2, OT25F4N2, OT40F4N2, OT63F4N2**
+- **Siemens 3LD2 suffix -0TK51/-0TK53** — described as "direct handle / shaft extension" → **-0TK51 = black rotary handle (standard), -0TK53 = red-yellow rotary handle (E-stop + main switch)**
+
+### prepetova_ochrana
+
+- **Phoenix VAL-MS 320/3+1/FM order number** — 2859160 not found anywhere → corrected to **2859181**
+- **Phoenix VAL-MS Up** — ≤ 1.5 kV → **≤ 1.6 kV** (L-N, per datasheet for 2859181)
+- **ABB OVR T2 1N product name** — missing QS suffix; correct: **OVR T2 1N 40-275 P TS QS** (TS = signaling contact, QS = quick-connect; not "disconnector")
+- **ABB OVR T2 3N** — the 3N variant has NO TS (no signaling contact); removed false signaling claim
+- **ABB OVR T2 Up** — ≤ 1.5 kV → **1.25 kV** (L-N)
+
+### rittal
+
+- **KX 1575.000 material** — "AISI 304 stainless steel" → **ocelový plech (carbon steel)**; dimensions and IP66 confirmed
+- **SZ2471.000** — "inner mounting panel for VX25" → WRONG: it is a **rain canopy for AE enclosures**; removed
+- **SZ2584.000** — "LED interior light" → WRONG: it is a **pole clamp** (discontinued January 2020); removed
+- **DK7100.100 / DK7101.100 / DK7110.100** — unverifiable; added note to confirm in Rittal catalog before ordering
+
+### Confirmed clean (no errors found)
+- All 9 Rittal VX25 part numbers and dimensions
+- All 6 Rittal AX part numbers and dimensions
+- Siemens 3LD2 part numbers 3LD2003/2103/2203/2504 and ratings
+- Schneider TeSys Vario VCF0–VCF3 and VBF0–VBF3 ratings
+- ABB OT16F3 (1SCA104811R1001) and OT40F3 (1SCA104902R1001) order numbers
+- ABB OT63F3 and OT100F3 existence confirmed
+- Phoenix VAL-MS DC variants (2800642 and 2800628)
+- Finder 88.02: 2CO DPDT 8A/250VAC, 0.05s–100h time range
 
 ---
 

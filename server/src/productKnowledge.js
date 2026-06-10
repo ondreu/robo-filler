@@ -1942,18 +1942,19 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
         label: 'Siemens',
         doc: `## Siemens – Časové relé 3RP2505
 
-### 3RP2505-1AW30 – Multifunkční časové relé
+### 3RP2505-1AW30 – Multifunkční časové relé (1CO, 13 funkcí)
 
-  3RP2505-1AW30 = 27 časovacích funkcí, 12–240 V AC/DC, 2CO, 5 A / 250 VAC
+  3RP2505-1AW30 = 13 časovacích funkcí, 12–240 V AC/DC, 1CO, Ith=5 A
+  3RP2505-1BW30 = 27 časovacích funkcí, 12–240 V AC/DC, 2CO (varianta s více funkcemi)
 
-### Parametry
+### Parametry 3RP2505-1AW30
 
   Napájení: 12–240 V AC/DC (univerzální vstup)
-  Počet funkcí: 27 (zapínací prodleva, vypínací prodleva, blikač,
+  Počet funkcí: 13 (zapínací prodleva, vypínací prodleva, blikač,
                  hvězda-trojúhelník, jednorázový impuls a další)
   Časový rozsah: 0,05 s … 360 000 s (= 100 hod), 7 rozsahů přepínačem
-  Výstupní kontakty: 2CO (2× přepínací), 5 A / 250 VAC
-  Montáž: DIN 35 mm lišta, šířka 35 mm (2 TE)
+  Výstupní kontakty: 1CO (SPDT), spínací proud 3 A / 250 VAC (Ith = 5 A)
+  Montáž: DIN 35 mm lišta, šířka 17,5 mm (1 TE)
   Pracovní teplota: –25 °C … +60 °C
   LED indikace: stav výstupu + napájení
 `,
@@ -1962,9 +1963,10 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
         label: 'ABB',
         doc: `## ABB – Časové relé CT-MFD.21
 
-### CT-MFD.21S (1SVR500012R2100) – Multifunkční časové relé
+### CT-MFD.21 / CT-MFD.21S – Multifunkční časové relé
 
-  CT-MFD.21S = 7 časovacích funkcí, 12–240 V AC/DC, 2CO, 5 A / 250 VAC
+  CT-MFD.21  (1SVR500020R1100) = 7 časovacích funkcí, 12–240 V AC/DC, 2CO, 5 A / 250 VAC
+  CT-MFD.21S = varianta s pružinovými svorkami (S = spring-clamp); objednací č. ověřit v katalogu ABB
 
 ### Parametry
 
@@ -1973,8 +1975,8 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
                  hvězda-trojúhelník, jednorázový impuls)
   Časový rozsah: 0,05 s … 100 hod (7 rozsahů)
   Výstupní kontakty: 2CO (2× přepínací), 5 A / 250 VAC
-  Montáž: DIN 35 mm lišta, šířka 35 mm
-  Pracovní teplota: –20 °C … +55 °C
+  Montáž: DIN 35 mm lišta, šířka 17,5 mm (1 TE)
+  Pracovní teplota: –20 °C … +60 °C
   Objednací číslo v závorce = ABB číslo
 `,
       },
@@ -1982,28 +1984,33 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
         label: 'Finder',
         doc: `## Finder – Multifunkční časové relé série 88
 
-### 88.02 – 7 funkcí, DPDT (2CO), 12–240 V AC/DC
+### 88.02.0.240.0000 – 2CO, 24–230 V AC/DC, panelová montáž 48×48 mm
 
-  88.02.0.240.0000 = 7 časovacích funkcí, 12–240 V AC/DC, 2CO, 8 A / 250 VAC
+  88.02.0.240.0000 = multifunkční časovač, 24–230 V AC/DC, 2CO, 8 A / 250 VAC
+
+  DŮLEŽITÉ: 88.02 je zásuvný časovač s čelním panelem 48×48 mm — NENÍ DIN modulem
+  22,5 mm. Pro montáž na DIN 35 mm lištu nutno použít zásuvku (socket), např. Finder 94.62.
 
 ### Časovací funkce série 88.02
 
-  A1 = zapínací prodleva (ON-delay)
-  A2 = vypínací prodleva (OFF-delay)
-  A3 = jednorázový impuls (single pulse po náběhu)
-  A4 = blikač (symetrický, start při napájení)
-  A5 = blikač s předvolbou (start + stop impulsy)
-  A6 = hvězda-trojúhelník prodleva
-  A7 = asymetrický blikač
+  AI = zapínací prodleva (ON-delay)
+  DI = vypínací prodleva (OFF-delay)
+  GI = jednorázový impuls
+  SW = symetrický blikač
+  BE = blikač s předvolbou startu
+  CE = blikač s předvolbou zastavení
+  DE = asymetrický blikač
+
+  Pozn.: Hvězda-trojúhelník funkce (star-delta) NENÍ součástí série 88.02
+         (tuto funkci nabízí Finder série 80, např. 80.82)
 
 ### Parametry
 
-  Napájení: 12–240 V AC/DC (universální vstup – jeden typ pro všechna napětí)
+  Napájení: 24–230 V AC/DC (univerzální vstup)
   Výstupní kontakty: 2CO (DPDT), 8 A / 250 VAC
-  Časový rozsah: 0,05 s … 100 hod (9 rozsahů potenciometrem)
+  Časový rozsah: 0,05 s … 100 hod (16 rozsahů potenciometrem)
   Nastavení: 2 potenciometry (čas + rozsah) + přepínač funkce
-  Montáž: DIN 35 mm lišta, šířka 22,5 mm
-  Pracovní teplota: –20 °C … +55 °C
+  Montáž: čelní panel 48×48 mm (DIN lišta přes zásuvku 94.62)
   Norma: IEC/EN 61812-1
 `,
       },
@@ -2029,40 +2036,42 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
         label: 'Siemens',
         doc: `## Siemens – Monitorovací relé 3UG45xx
 
-### 3UG4511-1AN20 – Základní fázové relé (pevné prahy)
+### 3UG4511-1AP20 – Základní fázové relé (pevné prahy)
 
-  3UG4511-1AN20 = 3× 320–500 V AC, 1CO, pevná asymetrie 10 %, auto reset
+  3UG4511-1AP20 = 3× 320–500 V AC, 1CO, sled fází + výpadek fáze, auto reset
 
-  Funkce: sledování sledu fází, výpadku fáze
+  Funkce: sledování sledu fází, výpadku fáze (bez sledování asymetrie)
   Výstup: 1CO (přepínací), 3 A / 240 VAC
-  Reakce: výpad < 150 ms
+  Reakce: výpad < 450 ms
   Montáž: DIN 35 mm, šířka 22,5 mm
+
+  Pozn.: 3UG4511-1AN20 = varianta 160–260 V AC; pro 400V síť použít -1AP20
 
 ### 3UG4512-1AR20 – Rozšířené fázové relé (nastavitelné prahy)
 
   3UG4512-1AR20 = 3× 160–690 V AC, 1CO, nastavitelná asymetrie + podpětí, auto/ruční reset
 
-  Funkce: sled fází, výpadek fáze, nastavitelná asymetrie (2–15 %),
+  Funkce: sled fází, výpadek fáze, nastavitelná asymetrie (0–20 %),
           nastavitelné podpětí
   Vstupní napětí: 160–690 V AC (50/60 Hz)
   Výstup: 1CO, 3 A / 240 VAC
   Montáž: DIN 35 mm, šířka 22,5 mm
 
-### 3UG4513-1BR20 – Digitálně nastavitelné fázové relé
+### 3UG4513-1BR20 – Rozšířené fázové relé s 2CO výstupy
 
-  3UG4513-1BR20 = 3× 160–690 V AC, 2CO, digitální nastavení, LED displej, auto/ruční reset
+  3UG4513-1BR20 = 3× 160–690 V AC, 2CO, analogové nastavení potenciometrem, auto/ruční reset
 
-  Funkce: vše jako 3UG4512 + digitální zobrazení napětí a asymetrie
+  Funkce: vše jako 3UG4512 (sled fází, výpadek, nastavitelná asymetrie + podpětí)
   Výstup: 2CO (2× přepínací), 3 A / 240 VAC
-  Nastavení: rotační kodér + LED displej
+  Nastavení: potenciometry (analogové) — není digitální displej
   Montáž: DIN 35 mm, šířka 22,5 mm
 
 ### Kódování sufixu 3UG45xx
 
-  3UG4511: základní (1CO, pevné prahy)
-  3UG4512: rozšířené (1CO, nastavitelné)
-  3UG4513: digitální (2CO, displej)
-  N = vstup 320–500 V, R = vstup 160–690 V
+  3UG4511: základní (1CO, pevné prahy, sled/výpadek bez asymetrie)
+  3UG4512: rozšířené (1CO, nastavitelná asymetrie + podpětí)
+  3UG4513: rozšířené s 2CO výstupy
+  N = vstup 160–260 V, P = vstup 320–500 V, R = vstup 160–690 V
   A = auto reset, B = auto + ruční reset
 `,
       },
@@ -2072,13 +2081,13 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### CM-PFE.2 – Kontrola fází třífázové sítě
 
-  CM-PFE.2 (2CSS2012400R1800) = 3× 200–500 V AC, 1CO, DIN 35 mm, šířka 22,5 mm
+  CM-PFE.2 (1SVR550826R9100) = 3× 200–500 V AC, 1CO, DIN 35 mm, šířka 22,5 mm
 
 ### Funkce
 
-  Sleduje: sled fází (nesprávné pořadí L1-L2-L3), výpadek fáze (asymetrie >50 %)
+  Sleduje: sled fází (nesprávné pořadí L1-L2-L3), výpadek fáze
   Výstup: 1CO (přepínací), 4 A / 250 VAC
-  Reakce: < 500 ms při výpadku fáze
+  Reakce: 500 ms při výpadku fáze (ts = tv = 500 ms, pevná hodnota)
 
 ### Parametry
 
@@ -2086,7 +2095,7 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   Napájení měřicí části: z měřené sítě (bez externího napájení)
   Reset: automatický při obnovení správného stavu fází
   Montáž: DIN 35 mm lišta, šířka 22,5 mm (1 TE)
-  Pracovní teplota: –20 °C … +55 °C
+  Pracovní teplota: –20 °C … +60 °C
   Norma: IEC 60255-1
   Objednací číslo v závorce = ABB číslo
 `,
@@ -2113,36 +2122,40 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
         label: 'Schneider Electric',
         doc: `## Schneider Electric – Tlačítka Harmony XB4 / XB5
 
-### Harmony XB4 – kovová (zinkový slitinový) čelní deska, IP65, Ø22 mm
+### Harmony XB4 – kovová (zinkový slitinový) čelní deska, Ø22 mm
 
-  XB4BA21 = černé, Ø22 mm, momentální, 1NO, IP65, kovová deska
-  XB4BD21 = zelené, Ø22 mm, momentální, 1NO, IP65, kovová deska (START)
-  XB4BA42 = červené, Ø22 mm, momentální, 1NC, IP65, kovová deska (STOP)
+  XB4BA21 = černé, Ø22 mm, momentální, 1NO, kovová deska
+  XB4BA31 = zelené, Ø22 mm, momentální, 1NO, kovová deska (START)
+  XB4BA42 = červené, Ø22 mm, momentální, 1NC, kovová deska (STOP)
 
-  Ø montážního výřezu: 22,3 mm
-  Proud kontaktu: 10 A / 240 VAC (AC-15: 4 A / 240 VAC)
+  Pozn.: XB4BD21 je přepínač (selektor 2-polohy), NIKOLI zelené tlačítko — neplést
+
+  Ø montážního výřezu: 22 mm
+  Proud kontaktu: 10 A / 600 VAC (AC-15: 3 A / 240 VAC)
   Norma: IEC 60947-5-1
 
 ### Harmony XB5 – plastová (polyamidová) čelní deska, IP66, Ø22 mm
 
   XB5AA21 = černé, Ø22 mm, momentální, 1NO, IP66
-  XB5AD21 = zelené, Ø22 mm, momentální, 1NO, IP66
+  XB5AA31 = zelené, Ø22 mm, momentální, 1NO, IP66
   XB5AA42 = červené, Ø22 mm, momentální, 1NC, IP66
 
-  Ø montážního výřezu: 22,3 mm
-  Proud kontaktu: 10 A / 240 VAC
+  Pozn.: XB5AD21 je přepínač (selektor 2-polohy), NIKOLI zelené tlačítko — neplést
+
+  Ø montážního výřezu: 22 mm
+  Proud kontaktu: 10 A / 600 VAC
 
 ### Kontaktní bloky (příslušenství, objednávány zvlášť u modulárních verzí)
 
   ZB4BZ101 = 1NO kontaktní blok pro XB4
   ZB4BZ102 = 1NC kontaktní blok pro XB4
-  ZB4BZ103 = 1NO + 1NC kontaktní blok pro XB4
+  ZB4BZ103 = 2NO kontaktní blok pro XB4
   ZB5AZ101 = 1NO kontaktní blok pro XB5
   ZB5AZ102 = 1NC kontaktní blok pro XB5
 
 ### XB4 vs. XB5
 
-  XB4: kovová deska, IP65, vyšší mechanická odolnost, průmyslové prostředí
+  XB4: kovová deska, vyšší mechanická odolnost, průmyslové prostředí
   XB5: plastová deska, IP66 (lepší těsnost), lehčí, ekonomičtější
   Kontaktní bloky XB4 a XB5 nejsou vzájemně zaměnitelné
 `,
@@ -2158,7 +2171,8 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   Ovládací hlavy (momentální tlačítka):
     M22-D-G  = zelená ovládací hlava, Ø22 mm, momentální, IP67
     M22-D-R  = červená ovládací hlava, Ø22 mm, momentální, IP67
-    M22-D-B  = černá ovládací hlava, Ø22 mm, momentální, IP67
+    M22-D-S  = černá ovládací hlava, Ø22 mm, momentální, IP67
+    M22-D-B  = modrá ovládací hlava, Ø22 mm, momentální, IP67
     M22-D-Y  = žlutá ovládací hlava, Ø22 mm, momentální, IP67
 
   Kontaktní bloky (objednávány zvlášť):
@@ -2173,9 +2187,9 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### Parametry M22
 
-  Průměr montážního výřezu: Ø22,3 mm
-  Proud kontaktu: 10 A / 230 VAC (AC-15: 4 A / 230 VAC)
-  Krytí čelní desky: IP67 (závisí na provedení základny)
+  Průměr montážního výřezu: Ø22 mm
+  Proud kontaktu: 6 A / 500 VAC (AC-15: 6 A / 230 VAC, 4 A / 400 VAC)
+  Krytí čelní desky: IP67/IP69K (závisí na provedení základny)
   Norma: IEC 60947-5-1
 `,
       },
@@ -2187,27 +2201,24 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
   Schéma: 3SB3[xxx]-[varianta][barva][kontakt]
 
-  Kompletní tlačítkové jednotky (standardní konfigurace):
-    3SB3001-0AA21 = Ø22 mm, černé, momentální, 1NO
-    3SB3001-0AB21 = Ø22 mm, zelené, momentální, 1NO
-    3SB3001-0AD21 = Ø22 mm, červené, momentální, 1NO
-    3SB3001-0AB11 = Ø22 mm, zelené, momentální, 1NC
+  Potvrzené příklady (ověřeno RS, TME, Kempston Controls):
+    3SB3001-0AA21 = Ø22 mm, červené, momentální, 1NO
 
-  Poznámka: Kód sufixu:
-    1. číslo za pomlčkou = 0 (standard)
-    2. písmeno = barva (A=černá, B=zelená, D=červená, E=žlutá)
-    3. číslice = verze hlavy
-    4. číslice = konfigurace kontaktů (1=1NO, 2=1NC, varianta bez číslice)
+  Kódování barev v sufixu — barva je zakódována v číslicové pozici sufixu:
+    -0AA21 = červená | -0AA31 = žlutá | -0AA41 = zelená
+    -0AA51 = modrá  | -0AA61 = bílá
+
+  DŮLEŽITÉ: Původní kódové schéma A=černá, B=zelená, D=červená je NESPRÁVNÉ.
+            Barva se NEKÓDUJE v písmenné části sufixu.
+            Pro přesná typová označení vždy ověřit v aktuálním katalogu
+            Siemens SIRIUS ACT 3SB3.
 
 ### Parametry 3SB3
 
-  Průměr montážního výřezu: Ø22,3 mm
+  Průměr montážního výřezu: Ø22 mm
   Proud kontaktu: 10 A / 240 VAC
   Krytí: IP65 (s krytkou)
   Norma: IEC 60947-5-1
-
-  Důležité: Pro přesný kód konfigurace kontaktů ověřit v aktuálním katalogu Siemens
-            SIRIUS ACT 3SB3, protože kódování pozic sufixu je komplexní.
 `,
       },
     },
@@ -2238,15 +2249,15 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
             → HLAVA POUZE – nutno přidat tělo (ZB4BZ009) + kontaktní blok
 
   Kompletní jednotky (hlava + tělo + kontakty):
-    XB4BS54441  = Ø40 mm hřib, twist-release, 1NC + 1NO
-    XB4BS8444   = Ø40 mm hřib, key-release (klíčové odjištění), 1NC + 1NO
+    XB4BS84441  = Ø40 mm hřib, twist-release, 2NC + 1NO
+    XB4BS8444   = Ø40 mm hřib, 2NC (způsob odjištění ověřit v katalogu)
 
   Dílčí komponenty XB4:
     ZB4BS54    = Ø40 mm červený hřib, twist-release (hlava)
     ZB4BZ009   = tělo Ø22 mm (base)
     ZB4BZ102   = 1NC kontaktní blok
     ZB4BZ101   = 1NO kontaktní blok
-    ZB4BZ103   = 1NO + 1NC kontaktní blok
+    ZB4BZ103   = 2NO kontaktní blok
 
 ### Harmony XB5 – plastová deska, Ø22 mm
 
@@ -2290,22 +2301,24 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### OTxF3 – 3-pólové odpínače
 
-  OT16F3  (1SCA104811R1001) = 3P, 16 A (IEC) / 20 A (UL) / 600 VAC, DIN 35 mm nebo přímá montáž
-  OT25F3  (1SCA104857R1001) = 3P, 25 A / 600 VAC
-  OT40F3  (1SCA104902R1001) = 3P, 40 A / 600 VAC
-  OT63F3                    = 3P, 63 A / 600 VAC  (objednací č. ověřit v katalogu ABB)
-  OT100F3                   = 3P, 100 A / 600 VAC (objednací č. ověřit v katalogu ABB)
+  OT16F3  (1SCA104811R1001) = 3P, 16 A (IEC) / 20 A (UL), 690 VAC (IEC) / 600 VAC (UL)
+  OT25F3  (1SCA104857R1001) = 3P, 25 A (IEC) / 30 A (UL), 690 VAC
+  OT40F3  (1SCA104902R1001) = 3P, 40 A / 690 VAC
+  OT63F3  (1SCA105332R1001) = 3P, 63 A / 690 VAC
+  OT100F3 (1SCA105004R1001) = 3P, 100 A / 690 VAC
 
-### OTxF4 – 4-pólové odpínače (3P+N)
+### OTxF4N2 – 4-pólové odpínače (3P+N), aktuální katalogové označení
 
-  OT16F4  = 4P, 16 A (IEC) / 600 VAC
-  OT25F4  = 4P, 25 A / 600 VAC
-  OT40F4  = 4P, 40 A / 600 VAC
-  OT63F4  = 4P, 63 A / 600 VAC
+  OT16F4N2  = 4P, 16 A / 690 VAC
+  OT25F4N2  = 4P, 25 A / 690 VAC
+  OT40F4N2  = 4P, 40 A / 690 VAC
+  OT63F4N2  = 4P, 63 A / 690 VAC
+
+  Pozn.: Starší označení bez N2 (OT16F4 apod.) se v aktuálním katalogu neobjevuje
 
 ### Parametry OT série
 
-  Napětí: do 600 V AC / 250 V DC
+  Napětí: do 690 V AC (IEC) / 600 V AC (UL) / 250 V DC
   Spínací kategorie: AC-23A (motorové zátěže), AC-22A (odporové + smíšené)
   Krytí: IP65 s krytem, IP20 na svorkách
   Montáž: DIN 35 mm nebo šrouby do výřezu panelu
@@ -2327,8 +2340,8 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
   3LD2203-0TK51 = 3P, 32 A
   3LD2504-0TK51 = 3P, 63 A
 
-  Suffix -0TK51: přímé ovládání rukojeti (frontální montáž)
-  Suffix -0TK53: pro prodloužení hřídele (montáž na dveře skříně)
+  Suffix -0TK51: černá rotační rukojeť (standardní hlavní vypínač)
+  Suffix -0TK53: červeno-žlutá rotační rukojeť (nouzový stop + hlavní vypínač)
 
 ### Parametry 3LD2
 
@@ -2634,13 +2647,13 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### VAL-MS – Type 2 SPD pro AC sítě 230/400 V
 
-  VAL-MS 320/3+1/FM    (2859160) = Type 2, 3+1 topologie, 320 V AC, DIN lišta
+  VAL-MS 320/3+1/FM    (2859181) = Type 2, 3+1 topologie, 320 V AC, DIN lišta
   VAL-MS 320/3+1/FM-UD           = Type 2, 3+1, 320 V AC, + dálková signalizace
 
   Parametry:
     Topologie 3+1: ochrana L1, L2, L3 vůči PE + N vůči PE
     Maximální výbojový proud Imax: 40 kA (8/20 µs) na pól
-    Ochranná hladina Up: ≤ 1,5 kV
+    Ochranná hladina Up: ≤ 1,6 kV (L-N)
     Jmenovité napětí Uc: 320 V AC (vhodné pro TN-C-S, TN-S, TT sítě 230/400 V)
 
 ### VAL-MS – Type 2 SPD pro DC fotovoltaické systémy
@@ -2673,21 +2686,23 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
 ### OVR T2 – Type 2 SPD pro AC sítě 230/400 V, DIN lišta
 
-  OVR T2 1N 40-275 P TS (2CTB803972R0500) = Type 2, jednofázový 1+N, Uc=275 V AC,
-                                              Imax=40 kA, se signalizací + odpojovač
-  OVR T2 3N 40-275 P QS (2CTB803973R1100) = Type 2, třífázový 3+N, Uc=275 V AC,
-                                              Imax=40 kA, se signalizací + rychlospojka
+  OVR T2 1N 40-275 P TS QS (2CTB803972R0500) = Type 2, 1+N, Uc=275 V AC,
+    Imax=40 kA, TS = svorky pro dálkovou signalizaci, QS = rychlospojkové svorky
+  OVR T2 3N 40-275 P QS    (2CTB803973R1100) = Type 2, 3+N, Uc=275 V AC,
+    Imax=40 kA, QS = rychlospojkové svorky (bez TS = bez dálkové signalizace)
 
 ### Schéma typového označení OVR T2
 
   OVR T[třída] [póly] [Imax]-[Uc] [P=s ochr.] [přípona]
-  Přípona: TS = se svorkami pro signalizaci, QS = quick-connect svorky
+  Přípona: TS = pomocný kontakt pro dálkovou signalizaci,
+           QS = quick-connect svorky (bezšroubové)
+  Termická pojistka (tepelný odpojovač): je standardní součástí všech OVR T2
 
 ### Parametry OVR T2
 
   Třída: Type 2 (IEC/EN 61643-11, třída II)
   Maximální výbojový proud Imax: 40 kA (8/20 µs) na pól
-  Ochranná hladina Up: ≤ 1,5 kV
+  Ochranná hladina Up: 1,25 kV (L-N)
   Jmenovité napětí Uc: 275 V AC (pro síť 230/400 V TN-S, TN-C-S)
   Montáž: DIN 35 mm lišta
   Indikace závady: vizuální okénko (zelená/červená) + dálková signalizace (TS verze)
@@ -2900,19 +2915,18 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
   Formát: 4-místné číslo + .000 (příklad: 1033.000)
 
-### KX – kompaktní nástěnné skříně z nerezové oceli (AISI 304)
+### KX – kompaktní nástěnné skříně (ocel), IP 66
 
-  KX 1575.000 = H300 × W300 × D155 mm, nerez, IP 66  (nejmenší hloubka 155 mm)
-  KX = jako AX série, ale z nerezové oceli AISI 304
-  Vhodné pro potravinářský, farmaceutický průmysl
+  KX 1575.000 = H300 × W300 × D155 mm, ocelový plech, IP 66  (nejmenší hloubka 155 mm)
+
+  Pozn.: KX 1575.000 je z ocelového plechu (ne z nerezové oceli AISI 304);
+         pro nerezové provedení ověřit aktuální katalog Rittal
 
 ### SZ – příslušenství pro skříně
 
-  SZ2309.000 = konzola pro DIN 35 mm lištu (clip, snap-on)
-  SZ2471.000 = vnitřní montážní panel (montageplatte pro VX25)
+  SZ2309.000 = montážní úchytka pro DIN 35 mm podpěrnou lištu (snap-on)
   SZ2482.600 = průchodkový otvor / interface flap
   SZ2561.500 = plastová deska pro průchodky (kabelové pole)
-  SZ2584.000 = vnitřní osvětlení LED
 
 ### DK – DIN lišty a kabelové žlaby
 
@@ -2924,8 +2938,9 @@ Série 5ST3 — příslušenství pro SENTRON MCB. Montáž zboku na DIN jistič
 
   VX25: 4-místné číslo + .000 (příklad: 8606.000) — nástupce TS 8
   AX/KX: 4-místné číslo + .000 (příklad: 1033.000)
-  AX minimalní hloubka = 210 mm; pro 155 mm hloubku → KX 1575.000
-  Příslušenství SZ/DK je kompatibilní s VX25 i AX
+  AX minimální hloubka = 210 mm; pro 155 mm hloubku → KX 1575.000
+  KX 1575.000 = ocelový plech (ne nerez); pro nerez ověřit katalog
+  DK artikly (DK7100/7101/7110) nebyly ověřeny — před objednávkou potvrdit v katalogu Rittal
 `,
       },
     },
