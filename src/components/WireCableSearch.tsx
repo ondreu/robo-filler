@@ -27,7 +27,7 @@ const WIRE_SKUPINY: SkupinaGroup[] = [
   { key: 'olflex', label: 'ÖLFLEX HEAT',  match: s => s.startsWith('ÖLFLEX HEAT') },
   { key: 'ptfe',   label: 'PTFE',         match: s => s.startsWith('DESCAFLEX') },
   { key: 'alpha',  label: 'ALPHAWIRE',    match: s => s.startsWith('ALPHAWIRE') },
-  { key: 'solar',  label: 'Solární',      match: s => s === 'SOLAR' },
+  { key: 'solar',  label: 'Solar',        match: s => s === 'SOLAR' },
   { key: 'ul',     label: 'UL',           match: s => s.startsWith('UL_') },
   { key: 'hvsil',  label: 'HV Silikon',   match: s => s === 'HV Silikon' },
   { key: 'nsg',    label: 'NSGAFÖU',      match: s => s.startsWith('NSGAFÖU') },
