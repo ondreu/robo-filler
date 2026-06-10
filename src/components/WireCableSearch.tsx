@@ -6,7 +6,7 @@ import { type WireArticle, type CableArticle, loadWiresRaw, loadCables } from '.
 
 const WIRE_BARVA: Record<string, string> = {
   BK: 'Černá', BKWH: 'Černá/Bílá', BN: 'Hnědá', BNWH: 'Hnědá/Bílá',
-  BURD: 'Bordó', BUWH: 'Modrá/Bílá', DBU: 'Tm. modrá', DBUWH: 'Tm.mod./Bílá',
+  BU: 'Modrá', BURD: 'Bordó', BUWH: 'Modrá/Bílá', DBU: 'Tm. modrá', DBUWH: 'Tm.mod./Bílá',
   GN: 'Zelená', GNWH: 'Zelená/Bílá', GNYE: 'Zel-žlutá', GY: 'Šedá',
   LBU: 'Sv. modrá', OG: 'Oranžová', OGWH: 'Oranž./Bílá',
   PK: 'Růžová', RD: 'Červená', RDWH: 'Červená/Bílá',
@@ -32,9 +32,10 @@ const WIRE_SKUPINY: SkupinaGroup[] = [
   { key: 'hvsil',  label: 'HV Silikon',   match: s => s === 'HV Silikon' },
   { key: 'nsg',    label: 'NSGAFÖU',      match: s => s.startsWith('NSGAFÖU') },
   { key: 'nsh',    label: 'NSHXAFÖ',      match: s => s.startsWith('NSHXAFÖ') },
+  { key: 'm22759', label: 'M22759 ETFE',  match: s => s === 'M22759' },
 ];
 
-const WIRE_PRUREZ = [0.14, 0.25, 0.35, 0.5, 0.75, 1, 1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 185, 240];
+const WIRE_PRUREZ = [0.14, 0.25, 0.34, 0.35, 0.5, 0.75, 1, 1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 185, 240];
 
 // ─── Cable constants ──────────────────────────────────────────────────────────
 
