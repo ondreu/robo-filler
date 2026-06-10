@@ -6,7 +6,7 @@ import { type WireArticle, type CableArticle, loadWiresRaw, loadCables } from '.
 
 const WIRE_BARVA: Record<string, string> = {
   BK: 'Černá', BKWH: 'Černá/Bílá', BN: 'Hnědá', BNWH: 'Hnědá/Bílá',
-  BU: 'Modrá', BURD: 'Bordó', BUWH: 'Modrá/Bílá', DBU: 'Tm. modrá', DBUWH: 'Tm.mod./Bílá',
+  BURD: 'Bordó', BUWH: 'Modrá/Bílá', DBU: 'Tm. modrá', DBUWH: 'Tm.mod./Bílá',
   GN: 'Zelená', GNWH: 'Zelená/Bílá', GNYE: 'Zel-žlutá', GY: 'Šedá',
   LBU: 'Sv. modrá', OG: 'Oranžová', OGWH: 'Oranž./Bílá',
   PK: 'Růžová', RD: 'Červená', RDWH: 'Červená/Bílá',
