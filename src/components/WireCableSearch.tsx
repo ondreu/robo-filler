@@ -751,8 +751,8 @@ export function WireCableSearch() {
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
             {subMode === 'wire'
-              ? (displayed as WireArticle[]).map(w => (
-                  <WireCard key={w.artiklStroj} w={w} onClick={() => setSelectedWire(w)} />
+              ? (displayed as WireArticle[]).map((w, i) => (
+                  <WireCard key={`${w.artiklStroj ?? w.artiklRucni}-${i}`} w={w} onClick={() => setSelectedWire(w)} />
                 ))
               : (displayed as CableArticle[]).map(c => (
                   <CableCard key={c.artikl} c={c} onClick={() => setSelectedCable(c)} />

@@ -138,7 +138,7 @@ export async function loadWires(): Promise<Article[]> {
   const raw = await loadWiresRaw();
   return raw.map(w => ({
     typoveOznaceni: w.typ ?? w.skupinaDleTypu ?? '',
-    artikl: w.artiklStroj,
+    artikl: w.artiklStroj ?? w.artiklRucni ?? '',
     vyrobce: w.vyrobce ?? '',
     nazev: w.nazev ?? '',
     cisloDiluVyrobce: w.objednaciCislo ?? '',
