@@ -121,6 +121,36 @@ export async function loadCables(): Promise<CableArticle[]> {
   }
 }
 
+export interface KanbanArticle {
+  artikl: string;
+  vKanbanu: boolean;
+  pozice: string | null;
+  popis: string | null;
+  typ: string | null;
+  skupina: string;
+  objednaciCislo: string | null;
+  vyrobce: string | null;
+  elkov: string | null;
+  novyArtikl: string | null;
+  poznamka: string | null;
+  din: 'ANO' | 'NE' | null;
+  varianta: string | null;
+  znaceni: string | null;
+}
+
+export async function loadKanban(): Promise<KanbanArticle[]> {
+  try {
+    const baseUrl = import.meta.env.BASE_URL;
+    const response = await fetch(`${baseUrl}kanban.json`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    if (!Array.isArray(data)) return [];
+    return data as KanbanArticle[];
+  } catch {
+    return [];
+  }
+}
+
 export async function loadWiresRaw(): Promise<WireArticle[]> {
   try {
     const baseUrl = import.meta.env.BASE_URL;

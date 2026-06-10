@@ -103,6 +103,7 @@ Po vydání nové verze aktualizuj:
 - **Vodiče/Kabely** — nová kategorie `vodic_kabel` v `componentGuide.js`; výrobci LAPP, Helukabel, HUBER+SUHNER, Nexans s plnými `MANUFACTURER_DOCS`
 - **Vodič DB** — `public/wires.json` (639 artiklů), načítána frontend i backend; frontend mergeuje do `articles` state (wire artikly nesmí přepsat hlavní DB); backend `wireSearch.js` pro Karel Bot a řízený mód; wire karty mají badge "Vodič DB" + prurez/barva; `Article` type má volitelná pole `prurez`, `barva`, `skupina`
 - **Řízený mód doporučení** — když DB nenajde nic, AI doporučí konkrétní typové označení z knowledge báze kategorie
+- **Sypký materiál (Kanban DB)** — `public/kanban.json` (517 artiklů z interní Kanban_DB.xlsx); karta `KanbanSearch.tsx`, `AppMode: 'kanban'`, přepínač vedle „Vodiče & Kabely"; barva peach; kategorie → podskupiny (`KATEGORIE` matchery nad sloupcem Skupina, fallback Ostatní musí být poslední), filtry Provedení / Barva dle DIN / Kanban; data se NEmergují do hlavní DB (`articles`); typ `KanbanArticle` + `loadKanban()` v `csvParser.ts`
 
 ## Plánovaný refaktoring: Unifikovaná knowledge báze
 

@@ -10,6 +10,18 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V120626',
+    date: '12. 6. 2026',
+    major: true,
+    changes: [
+      'Sypký materiál — nová karta vedle Vodičů & Kabelů: databáze 517 artiklů kanban materiálu (dutinky, kabelová oka, fastony, smršťovací bužírky, stahovací pásky…)',
+      'Sypký materiál: filtrování po kategoriích — po výběru kategorie se zobrazí podskupiny (např. Dutinky → Izolované / Neizolované / Dvojdutinky / V pásu / Stínící)',
+      'Sypký materiál: filtry Provedení (bez lepidla / s lepidlem…), Barva dle DIN a V kanbanu / Mimo kanban',
+      'Sypký materiál: vyhledávání dle SAP artiklu, Elkov čísla, objednacího čísla, typu nebo popisu',
+      'Sypký materiál: karta artiklu zobrazuje pozici v kanbanu, skupinu a odznak Kanban; detail navíc Elkov číslo, nový artikl a poznámky (výběhy, náhrady)',
+    ],
+  },
+  {
     version: 'V110626',
     date: '11. 6. 2026',
     major: true,

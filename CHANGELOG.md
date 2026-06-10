@@ -1,5 +1,20 @@
 # Changelog
 
+## V120626 — Sypký materiál (2026-06-12)
+
+Nová karta **📦 Sypký materiál** vedle Vodičů & Kabelů — databáze kanban materiálu s filtrováním a vyhledáváním.
+
+### Nové funkce
+
+**Sypký materiál (Kanban DB)**
+- Tlačítko „Vodiče & Kabely" rozšířeno na přepínač „Vodiče & Kabely / Sypký materiál"
+- Databáze 517 artiklů kanban materiálu (`public/kanban.json`) — dutinky, kabelová oka, fastony, smršťovací bužírky, stahovací pásky, konektory, značení a další
+- Filtrování po kategoriích — po výběru kategorie se zobrazí podskupiny (např. Dutinky → Izolované / Neizolované / Dvojdutinky / V pásu / Stínící)
+- Filtry Provedení (bez lepidla / s lepidlem / bílé / černé…), Barva dle DIN (dle DIN / mimo DIN) a Kanban (v kanbanu / mimo kanban)
+- Vyhledávání dle SAP artiklu, Elkov čísla, objednacího čísla, typu nebo popisu
+- Karta artiklu: SAP artikl s kopírováním, pozice v kanbanu, podskupina, odznaky Kanban / DIN / poznámka
+- Detail artiklu: Elkov číslo, nový artikl, výrobce, obj. číslo, značení (ruční / tiskárna Phoenix) a poznámky (výběhy, náhrady)
+
 ## v2.1.0 — AI stavba kusovníku BETA (2026-06-07)
 
 Experimentální funkce pro automatické sestavení kusovníku z typových označení pomocí AI.
