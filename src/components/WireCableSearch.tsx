@@ -284,7 +284,7 @@ function WireCard({ w, onClick }: { w: WireArticle; onClick: () => void }) {
         </div>
         <span className="text-subtext0 text-[10px] shrink-0 truncate max-w-[60px]">{w.vyrobce}</span>
       </div>
-      {w.typ && w.typ !== w.skupinaDleTypu && (
+      {w.typ && (
         <div className="text-subtext1 text-[10px] font-medium truncate">{w.typ}</div>
       )}
       <div className="text-text text-xs font-medium leading-snug line-clamp-2">{w.nazev}</div>
