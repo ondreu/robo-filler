@@ -157,11 +157,13 @@ function App() {
     const db = customArticles || articles;
     const reader = new FileReader();
     reader.onload = ev => {
-      const result = parseBomTxt(ev.target?.result as string, db);
+      const buf = ev.target?.result as ArrayBuffer;
+      const text = new TextDecoder('windows-1250').decode(buf);
+      const result = parseBomTxt(text, db);
       if (result) openNewZbomTab(result);
       if (zbomInputRef.current) zbomInputRef.current.value = '';
     };
-    reader.readAsText(file, 'utf-8');
+    reader.readAsArrayBuffer(file);
   };
 
   // Debounced query for search

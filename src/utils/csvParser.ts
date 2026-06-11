@@ -49,7 +49,8 @@ export async function loadCSV(filename: string): Promise<CSVLoadResult> {
     if (!response.ok) {
       throw new Error(`Failed to load ${filename}`);
     }
-    const text = await response.text();
+    const buf = await response.arrayBuffer();
+    const text = new TextDecoder('windows-1250').decode(buf);
     return { articles: parseCSV(text), lastModified: null };
   } catch (error) {
     console.error('Error loading CSV:', error);
