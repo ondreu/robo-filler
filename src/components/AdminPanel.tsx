@@ -413,7 +413,7 @@ export function AdminPanel() {
     setConfirmSave(null);
     setSaving(true); setError(''); setSavedMsg('');
     try {
-      const res = await saveDb(dbName, password, { rows, schema });
+      const res = await saveDb(dbName as DbName, password, { rows, schema });
       setSchema(res.schema);
       setDirty(false); setUndoStack([]);
       setSavedMsg(`Uloženo — ${res.count} řádků.`);
@@ -569,7 +569,7 @@ export function AdminPanel() {
               <button onClick={exportJson} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5">
                 <Download size={14} /> JSON
               </button>
-              <button onClick={() => dbName !== 'master' && loadDb(dbName as DbName)} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5" title="Znovu načíst ze serveru">
+              <button onClick={() => loadDb(dbName as DbName)} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5" title="Znovu načíst ze serveru">
                 <RefreshCw size={14} />
               </button>
               <button
