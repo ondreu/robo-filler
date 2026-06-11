@@ -67,13 +67,13 @@ function GuidedDetail({ rec }: { rec: ChatLogRecord }) {
   return (
     <div className="p-3 space-y-3 max-h-96 overflow-y-auto text-xs">
       <div className="flex flex-wrap gap-3">
-        {rec.phase && (
+        {!!rec.phase && (
           <div className="bg-surface1 rounded-lg px-2 py-1">
             <span className="text-overlay0">Fáze: </span>
             <span className="text-text font-medium">{String(rec.phase)}</span>
           </div>
         )}
-        {rec.categoryKey && (
+        {!!rec.categoryKey && (
           <div className="bg-surface1 rounded-lg px-2 py-1">
             <span className="text-overlay0">Kategorie: </span>
             <span className="text-teal font-medium">{String(rec.categoryKey)}</span>
@@ -81,7 +81,7 @@ function GuidedDetail({ rec }: { rec: ChatLogRecord }) {
         )}
       </div>
 
-      {rec.message && (
+      {!!rec.message && (
         <div className="bg-mauve/10 border border-mauve/20 rounded-xl px-3 py-2">
           <p className="text-[10px] text-mauve font-semibold mb-1 flex items-center gap-1"><User size={10} /> Dotaz uživatele</p>
           <p className="text-text whitespace-pre-wrap">{String(rec.message)}</p>
@@ -140,7 +140,7 @@ function BomDetail({ rec }: { rec: ChatLogRecord }) {
         )}
       </div>
 
-      {rec.preferences && (
+      {!!rec.preferences && (
         <div className="bg-surface1 rounded-lg px-3 py-2">
           <span className="text-overlay0">Preference: </span>
           <span className="text-text">{String(rec.preferences)}</span>
