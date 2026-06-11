@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Lock, Save, Plus, Trash2, Download, Upload, RefreshCw, Loader2,
-  Search, X, Settings2, Filter, AlertTriangle, CheckCircle2, Table2, MessageSquare, Database,
+  Search, X, Settings2, Filter, AlertTriangle, CheckCircle2, Table2, MessageSquare,
   History, Undo2, Replace, SlidersHorizontal, Eye, EyeOff,
 } from 'lucide-react';
 import type { DbName, DbRow, DbSchema, DbColumn, ColumnType, DbInfo } from '../utils/dbSchema';
@@ -17,7 +17,7 @@ const PW_KEY = 'robo-filler-admin-pw';
 const NOTE_KEY = '_poznamka';        // interní admin poznámka k řádku
 const UNDO_LIMIT = 50;
 
-type SubView = 'data' | 'logs' | 'master' | 'backups';
+type SubView = 'data' | 'logs' | 'backups';
 type SortDir = 'asc' | 'desc' | null;
 
 // ─── Login ──────────────────────────────────────────────────────────────────
@@ -185,7 +185,7 @@ export function AdminPanel() {
   const [authChecked, setAuthChecked] = useState(false);
 
   const [databases, setDatabases] = useState<DbInfo[]>([]);
-  const [dbName, setDbName] = useState<DbName>('wires');
+  const [dbName, setDbName] = useState<DbName | 'master'>('wires');
 
   const [rows, setRows] = useState<DbRow[]>([]);
   const [schema, setSchema] = useState<DbSchema>({ columns: [] });
@@ -244,7 +244,7 @@ export function AdminPanel() {
       .finally(() => setLoading(false));
   }, [password]);
 
-  useEffect(() => { if (password) loadDb(dbName); }, [password, dbName, loadDb]);
+  useEffect(() => { if (password && dbName !== 'master') loadDb(dbName as DbName); }, [password, dbName, loadDb]);
 
   // #2 varování při odchodu s neuloženými změnami
   useEffect(() => {
@@ -492,7 +492,6 @@ export function AdminPanel() {
           { v: 'data', label: 'Databáze', icon: Table2 },
           { v: 'backups', label: 'Zálohy', icon: History },
           { v: 'logs', label: 'AI logy', icon: MessageSquare },
-          { v: 'master', label: 'Hlavní DB', icon: Database },
         ] as const).map(({ v, label, icon: Icon }) => (
           <button
             key={v}
@@ -507,7 +506,6 @@ export function AdminPanel() {
       </div>
 
       {subView === 'logs' && <AdminLogs password={password} />}
-      {subView === 'master' && <AdminMasterCsv password={password} />}
       {subView === 'backups' && (
         <AdminBackups
           password={password}
@@ -535,9 +533,20 @@ export function AdminPanel() {
                   {d.label}
                 </button>
               ))}
+              <button
+                onClick={() => {
+                  if (dirty && !confirm('Máš neuložené změny. Přepnout databázi a zahodit je?')) return;
+                  setDbName('master');
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  dbName === 'master' ? 'bg-teal text-crust' : 'text-subtext1 hover:text-text'
+                }`}
+              >
+                Master CSV
+              </button>
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
+            {dbName !== 'master' && <div className="flex items-center gap-2 flex-wrap">
               <button onClick={undo} disabled={!undoStack.length} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5 disabled:opacity-40" title="Zpět (Ctrl+Z)">
                 <Undo2 size={14} /> Zpět
               </button>
@@ -560,7 +569,7 @@ export function AdminPanel() {
               <button onClick={exportJson} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5">
                 <Download size={14} /> JSON
               </button>
-              <button onClick={() => loadDb(dbName)} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5" title="Znovu načíst ze serveru">
+              <button onClick={() => dbName !== 'master' && loadDb(dbName as DbName)} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5" title="Znovu načíst ze serveru">
                 <RefreshCw size={14} />
               </button>
               <button
@@ -573,9 +582,12 @@ export function AdminPanel() {
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                 Uložit{dirty ? ' •' : ''}
               </button>
-            </div>
+            </div>}
           </div>
 
+          {dbName === 'master' && <AdminMasterCsv password={password} />}
+
+          {dbName !== 'master' && <>
           {/* Status */}
           {error && <div className="bg-red/10 border border-red/30 text-red text-sm rounded-xl px-4 py-2">{error}</div>}
           {savedMsg && <div className="flex items-center gap-2 bg-green/10 border border-green/30 text-green text-sm rounded-xl px-4 py-2"><CheckCircle2 size={15} /> {savedMsg}</div>}
@@ -699,6 +711,7 @@ export function AdminPanel() {
               </div>
             </div>
           )}
+          </>}
         </>
       )}
     </div>
