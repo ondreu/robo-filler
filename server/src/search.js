@@ -50,7 +50,8 @@ function parseCSV(content) {
 
 function loadDataset(filename) {
   try {
-    const content = readFileSync(join(DATA_DIR, filename), 'utf-8');
+    const buf = readFileSync(join(DATA_DIR, filename));
+    const content = new TextDecoder('windows-1250').decode(buf);
     return parseCSV(content);
   } catch {
     console.warn(`[search] Could not load ${filename}`);

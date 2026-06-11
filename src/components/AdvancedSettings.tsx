@@ -23,7 +23,8 @@ export function AdvancedSettings({
     if (!file) return;
 
     try {
-      const text = await file.text();
+      const buf = await file.arrayBuffer();
+      const text = new TextDecoder('windows-1250').decode(buf);
       const data = parseCSV(text);
 
       if (data.length === 0) {
