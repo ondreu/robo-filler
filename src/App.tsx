@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Loader2, AlertCircle, Download, FolderOpen } from 'lucide-react';
+import { Loader2, AlertCircle, Download, FolderOpen, Settings } from 'lucide-react';
 import type { Article, SearchResult, SearchMode, SearchField, DataSource, AppMode } from './types';
 import { parseBomTxt, type ImportResult } from './utils/bomExport';
 import { BomWizard } from './components/BomWizard';
@@ -295,7 +295,22 @@ function App() {
 
   return (
     <div className="min-h-screen bg-base text-text p-4 md:p-8">
-      <div className="max-w-[1600px] mx-auto space-y-6">
+      <div className="max-w-[1600px] mx-auto space-y-6 relative">
+        {/* Admin — ozubené kolo vpravo nahoře */}
+        {ADMIN_AVAILABLE && (
+          <button
+            onClick={() => setAppMode(appMode === 'admin' ? 'single' : 'admin')}
+            title="Správa databází"
+            aria-label="Správa databází"
+            className={`absolute right-0 top-0 z-20 p-2.5 rounded-xl transition-all ${
+              appMode === 'admin'
+                ? 'bg-sky text-crust shadow-lg'
+                : 'bg-surface0 text-subtext1 hover:text-text hover:bg-surface1'
+            }`}
+          >
+            <Settings size={20} className={appMode === 'admin' ? '' : 'hover:rotate-45 transition-transform'} />
+          </button>
+        )}
         {/* Header */}
         <header className="text-center space-y-3">
           <h1 className="text-4xl md:text-5xl font-bold text-mauve">
@@ -369,20 +384,6 @@ function App() {
               📦 Sypký materiál
             </button>
           </div>
-          {ADMIN_AVAILABLE && (
-            <div className="flex bg-surface0 rounded-2xl p-1 gap-1">
-              <button
-                onClick={() => setAppMode('admin')}
-                className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                  appMode === 'admin'
-                    ? 'bg-sky text-crust shadow-lg'
-                    : 'text-subtext1 hover:text-text'
-                }`}
-              >
-                🛠️ Správa DB
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Admin — správa databází (nezávislé na hlavní DB) */}
