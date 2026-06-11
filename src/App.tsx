@@ -21,6 +21,8 @@ import { AiOnboarding } from './components/AiOnboarding';
 import { AppOnboarding } from './components/AppOnboarding';
 import { WireCableSearch } from './components/WireCableSearch';
 import { KanbanSearch } from './components/KanbanSearch';
+import { AdminPanel } from './components/AdminPanel';
+import { ADMIN_AVAILABLE } from './utils/adminApi';
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -367,9 +369,27 @@ function App() {
               📦 Sypký materiál
             </button>
           </div>
+          {ADMIN_AVAILABLE && (
+            <div className="flex bg-surface0 rounded-2xl p-1 gap-1">
+              <button
+                onClick={() => setAppMode('admin')}
+                className={`px-5 py-2 rounded-xl font-medium transition-all ${
+                  appMode === 'admin'
+                    ? 'bg-sky text-crust shadow-lg'
+                    : 'text-subtext1 hover:text-text'
+                }`}
+              >
+                🛠️ Správa DB
+              </button>
+            </div>
+          )}
         </div>
 
+        {/* Admin — správa databází (nezávislé na hlavní DB) */}
+        {appMode === 'admin' && <AdminPanel />}
+
         {/* Data source toggle and advanced settings */}
+        {appMode !== 'admin' && (
         <div className="flex flex-wrap items-center justify-between gap-4 bg-mantle rounded-2xl p-4">
           <DataSourceToggle
             dataSource={dataSource}
@@ -445,6 +465,7 @@ function App() {
             />
           </div>
         </div>
+        )}
 
         {/* Error state */}
         {error && (
@@ -455,7 +476,7 @@ function App() {
         )}
 
         {/* Loading state */}
-        {isLoading && (
+        {isLoading && appMode !== 'admin' && (
           <div className="bg-mantle rounded-2xl p-8 flex flex-col items-center justify-center gap-4">
             <Loader2 className="text-mauve animate-spin" size={48} />
             <p className="text-subtext1">Načítám databázi...</p>

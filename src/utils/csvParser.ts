@@ -1,4 +1,33 @@
 import type { Article } from '../types';
+import type { DbSchema } from './dbSchema';
+
+const BACKEND_URL = ((import.meta.env.VITE_BACKEND_URL as string | undefined) ?? '').trim().replace(/\/$/, '');
+
+// Živá data z backendu (admin zdroj pravdy). Vrací null → fallback na statický JSON.
+async function fetchBackendRows<T>(name: string): Promise<T[] | null> {
+  if (!BACKEND_URL) return null;
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/db/${name}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return Array.isArray(data.rows) ? (data.rows as T[]) : null;
+  } catch {
+    return null;
+  }
+}
+
+// Schéma databáze z backendu (pro dynamické filtry). null → filtry se nezobrazí.
+export async function loadSchema(name: string): Promise<DbSchema | null> {
+  if (!BACKEND_URL) return null;
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/db/${name}/schema`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data && Array.isArray(data.columns) ? (data as DbSchema) : null;
+  } catch {
+    return null;
+  }
+}
 
 export function parseCSV(csvContent: string): Article[] {
   const lines = csvContent.trim().split('\n');
@@ -110,6 +139,8 @@ export interface CableArticle {
 }
 
 export async function loadCables(): Promise<CableArticle[]> {
+  const live = await fetchBackendRows<CableArticle>('cables');
+  if (live) return live;
   try {
     const baseUrl = import.meta.env.BASE_URL;
     const response = await fetch(`${baseUrl}cables.json`);
@@ -140,6 +171,8 @@ export interface KanbanArticle {
 }
 
 export async function loadKanban(): Promise<KanbanArticle[]> {
+  const live = await fetchBackendRows<KanbanArticle>('kanban');
+  if (live) return live;
   try {
     const baseUrl = import.meta.env.BASE_URL;
     const response = await fetch(`${baseUrl}kanban.json`);
@@ -153,6 +186,8 @@ export async function loadKanban(): Promise<KanbanArticle[]> {
 }
 
 export async function loadWiresRaw(): Promise<WireArticle[]> {
+  const live = await fetchBackendRows<WireArticle>('wires');
+  if (live) return live;
   try {
     const baseUrl = import.meta.env.BASE_URL;
     const response = await fetch(`${baseUrl}wires.json`);

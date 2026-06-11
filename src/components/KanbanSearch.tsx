@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Copy, Check, Loader2, Search, X } from 'lucide-react';
-import { type KanbanArticle, loadKanban } from '../utils/csvParser';
+import { type KanbanArticle, loadKanban, loadSchema } from '../utils/csvParser';
+import { DynamicFilters } from './DynamicFilters';
+import { applyDynamicFilters, type DbSchema, type DbRow, type DynamicFilterState } from '../utils/dbSchema';
 
 // ─── Kategorie ────────────────────────────────────────────────────────────────
 // Skupiny z Kanban DB (sloupec "Skupina") seskupené do top-level kategorií.
@@ -429,6 +431,8 @@ export function KanbanSearch() {
   const [kanban, setKanban] = useState<'' | 'ANO' | 'NE'>('');
   const [prurezFilter, setPrurezFilter] = useState<number[]>([]);
   const [delkaFilter, setDelkaFilter] = useState<number[]>([]);
+  const [schema, setSchema] = useState<DbSchema | null>(null);
+  const [dynFilters, setDynFilters] = useState<DynamicFilterState>({});
 
   useEffect(() => {
     setLoading(true);
@@ -436,6 +440,7 @@ export function KanbanSearch() {
       setItems(data);
       setLoading(false);
     });
+    loadSchema('kanban').then(setSchema);
   }, []);
 
   // ── Derived options ────────────────────────────────────────────────────
@@ -503,16 +508,18 @@ export function KanbanSearch() {
     let r = filteredBase;
     if (prurezFilter.length) r = r.filter(i => { const p = parsePrurezFromTyp(i.typ); return p !== null && prurezFilter.includes(p); });
     if (delkaFilter.length)  r = r.filter(i => { const d = parseDelkaFromTyp(i.typ); return d !== null && delkaFilter.includes(d); });
+    r = applyDynamicFilters(r as unknown as DbRow[], schema, dynFilters) as unknown as KanbanArticle[];
     return r;
-  }, [filteredBase, prurezFilter, delkaFilter]);
+  }, [filteredBase, prurezFilter, delkaFilter, schema, dynFilters]);
 
   // ── Reset ─────────────────────────────────────────────────────────────
 
   const resetFilters = () => {
     setQuery(''); setKategorie(''); setSkupiny([]); setVarianty([]); setDin(''); setKanban('');
-    setPrurezFilter([]); setDelkaFilter([]);
+    setPrurezFilter([]); setDelkaFilter([]); setDynFilters({});
   };
-  const filtersActive = !!(query || kategorie || skupiny.length || varianty.length || din || kanban || prurezFilter.length || delkaFilter.length);
+  const dynActive = Object.values(dynFilters).some(a => a.length > 0);
+  const filtersActive = !!(query || kategorie || skupiny.length || varianty.length || din || kanban || prurezFilter.length || delkaFilter.length || dynActive);
 
   // Kategorie — single-select; přepnutí na jinou zruší podskupiny a průřez/délku
   const onToggleKategorie = (key: string) => {
@@ -652,6 +659,7 @@ export function KanbanSearch() {
           value={kanban}
           onChange={setKanban}
         />
+        <DynamicFilters schema={schema} items={filteredBase as unknown as DbRow[]} value={dynFilters} onChange={setDynFilters} accent="peach" />
       </div>
 
       {/* Results */}

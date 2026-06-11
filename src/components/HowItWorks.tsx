@@ -241,6 +241,26 @@ export function HowItWorks() {
                 </p>
               </section>
 
+              {/* Správa databází */}
+              <section>
+                <div className="flex items-center gap-2 mb-2">
+                  <Database size={15} className="text-sky shrink-0" />
+                  <h3 className="font-semibold text-sm text-text">🛠️ Správa DB (admin)</h3>
+                </div>
+                <p className="text-sm text-subtext1 leading-relaxed mb-2">
+                  Záložka <span className="text-text font-medium">🛠️ Správa DB</span> umožňuje spravovat databáze
+                  Vodiče, Kabely a Sypký materiál jako tabulku — přidávat a mazat řádky i sloupce, upravovat hodnoty,
+                  importovat a exportovat CSV (nebo exportovat JSON pro práci v jiných programech). Přístup je chráněn heslem.
+                </p>
+                <div className="flex items-start gap-2 bg-surface0 rounded-xl p-3">
+                  <span className="text-xs font-semibold px-1.5 py-0.5 bg-teal/15 text-teal rounded-lg shrink-0 mt-0.5">Filtry</span>
+                  <p className="text-xs text-subtext1">
+                    U každého sloupce lze zapnout příznak <span className="text-text font-medium">„filtrovatelný"</span> — takový sloupec
+                    se automaticky objeví jako filtr ve vyhledávání. Stačí přidat nový sloupec (např. „Nákupčí"), označit ho a filtr vyskočí sám.
+                  </p>
+                </div>
+              </section>
+
             </div>
           </div>
         </div>

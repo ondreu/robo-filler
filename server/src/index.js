@@ -5,13 +5,31 @@ import { handleBomBuild, checkClarification, postCheckClarification } from './bo
 import { handleGuidedChat } from './guidedSearch.js';
 import { COMPONENT_CATEGORIES } from './componentGuide.js';
 import { logRecord } from './collector.js';
+import { DATABASES, isValidDb, getDb, writeRows, writeSchema, readSchema } from './dataStore.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
 const CORS_ORIGIN = process.env.CORS_ORIGIN ?? '*';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? '';
 
 app.use(cors({ origin: CORS_ORIGIN }));
-app.use(express.json());
+// JSON databáze mohou být velké (megabajty) — zvedneme limit pro admin zápisy.
+app.use(express.json({ limit: '64mb' }));
+
+// ─── Admin auth ─────────────────────────────────────────────────────────────
+// Jednoduché sdílené heslo přes hlavičku x-admin-password (env ADMIN_PASSWORD).
+function checkAdmin(req, res) {
+  if (!ADMIN_PASSWORD) {
+    res.status(503).json({ error: 'Admin není nakonfigurován (chybí ADMIN_PASSWORD na serveru).' });
+    return false;
+  }
+  const pw = req.get('x-admin-password') ?? '';
+  if (pw !== ADMIN_PASSWORD) {
+    res.status(401).json({ error: 'Neplatné heslo.' });
+    return false;
+  }
+  return true;
+}
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
@@ -165,6 +183,67 @@ app.post('/api/guided-chat', async (req, res) => {
   }
 
   res.end();
+});
+
+// ─── Admin databáze ───────────────────────────────────────────────────────────
+
+// Seznam databází (veřejné)
+app.get('/api/db', (_req, res) => {
+  res.json(Object.entries(DATABASES).map(([name, def]) => ({ name, label: def.label, idKey: def.idKey })));
+});
+
+// Veřejné čtení dat + schématu — používá frontend vyhledávání pro živá data a
+// dynamické filtry. Nevyžaduje heslo (jen čtení).
+app.get('/api/db/:name', (req, res) => {
+  const { name } = req.params;
+  if (!isValidDb(name)) return res.status(404).json({ error: 'Neznámá databáze.' });
+  try {
+    res.json(getDb(name));
+  } catch (err) {
+    console.error('[db:get]', err);
+    res.status(500).json({ error: 'Chyba při čtení databáze.' });
+  }
+});
+
+// Schéma zvlášť (lehčí dotaz pro vyhledávací UI)
+app.get('/api/db/:name/schema', (req, res) => {
+  const { name } = req.params;
+  if (!isValidDb(name)) return res.status(404).json({ error: 'Neznámá databáze.' });
+  try {
+    res.json(readSchema(name));
+  } catch (err) {
+    console.error('[db:schema]', err);
+    res.status(500).json({ error: 'Chyba při čtení schématu.' });
+  }
+});
+
+// Ověření admin hesla
+app.post('/api/admin/login', (req, res) => {
+  if (!ADMIN_PASSWORD) return res.status(503).json({ error: 'Admin není nakonfigurován.' });
+  const pw = (req.body ?? {}).password ?? '';
+  if (pw !== ADMIN_PASSWORD) return res.status(401).json({ error: 'Neplatné heslo.' });
+  res.json({ ok: true });
+});
+
+// Uložení dat a/nebo schématu (vyžaduje heslo)
+app.put('/api/admin/db/:name', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const { name } = req.params;
+  if (!isValidDb(name)) return res.status(404).json({ error: 'Neznámá databáze.' });
+
+  const { rows, schema } = req.body ?? {};
+  try {
+    if (schema !== undefined) writeSchema(name, schema);
+    if (rows !== undefined) {
+      if (!Array.isArray(rows)) return res.status(400).json({ error: 'rows musí být pole.' });
+      writeRows(name, rows);
+    }
+    const saved = getDb(name);
+    res.json({ ok: true, count: saved.rows.length, schema: saved.schema });
+  } catch (err) {
+    console.error('[db:put]', err);
+    res.status(500).json({ error: 'Chyba při ukládání databáze.' });
+  }
 });
 
 app.listen(PORT, () => {
