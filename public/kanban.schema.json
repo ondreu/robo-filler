@@ -1,0 +1,88 @@
+{
+  "columns": [
+    {
+      "key": "artikl",
+      "label": "artikl",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "vKanbanu",
+      "label": "vKanbanu",
+      "type": "boolean",
+      "filterable": false
+    },
+    {
+      "key": "pozice",
+      "label": "pozice",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "popis",
+      "label": "popis",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "typ",
+      "label": "typ",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "skupina",
+      "label": "skupina",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "objednaciCislo",
+      "label": "objednaciCislo",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "vyrobce",
+      "label": "vyrobce",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "elkov",
+      "label": "elkov",
+      "type": "number",
+      "filterable": false
+    },
+    {
+      "key": "novyArtikl",
+      "label": "novyArtikl",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "poznamka",
+      "label": "poznamka",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "din",
+      "label": "din",
+      "type": "boolean",
+      "filterable": false
+    },
+    {
+      "key": "varianta",
+      "label": "varianta",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "znaceni",
+      "label": "znaceni",
+      "type": "text",
+      "filterable": false
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "columns": [
+    {
+      "key": "artiklStroj",
+      "label": "artiklStroj",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "skupinaDleTypu",
+      "label": "skupinaDleTypu",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "skupinaDlePouziti",
+      "label": "skupinaDlePouziti",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "artiklRucni",
+      "label": "artiklRucni",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "typ",
+      "label": "typ",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "prurez",
+      "label": "prurez",
+      "type": "number",
+      "filterable": false
+    },
+    {
+      "key": "barva",
+      "label": "barva",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "vyrobce",
+      "label": "vyrobce",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "objednaciCislo",
+      "label": "objednaciCislo",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "baleni",
+      "label": "baleni",
+      "type": "number",
+      "filterable": false
+    },
+    {
+      "key": "nazev",
+      "label": "nazev",
+      "type": "text",
+      "filterable": false
+    }
+  ]
+}

@@ -1,0 +1,208 @@
+{
+  "columns": [
+    {
+      "key": "artikl",
+      "label": "artikl",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "objCislo1",
+      "label": "objCislo1",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "objCislo2",
+      "label": "objCislo2",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "objCislo3",
+      "label": "objCislo3",
+      "type": "number",
+      "filterable": false
+    },
+    {
+      "key": "objCislo4",
+      "label": "objCislo4",
+      "type": "number",
+      "filterable": false
+    },
+    {
+      "key": "dodavatel",
+      "label": "dodavatel",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "nazevKatalog",
+      "label": "nazevKatalog",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "nazev",
+      "label": "nazev",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "pocetZil",
+      "label": "pocetZil",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "ochrannyVodic",
+      "label": "ochrannyVodic",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "prurez",
+      "label": "prurez",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "ce",
+      "label": "ce",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "ul",
+      "label": "ul",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "cULus",
+      "label": "cULus",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "csa",
+      "label": "csa",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "ukca",
+      "label": "ukca",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "ru",
+      "label": "ru",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "cRUus",
+      "label": "cRUus",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "rohs",
+      "label": "rohs",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "har",
+      "label": "har",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "vde",
+      "label": "vde",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "profibus",
+      "label": "profibus",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "ulStyle",
+      "label": "ulStyle",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "stineni",
+      "label": "stineni",
+      "type": "boolean",
+      "filterable": false
+    },
+    {
+      "key": "pletezenePary",
+      "label": "pletezenePary",
+      "type": "boolean",
+      "filterable": false
+    },
+    {
+      "key": "znaceniVodicu",
+      "label": "znaceniVodicu",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "teplotniRozsah",
+      "label": "teplotniRozsah",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "jmenoviteNapeti",
+      "label": "jmenoviteNapeti",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "retiez",
+      "label": "retiez",
+      "type": "boolean",
+      "filterable": false
+    },
+    {
+      "key": "olej",
+      "label": "olej",
+      "type": "boolean",
+      "filterable": false
+    },
+    {
+      "key": "bezhalogenovy",
+      "label": "bezhalogenovy",
+      "type": "boolean",
+      "filterable": false
+    },
+    {
+      "key": "materialPlaste",
+      "label": "materialPlaste",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "barva",
+      "label": "barva",
+      "type": "text",
+      "filterable": false
+    },
+    {
+      "key": "prumer",
+      "label": "prumer",
+      "type": "text",
+      "filterable": false
+    }
+  ]
+}
