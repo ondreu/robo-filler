@@ -24,7 +24,11 @@ Nástroj pro vyhledávání průmyslových artiklů a sestavení kusovníků. In
 | `src/components/ZbomEditor.tsx` | ZBOM tabulkový editor |
 | `src/components/HowItWorks.tsx` | Modal „Jak funguju?" |
 | `src/components/Changelog.tsx` | Modal se záznamy změn — verze `VDDMMYY` |
-| `src/components/AdminPanel.tsx` | Admin správa databází (mód `admin`) — tabulkový editor, CRUD řádků/sloupců, schéma, CSV/JSON import/export, heslo |
+| `src/components/AdminPanel.tsx` | Admin správa databází (mód `admin`) — sub-navigace Databáze/AI logy/Hlavní DB, CRUD, schéma, CSV/JSON, heslo |
+| `src/components/DataGrid.tsx` | Excel-like grid pro admin — výběr buněk (drag/shift), kopírování (Ctrl+C → TSV), vkládání z Excelu (Ctrl+V), editace, sloupec admin poznámky |
+| `src/components/AdminLogs.tsx` | Prohlížeč logů AI chatů (chat/guided/bom) — čte `/api/admin/logs` |
+| `src/components/AdminMasterCsv.tsx` | Nahrání nové verze master CSV (hlavní DB) + read-only prohlížeč hlavní DB — `/api/admin/master-csv`, `/api/admin/master-search` |
+| `src/components/AdminBackups.tsx` | Snapshoty/rollback (GFS retence) + audit log admin akcí — `/api/admin/snapshots`, `/api/admin/audit` |
 | `src/components/DynamicFilters.tsx` | Dynamické filtry řízené schématem (sloupce `filterable:true`) — KanbanSearch + WireCableSearch |
 | `src/utils/bomExport.ts` | `ImportResult` typ + helpers pro ZBOM import |
 | `src/utils/dbSchema.ts` | Typy schématu (`DbColumn`, `DbSchema`), inference, `applyDynamicFilters`, `cellToFilterString` |
@@ -58,7 +62,15 @@ Nástroj pro vyhledávání průmyslových artiklů a sestavení kusovníků. In
 | `GET /api/db/:name` | JSON | Živá data + schéma databáze (čte frontend vyhledávání) |
 | `GET /api/db/:name/schema` | JSON | Jen schéma (pro dynamické filtry) |
 | `POST /api/admin/login` | JSON | Ověření admin hesla (`ADMIN_PASSWORD`) |
+| `GET /api/admin/db/:name` | JSON | Admin čtení — plná data vč. interních klíčů (`_poznamka`) |
 | `PUT /api/admin/db/:name` | JSON | Uložení dat a/nebo schématu (hlavička `x-admin-password`) |
+| `GET /api/admin/logs` | JSON | Logy AI chatů (`?type=chat\|guided\|bom`, `?limit=`) |
+| `GET /api/admin/master-csv` | JSON | Info o master CSV (velikost, počet artiklů) |
+| `PUT /api/admin/master-csv/:which` | JSON | Nahrání master CSV (`main\|effi`, tělo `{dataBase64}`) → reindex |
+| `GET /api/admin/master-search` | JSON | Read-only hledání v hlavní DB (`?q=`, reuse `searchTerm`) |
+| `GET/POST /api/admin/snapshots/:name` | JSON | Seznam / ruční vytvoření snapshotu |
+| `POST /api/admin/snapshots/:name/restore/:id` | JSON | Obnova ze snapshotu (předtím zazálohuje aktuální stav) |
+| `GET /api/admin/audit` | JSON | Audit log admin akcí (save/snapshot/restore/master-csv) |
 
 ### SSE event typy (`/api/bom-build`)
 ```
@@ -101,9 +113,16 @@ L/T řádky odpovídají SAP ZBOM formátu — L = materiál, T = text/placehold
 
 ### Důležité
 - **Heslo** — `ADMIN_PASSWORD` (env na serveru). Bez něj admin endpointy vrací 503 a záložka v UI se zobrazí jen když je nastaven `VITE_BACKEND_URL`. Heslo se posílá hlavičkou `x-admin-password`, klient ho drží v `sessionStorage` (`robo-filler-admin-pw`).
-- **Persistence v Dockeru** — `DATA_DIR=/app/data` je perzistentní volume (`./data:/app/data`). `entrypoint.sh` rozlišuje: referenční **master CSV se vždy přepíše** z image (týdenní update z GitHubu), editovatelné **JSON (wires/cables/kanban) se naseedují jen když chybí** → admin editace přežijí auto-update image (watchtower).
+- **Persistence v Dockeru** — `DATA_DIR=/app/data` je perzistentní volume (`./data:/app/data`). `entrypoint.sh` naseeduje **všechna data jen když chybí** (master CSV i JSON) → admin editace JSON i nahrání nového master CSV přes admin přežijí restart/auto-update image. Vynucení obnovy z image = smazat soubor z volume. Master CSV se nově aktualizuje přes admin (sekce „Hlavní DB"), ne commitem na GitHub.
 - **Mazání sloupce** odstraní klíč i ze všech řádků (jinak by ho `reconcileSchema` při uložení znovu obnovil).
 - **Export** CSV/JSON je čistě klientský (ke stažení), neslouží ke commitu — slouží pro práci v jiných programech.
+- **Admin poznámky k řádkům** — klíč `_poznamka` (prefix `_` = interní). `inferSchema` klíče s `_` ignoruje (nejsou sloupce/filtry), veřejný `GET /api/db/:name` i GitHub záloha je **odstraní** (`stripInternal`), admin je čte přes `GET /api/admin/db/:name`. V gridu jsou jako žlutý virtuální sloupec.
+- **AI logy** — `collector.js` zapisuje `server/logs/chats.jsonl`; `GET /api/admin/logs` čte posledních N (nejnovější první). Komponenta `AdminLogs`.
+- **Master CSV upload** — `AdminMasterCsv` pošle soubor jako base64 na `PUT /api/admin/master-csv/:which`; backend zapíše do `DATA_DIR` a zavolá `reloadMaster()` (search.js). `loadDataset` auto-detekuje kódování (UTF-8 / win-1250). Master CSV se nově aktualizuje takto (ne commitem do repa).
+- **Excel-like grid** (`DataGrid`) — výběr buněk myší/shift, Ctrl/⌘+C kopíruje výběr jako TSV, Ctrl/⌘+V vkládá z Excelu (přetečení = nové řádky), dvojklik/Enter edituje, Del maže obsah, klik na hlavičku řadí (asc/desc/off), sticky sloupec `#`, hromadné akce na výběru (smazat řádky / vyplnit hodnotou).
+- **Bezpečnost ukládání** — před uložením modal se souhrnem + validací (duplicitní/prázdný idKey, nečíselné hodnoty v číselných sloupcích); `beforeunload` varování při neuložených změnách.
+- **Produktivita** — `Ctrl/⌘+Z` undo (stack 50, mimo editaci inputu), filtry per sloupec, najít&nahradit (textová záměna napříč sloupci, lze vrátit).
+- **Snapshoty/rollback** — `dataStore` po každém uložení vytvoří snapshot do `DATA_DIR/.snapshots/<name>/`; GFS retence (vše posledních 5 dní, týdně 3 týdny, měsíčně 1 měsíc). Restore nejdřív zazálohuje aktuální stav. Snapshoty ani `.audit.jsonl` nejsou veřejné ani v GitHub záloze.
 - **Denní záloha na GitHub** — workflow `.github/workflows/backup-databases.yml` (cron 02:00 UTC + ruční spuštění) stáhne živá data z backendu (`GET /api/db/:name`) a commitne `public/<name>.json` + `public/<name>.schema.json` do repa. Pojistka: pokud DB vrátí 0 řádků, soubor se nepřepíše. Vyžaduje secret `VITE_BACKEND_URL` (veřejná URL API). Tím se admin editace verzují a zároveň slouží jako seed pro budoucí build image.
 
 ## Changelog konvence

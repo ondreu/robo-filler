@@ -1,5 +1,32 @@
 # Changelog
 
+## V150626 — Admin: bezpečnost, produktivita, zálohy (2026-06-15)
+
+### Nové funkce
+- **Bezpečné ukládání** — před uložením souhrn („uloží se N řádků") + validace (duplicitní/prázdný klíč, nečíselné hodnoty v číselných sloupcích); `beforeunload` varování při neuložených změnách
+- **Produktivita v tabulce** — řazení klikem na hlavičku (asc/desc/off), filtry jednotlivých sloupců, najít & nahradit (napříč sloupci), hromadné akce na výběru (smazat řádky / vyplnit hodnotou), zpět `Ctrl/⌘+Z`, sticky sloupec čísla řádku
+- **Zálohy & rollback** — snapshoty po každém uložení s GFS retencí (vše 5 dní, týdně 3 týdny, měsíčně 1 měsíc); obnova na libovolnou verzi (před obnovou se aktuální stav zazálohuje); ruční „Zálohovat teď"
+- **Audit log** — přehled admin akcí (uložení/záloha/obnova/master CSV)
+- **Prohlížeč hlavní DB** — read-only hledání v master CSV přímo v adminu
+
+### Backend
+- `dataStore.js` — snapshoty (`.snapshots/`), GFS prune, audit (`.audit.jsonl`); nejsou veřejné ani v GitHub záloze
+- Endpointy `/api/admin/snapshots/*`, `/api/admin/audit`, `/api/admin/master-search`
+
+## V140626 — Admin dashboard rozšíření (2026-06-14)
+
+Rozšíření admin prostředí o Excel-like tabulku, logy AI, upload hlavní DB a poznámky k řádkům.
+
+### Nové funkce
+- **Excel-like tabulka** — výběr více buněk (tažením/Shift), kopírování `Ctrl/⌘+C` (TSV), vkládání z Excelu `Ctrl/⌘+V` (přetečení vytvoří nové řádky), editace dvojklikem/psaním, `Del` smaže obsah
+- **Logy AI chatů** — nová sekce „AI logy": Karel Bot / řízený / BOM, filtr dle typu, rozbalení detailu záznamu (`GET /api/admin/logs`)
+- **Nahrání hlavní DB (master CSV)** — sekce „Hlavní DB": nahrání nové verze `master-data.csv` / `master-data-effi.csv` přímo v adminu, okamžitý reindex vyhledávání; auto-detekce kódování (UTF-8 / win-1250)
+- **Poznámka k řádku** — interní pole pro admina (`_poznamka`); ve veřejném API i v GitHub záloze se odstraňuje, nikde jinde se nezobrazuje
+
+### Backend
+- `search.js` — `reloadMaster()` po nahrání CSV; `GET /api/admin/db/:name` (plná data vč. poznámek), veřejný `GET /api/db/:name` interní klíče odstraní
+- `entrypoint.sh` — master CSV se nově seeduje jen když chybí (upload přes admin přežije update image)
+
 ## V130626 — Správa databází / admin (2026-06-13)
 
 Nová záložka **🛠️ Správa DB** pro tabulkovou správu databází Vodiče, Kabely a Sypký materiál.

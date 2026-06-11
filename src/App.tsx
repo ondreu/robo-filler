@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Loader2, AlertCircle, Download, FolderOpen, Settings } from 'lucide-react';
+import { Loader2, AlertCircle, Download, FolderOpen, Settings, Calculator, Cable } from 'lucide-react';
 import type { Article, SearchResult, SearchMode, SearchField, DataSource, AppMode } from './types';
 import { parseBomTxt, type ImportResult } from './utils/bomExport';
 import { BomWizard } from './components/BomWizard';
@@ -296,21 +296,43 @@ function App() {
   return (
     <div className="min-h-screen bg-base text-text p-4 md:p-8">
       <div className="max-w-[1600px] mx-auto space-y-6 relative">
-        {/* Admin — ozubené kolo vpravo nahoře */}
-        {ADMIN_AVAILABLE && (
-          <button
-            onClick={() => setAppMode(appMode === 'admin' ? 'single' : 'admin')}
-            title="Správa databází"
-            aria-label="Správa databází"
-            className={`absolute right-0 top-0 z-20 p-2.5 rounded-xl transition-all ${
-              appMode === 'admin'
-                ? 'bg-sky text-crust shadow-lg'
-                : 'bg-surface0 text-subtext1 hover:text-text hover:bg-surface1'
-            }`}
+        {/* Externí nástroje + admin — vpravo nahoře */}
+        <div className="absolute right-0 top-0 z-20 flex items-center gap-2">
+          <a
+            href="https://ondreju-sag.github.io/Electrical-engineering-calculator/"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Elektro kalkulačka"
+            aria-label="Elektro kalkulačka"
+            className="p-2.5 rounded-xl bg-surface0 text-subtext1 hover:text-text hover:bg-surface1 transition-all"
           >
-            <Settings size={20} className={appMode === 'admin' ? '' : 'hover:rotate-45 transition-transform'} />
-          </button>
-        )}
+            <Calculator size={20} />
+          </a>
+          <a
+            href="https://ondreu.github.io/IEC-60364-5-52-Installation-Methods/"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="IEC 60364-5-52 — způsoby uložení vedení"
+            aria-label="IEC 60364-5-52 — způsoby uložení vedení"
+            className="p-2.5 rounded-xl bg-surface0 text-subtext1 hover:text-text hover:bg-surface1 transition-all"
+          >
+            <Cable size={20} />
+          </a>
+          {ADMIN_AVAILABLE && (
+            <button
+              onClick={() => setAppMode(appMode === 'admin' ? 'single' : 'admin')}
+              title="Správa databází"
+              aria-label="Správa databází"
+              className={`p-2.5 rounded-xl transition-all ${
+                appMode === 'admin'
+                  ? 'bg-sky text-crust shadow-lg'
+                  : 'bg-surface0 text-subtext1 hover:text-text hover:bg-surface1'
+              }`}
+            >
+              <Settings size={20} className={appMode === 'admin' ? '' : 'hover:rotate-45 transition-transform'} />
+            </button>
+          )}
+        </div>
         {/* Header */}
         <header className="text-center space-y-3">
           <h1 className="text-4xl md:text-5xl font-bold text-mauve">

@@ -10,6 +10,28 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V150626',
+    date: '15. 6. 2026',
+    major: true,
+    changes: [
+      'Admin: bezpečné ukládání — souhrn změn + kontrola chyb (duplicity, prázdné/nečíselné hodnoty) před uložením, varování při odchodu s neuloženými změnami',
+      'Admin: řazení kliknutím na hlavičku, filtry jednotlivých sloupců, najít & nahradit, hromadné akce na výběru (smazat řádky / vyplnit hodnotou), zpět (Ctrl+Z)',
+      'Admin: zálohy a obnova — snapshoty s odstupňovanou retencí (5 dní / 3 týdny / 1 měsíc) a rollback na libovolnou verzi; audit log admin akcí',
+      'Admin: nahrání hlavní DB doplněno o náhled (read-only prohlížeč hlavní databáze) a sticky sloupec čísla řádku',
+    ],
+  },
+  {
+    version: 'V140626',
+    date: '14. 6. 2026',
+    major: true,
+    changes: [
+      'Admin: Excel-like tabulka — výběr více buněk myší, kopírování (Ctrl/⌘+C) a vkládání z Excelu (Ctrl/⌘+V), editace dvojklikem nebo psaním, mazání obsahu klávesou Del',
+      'Admin: prohlížeč logů AI chatů (Karel Bot / řízený / BOM) s filtrem a rozbalením detailu',
+      'Admin: nahrání nové verze hlavní databáze (master CSV) přímo v dashboardu — okamžitě se přeindexuje vyhledávání',
+      'Admin: pole „Poznámka" u každého řádku — jen pro admina, nikde jinde (ani ve veřejném API či záloze) viditelné',
+    ],
+  },
+  {
     version: 'V130626',
     date: '13. 6. 2026',
     major: true,

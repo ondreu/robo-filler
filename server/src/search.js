@@ -48,25 +48,38 @@ function parseCSV(content) {
   return articles;
 }
 
+function decodeSmart(buf) {
+  // Master CSV historicky bývá windows-1250; admin upload může být UTF-8.
+  // Zkus UTF-8 — když obsahuje náhradní znak (nevalidní UTF-8), dekóduj jako win-1250.
+  const utf8 = new TextDecoder('utf-8', { fatal: false }).decode(buf);
+  if (utf8.includes('�')) {
+    return new TextDecoder('windows-1250').decode(buf);
+  }
+  return utf8;
+}
+
 function loadDataset(filename) {
   try {
     const buf = readFileSync(join(DATA_DIR, filename));
-    const content = new TextDecoder('windows-1250').decode(buf);
-    return parseCSV(content);
+    return parseCSV(decodeSmart(buf));
   } catch {
     console.warn(`[search] Could not load ${filename}`);
     return [];
   }
 }
 
-const allArticles = [
-  ...loadDataset('master-data.csv'),
-  ...loadDataset('master-data-effi.csv'),
-];
+const MASTER_FILES = ['master-data.csv', 'master-data-effi.csv'];
+
+function loadAllArticles() {
+  return MASTER_FILES.flatMap(loadDataset);
+}
+
+let allArticles = loadAllArticles();
 
 console.log(`[search] Loaded ${allArticles.length} articles`);
 
 export const articleCount = allArticles.length;
+export function getArticleCount() { return allArticles.length; }
 
 // ─── BM25 ────────────────────────────────────────────────────────────────────
 
@@ -117,7 +130,15 @@ function lowerBound(arr, prefix) {
   return lo;
 }
 
-const bm25Index = buildBM25Index(allArticles);
+let bm25Index = buildBM25Index(allArticles);
+
+// Obnoví hlavní DB i index po nahrání nového master CSV přes admin.
+export function reloadMaster() {
+  allArticles = loadAllArticles();
+  bm25Index = buildBM25Index(allArticles);
+  console.log(`[search] Reloaded ${allArticles.length} articles`);
+  return allArticles.length;
+}
 
 function bm25Search(query, topN, manufacturerFilter) {
   const { invertedIndex, sortedTokens, docLengths, avgDL, N } = bm25Index;

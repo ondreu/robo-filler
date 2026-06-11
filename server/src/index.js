@@ -5,7 +5,14 @@ import { handleBomBuild, checkClarification, postCheckClarification } from './bo
 import { handleGuidedChat } from './guidedSearch.js';
 import { COMPONENT_CATEGORIES } from './componentGuide.js';
 import { logRecord } from './collector.js';
-import { DATABASES, isValidDb, getDb, writeRows, writeSchema, readSchema } from './dataStore.js';
+import { DATABASES, isValidDb, getDb, writeRows, writeSchema, readSchema, DATA_DIR,
+  snapshotDb, listSnapshots, readSnapshot, appendAudit, readAudit } from './dataStore.js';
+import { reloadMaster, getArticleCount, searchTerm } from './search.js';
+import { readFileSync, writeFileSync, existsSync, statSync, renameSync } from 'fs';
+import { join } from 'path';
+
+const LOGS_DIR = join(import.meta.dirname, '..', 'logs');
+const MASTER_FILES = { main: 'master-data.csv', effi: 'master-data-effi.csv' };
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -192,15 +199,39 @@ app.get('/api/db', (_req, res) => {
   res.json(Object.entries(DATABASES).map(([name, def]) => ({ name, label: def.label, idKey: def.idKey })));
 });
 
+// Odstraní interní klíče (prefix `_`, např. admin poznámky) — ty se nesmí
+// dostat do veřejného API ani do GitHub zálohy.
+function stripInternal(rows) {
+  return rows.map(r => {
+    const out = {};
+    for (const k of Object.keys(r)) if (!k.startsWith('_')) out[k] = r[k];
+    return out;
+  });
+}
+
 // Veřejné čtení dat + schématu — používá frontend vyhledávání pro živá data a
-// dynamické filtry. Nevyžaduje heslo (jen čtení).
+// dynamické filtry. Nevyžaduje heslo. Interní klíče (`_`) se odstraní.
 app.get('/api/db/:name', (req, res) => {
+  const { name } = req.params;
+  if (!isValidDb(name)) return res.status(404).json({ error: 'Neznámá databáze.' });
+  try {
+    const { rows, schema } = getDb(name);
+    res.json({ rows: stripInternal(rows), schema });
+  } catch (err) {
+    console.error('[db:get]', err);
+    res.status(500).json({ error: 'Chyba při čtení databáze.' });
+  }
+});
+
+// Admin čtení — vrací plná data včetně interních klíčů (admin poznámky).
+app.get('/api/admin/db/:name', (req, res) => {
+  if (!checkAdmin(req, res)) return;
   const { name } = req.params;
   if (!isValidDb(name)) return res.status(404).json({ error: 'Neznámá databáze.' });
   try {
     res.json(getDb(name));
   } catch (err) {
-    console.error('[db:get]', err);
+    console.error('[admin:db:get]', err);
     res.status(500).json({ error: 'Chyba při čtení databáze.' });
   }
 });
@@ -239,10 +270,136 @@ app.put('/api/admin/db/:name', (req, res) => {
       writeRows(name, rows);
     }
     const saved = getDb(name);
+    snapshotDb(name); // verzovací snapshot po uložení
+    appendAudit({ action: 'save', db: name, rows: saved.rows.length });
     res.json({ ok: true, count: saved.rows.length, schema: saved.schema });
   } catch (err) {
     console.error('[db:put]', err);
     res.status(500).json({ error: 'Chyba při ukládání databáze.' });
+  }
+});
+
+// ─── Admin: snapshoty / rollback ─────────────────────────────────────────────
+app.get('/api/admin/snapshots/:name', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const { name } = req.params;
+  if (!isValidDb(name)) return res.status(404).json({ error: 'Neznámá databáze.' });
+  res.json({ snapshots: listSnapshots(name) });
+});
+
+// Ruční snapshot „Zálohovat teď"
+app.post('/api/admin/snapshots/:name', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const { name } = req.params;
+  if (!isValidDb(name)) return res.status(404).json({ error: 'Neznámá databáze.' });
+  try {
+    const id = snapshotDb(name);
+    appendAudit({ action: 'snapshot', db: name });
+    res.json({ ok: true, id, snapshots: listSnapshots(name) });
+  } catch (err) {
+    console.error('[snapshot]', err);
+    res.status(500).json({ error: 'Chyba při vytváření snapshotu.' });
+  }
+});
+
+// Obnovení z konkrétního snapshotu
+app.post('/api/admin/snapshots/:name/restore/:id', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const { name, id } = req.params;
+  if (!isValidDb(name)) return res.status(404).json({ error: 'Neznámá databáze.' });
+  const snap = readSnapshot(name, id);
+  if (!snap) return res.status(404).json({ error: 'Snapshot nenalezen.' });
+  try {
+    snapshotDb(name); // záloha aktuálního stavu před obnovou (jde vrátit zpět)
+    if (snap.schema) writeSchema(name, snap.schema);
+    writeRows(name, snap.rows ?? []);
+    const saved = getDb(name);
+    appendAudit({ action: 'restore', db: name, from: id, rows: saved.rows.length });
+    res.json({ ok: true, count: saved.rows.length, schema: saved.schema });
+  } catch (err) {
+    console.error('[restore]', err);
+    res.status(500).json({ error: 'Chyba při obnově.' });
+  }
+});
+
+// ─── Admin: audit log ─────────────────────────────────────────────────────────
+app.get('/api/admin/audit', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  res.json({ records: readAudit(Math.min(Number(req.query.limit) || 200, 1000)) });
+});
+
+// ─── Admin: read-only hledání v hlavní DB (master CSV) ──────────────────────────
+app.get('/api/admin/master-search', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const q = (req.query.q ?? '').toString().trim();
+  if (!q) return res.json({ results: [] });
+  try {
+    res.json({ results: searchTerm(q, 50) });
+  } catch (err) {
+    console.error('[master-search]', err);
+    res.status(500).json({ error: 'Chyba při hledání.' });
+  }
+});
+
+// ─── Admin: AI logy ─────────────────────────────────────────────────────────
+// Čte server/logs/chats.jsonl (JSONL). Vrací posledních N záznamů (nejnovější první).
+app.get('/api/admin/logs', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const limit = Math.min(Number(req.query.limit) || 200, 1000);
+  const typeFilter = req.query.type;
+  try {
+    const file = join(LOGS_DIR, 'chats.jsonl');
+    if (!existsSync(file)) return res.json({ records: [], total: 0 });
+    const lines = readFileSync(file, 'utf-8').split('\n').filter(Boolean);
+    const records = [];
+    for (let i = lines.length - 1; i >= 0 && records.length < limit; i--) {
+      try {
+        const rec = JSON.parse(lines[i]);
+        if (typeFilter && typeFilter !== 'all' && rec.type !== typeFilter) continue;
+        records.push(rec);
+      } catch { /* poškozený řádek přeskoč */ }
+    }
+    res.json({ records, total: lines.length });
+  } catch (err) {
+    console.error('[admin:logs]', err);
+    res.status(500).json({ error: 'Chyba při čtení logů.' });
+  }
+});
+
+// ─── Admin: hlavní DB (master CSV) ─────────────────────────────────────────────
+app.get('/api/admin/master-csv', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const info = {};
+  for (const [key, name] of Object.entries(MASTER_FILES)) {
+    const p = join(DATA_DIR, name);
+    info[key] = existsSync(p)
+      ? { name, bytes: statSync(p).size, modified: statSync(p).mtime.toISOString() }
+      : { name, bytes: 0, modified: null };
+  }
+  res.json({ files: info, articleCount: getArticleCount() });
+});
+
+// Nahrání nové verze master CSV. Tělo: { dataBase64 } (zachová přesné byty / kódování).
+app.put('/api/admin/master-csv/:which', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const { which } = req.params;
+  if (!MASTER_FILES[which]) return res.status(404).json({ error: 'Neznámý soubor (main|effi).' });
+  const { dataBase64 } = req.body ?? {};
+  if (typeof dataBase64 !== 'string' || !dataBase64) {
+    return res.status(400).json({ error: 'Chybí dataBase64.' });
+  }
+  try {
+    const buf = Buffer.from(dataBase64, 'base64');
+    if (buf.length === 0) return res.status(400).json({ error: 'Prázdný soubor.' });
+    const tmp = join(DATA_DIR, MASTER_FILES[which] + '.tmp');
+    writeFileSync(tmp, buf);
+    renameSync(tmp, join(DATA_DIR, MASTER_FILES[which]));
+    const count = reloadMaster();
+    appendAudit({ action: 'master-csv', which, bytes: buf.length, articleCount: count });
+    res.json({ ok: true, articleCount: count });
+  } catch (err) {
+    console.error('[admin:master-csv]', err);
+    res.status(500).json({ error: 'Chyba při ukládání CSV.' });
   }
 });
 
