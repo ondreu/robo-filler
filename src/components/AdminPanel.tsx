@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Lock, Save, Plus, Trash2, Download, Upload, RefreshCw, Loader2,
   Search, X, Settings2, Filter, AlertTriangle, CheckCircle2, Table2, MessageSquare, Database,
+  History, Undo2, Replace, SlidersHorizontal,
 } from 'lucide-react';
 import type { DbName, DbRow, DbSchema, DbColumn, ColumnType, DbInfo } from '../utils/dbSchema';
 import { coerceCell } from '../utils/dbSchema';
@@ -10,12 +11,15 @@ import { rowsToCsv, rowsToJson, parseCsv, downloadFile } from '../utils/dbCsv';
 import { DataGrid, type GridCol } from './DataGrid';
 import { AdminLogs } from './AdminLogs';
 import { AdminMasterCsv } from './AdminMasterCsv';
+import { AdminBackups } from './AdminBackups';
 
 const PW_KEY = 'robo-filler-admin-pw';
 const PAGE_SIZE = 25;
 const NOTE_KEY = '_poznamka';        // interní admin poznámka k řádku
+const UNDO_LIMIT = 50;
 
-type SubView = 'data' | 'logs' | 'master';
+type SubView = 'data' | 'logs' | 'master' | 'backups';
+type SortDir = 'asc' | 'desc' | null;
 
 // ─── Login ──────────────────────────────────────────────────────────────────
 
@@ -185,6 +189,21 @@ export function AdminPanel() {
   const [importData, setImportData] = useState<DbRow[] | null>(null);
   const [subView, setSubView] = useState<SubView>('data');
 
+  // #3 řazení + filtry sloupců + najít&nahradit
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>(null);
+  const [showColFilters, setShowColFilters] = useState(false);
+  const [colFilters, setColFilters] = useState<Record<string, string>>({});
+  const [showReplace, setShowReplace] = useState(false);
+  const [findText, setFindText] = useState('');
+  const [replaceText, setReplaceText] = useState('');
+
+  // #2 souhrn/validace před uložením
+  const [confirmSave, setConfirmSave] = useState<null | { issues: string[]; summary: string }>(null);
+
+  // #7 undo
+  const [undoStack, setUndoStack] = useState<DbRow[][]>([]);
+
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Ověření uloženého hesla při startu
@@ -204,51 +223,107 @@ export function AdminPanel() {
     if (!password) return;
     setLoading(true); setError(''); setSavedMsg('');
     fetchDb(name, password)
-      .then(({ rows, schema }) => { setRows(rows); setSchema(schema); setDirty(false); setPage(0); setQuery(''); })
+      .then(({ rows, schema }) => {
+        setRows(rows); setSchema(schema); setDirty(false); setPage(0); setQuery('');
+        setUndoStack([]); setSortKey(null); setSortDir(null); setColFilters({});
+      })
       .catch(e => setError(e.message ?? 'Chyba načtení.'))
       .finally(() => setLoading(false));
   }, [password]);
 
   useEffect(() => { if (password) loadDb(dbName); }, [password, dbName, loadDb]);
 
+  // #2 varování při odchodu s neuloženými změnami
+  useEffect(() => {
+    if (!dirty) return;
+    const h = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', h);
+    return () => window.removeEventListener('beforeunload', h);
+  }, [dirty]);
+
+  // #7 Ctrl/⌘+Z (mimo editaci v inputu/textarea)
+  useEffect(() => {
+    if (subView !== 'data') return;
+    const h = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+        e.preventDefault(); undo();
+      }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }); // bez deps — closure čte aktuální undoStack přes setState
+
   // ── Edit operace ────────────────────────────────────────────────────────
 
   const typeByKey = useMemo(() => new Map(schema.columns.map(c => [c.key, c.type])), [schema]);
 
+  // #7 undo — uloží předchozí stav před každou mutací
+  const pushUndo = (snapshot: DbRow[]) => setUndoStack(s => [...s.slice(-(UNDO_LIMIT - 1)), snapshot]);
+  const commit = (next: DbRow[]) => { pushUndo(rows); setRows(next); setDirty(true); setSavedMsg(''); };
+  const undo = () => {
+    if (!undoStack.length) return;
+    setRows(undoStack[undoStack.length - 1]);
+    setUndoStack(s => s.slice(0, -1));
+    setDirty(true); setSavedMsg('');
+  };
+
   const updateCell = (idx: number, key: string, value: string) => {
     const type = typeByKey.get(key) ?? 'text';
     const coerced = coerceCell(value, type);
-    setRows(prev => prev.map((r, i) => (i === idx ? { ...r, [key]: coerced } : r)));
-    setDirty(true); setSavedMsg('');
+    commit(rows.map((r, i) => (i === idx ? { ...r, [key]: coerced } : r)));
   };
 
   const addRow = () => {
     const blank: DbRow = {};
     schema.columns.forEach(c => { blank[c.key] = null; });
     blank[NOTE_KEY] = null;
-    setRows(prev => [...prev, blank]);
-    setDirty(true); setSavedMsg('');
+    commit([...rows, blank]);
     setPage(Math.floor((rows.length) / PAGE_SIZE));
   };
 
   const appendRows = (newRows: DbRow[]) => {
     if (!newRows.length) return;
-    setRows(prev => [...prev, ...newRows]);
-    setDirty(true); setSavedMsg('');
+    commit([...rows, ...newRows]);
   };
 
-  const deleteRow = (idx: number) => {
-    setRows(prev => prev.filter((_, i) => i !== idx));
-    setDirty(true); setSavedMsg('');
+  const deleteRow = (idx: number) => commit(rows.filter((_, i) => i !== idx));
+
+  const deleteRows = (idxs: number[]) => {
+    const set = new Set(idxs);
+    commit(rows.filter((_, i) => !set.has(i)));
   };
 
   const duplicateRow = (idx: number) => {
-    setRows(prev => {
-      const copy = [...prev];
-      copy.splice(idx + 1, 0, { ...prev[idx] });
-      return copy;
+    const copy = [...rows];
+    copy.splice(idx + 1, 0, { ...rows[idx] });
+    commit(copy);
+  };
+
+  // #3 najít & nahradit napříč všemi sloupci (textová záměna)
+  const doReplace = () => {
+    if (!findText) return;
+    let count = 0;
+    const next = rows.map(r => {
+      const nr = { ...r };
+      for (const col of gridColumns) {
+        const v = nr[col.key];
+        if (typeof v === 'string' && v.includes(findText)) {
+          nr[col.key] = coerceCell(v.split(findText).join(replaceText), col.type);
+          count++;
+        }
+      }
+      return nr;
     });
-    setDirty(true); setSavedMsg('');
+    if (count > 0) { commit(next); setSavedMsg(`Nahrazeno v ${count} buňkách.`); }
+    else setSavedMsg('Žádná shoda.');
+  };
+
+  // #3 řazení — klik cyklí asc → desc → vypnuto
+  const onSort = (key: string) => {
+    if (sortKey !== key) { setSortKey(key); setSortDir('asc'); }
+    else if (sortDir === 'asc') setSortDir('desc');
+    else { setSortKey(null); setSortDir(null); }
   };
 
   const setSchemaCols = (cols: DbColumn[]) => { setSchema({ columns: cols }); setDirty(true); setSavedMsg(''); };
@@ -289,15 +364,47 @@ export function AdminPanel() {
     setPage(0);
   };
 
-  // ── Save ─────────────────────────────────────────────────────────────────
+  // ── Save (#2 validace + souhrn) ────────────────────────────────────────────
 
-  const save = async () => {
+  const idKey = useMemo(() => databases.find(d => d.name === dbName)?.idKey ?? schema.columns[0]?.key, [databases, dbName, schema]);
+
+  const validate = (): string[] => {
+    const issues: string[] = [];
+    // duplicitní / prázdné ID
+    if (idKey) {
+      const seen = new Map<string, number>();
+      let empty = 0;
+      rows.forEach(r => {
+        const v = r?.[idKey];
+        if (v == null || String(v).trim() === '') { empty++; return; }
+        const k = String(v); seen.set(k, (seen.get(k) ?? 0) + 1);
+      });
+      const dups = [...seen.entries()].filter(([, n]) => n > 1);
+      if (empty) issues.push(`${empty} řádků s prázdným „${idKey}"`);
+      if (dups.length) issues.push(`${dups.length} duplicitních hodnot „${idKey}" (např. ${dups.slice(0, 3).map(([k]) => k).join(', ')})`);
+    }
+    // nečíselné hodnoty v číselných sloupcích
+    schema.columns.filter(c => c.type === 'number').forEach(c => {
+      const bad = rows.filter(r => { const v = r?.[c.key]; return v != null && v !== '' && typeof v !== 'number' && isNaN(Number(String(v).replace(',', '.'))); }).length;
+      if (bad) issues.push(`${bad} nečíselných hodnot ve sloupci „${c.label}"`);
+    });
+    return issues;
+  };
+
+  const save = () => {
     if (!password) return;
+    const issues = validate();
+    setConfirmSave({ issues, summary: `Uloží se ${rows.length} řádků.` });
+  };
+
+  const performSave = async () => {
+    if (!password) return;
+    setConfirmSave(null);
     setSaving(true); setError(''); setSavedMsg('');
     try {
       const res = await saveDb(dbName, password, { rows, schema });
       setSchema(res.schema);
-      setDirty(false);
+      setDirty(false); setUndoStack([]);
       setSavedMsg(`Uloženo — ${res.count} řádků.`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Uložení selhalo.';
@@ -311,13 +418,27 @@ export function AdminPanel() {
   // ── Filtered / paged view ──────────────────────────────────────────────────
 
   const indexed = useMemo(() => rows.map((row, idx) => ({ row, idx })), [rows]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return indexed;
-    return indexed.filter(({ row }) =>
-      schema.columns.some(c => String(row?.[c.key] ?? '').toLowerCase().includes(q)),
-    );
-  }, [indexed, query, schema]);
+    const activeCol = Object.entries(colFilters).filter(([, v]) => v.trim() !== '');
+    let r = indexed;
+    if (q) r = r.filter(({ row }) => schema.columns.some(c => String(row?.[c.key] ?? '').toLowerCase().includes(q)));
+    if (activeCol.length) {
+      r = r.filter(({ row }) => activeCol.every(([k, v]) => String(row?.[k] ?? '').toLowerCase().includes(v.trim().toLowerCase())));
+    }
+    if (sortKey && sortDir) {
+      const type = typeByKey.get(sortKey) ?? 'text';
+      const dir = sortDir === 'asc' ? 1 : -1;
+      r = [...r].sort((a, b) => {
+        const va = a.row?.[sortKey], vb = b.row?.[sortKey];
+        if (va == null) return 1; if (vb == null) return -1;
+        if (type === 'number') return (Number(va) - Number(vb)) * dir;
+        return String(va).localeCompare(String(vb), 'cs', { numeric: true }) * dir;
+      });
+    }
+    return r;
+  }, [indexed, query, schema, colFilters, sortKey, sortDir, typeByKey]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages - 1);
@@ -352,6 +473,7 @@ export function AdminPanel() {
       <div className="flex bg-surface0 rounded-2xl p-1 gap-1 w-fit">
         {([
           { v: 'data', label: 'Databáze', icon: Table2 },
+          { v: 'backups', label: 'Zálohy', icon: History },
           { v: 'logs', label: 'AI logy', icon: MessageSquare },
           { v: 'master', label: 'Hlavní DB', icon: Database },
         ] as const).map(({ v, label, icon: Icon }) => (
@@ -369,6 +491,13 @@ export function AdminPanel() {
 
       {subView === 'logs' && <AdminLogs password={password} />}
       {subView === 'master' && <AdminMasterCsv password={password} />}
+      {subView === 'backups' && (
+        <AdminBackups
+          password={password}
+          databases={databases}
+          onAfterRestore={(d) => { if (d === dbName) loadDb(dbName); }}
+        />
+      )}
 
       {subView === 'data' && (
         <>
@@ -392,6 +521,15 @@ export function AdminPanel() {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
+              <button onClick={undo} disabled={!undoStack.length} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5 disabled:opacity-40" title="Zpět (Ctrl+Z)">
+                <Undo2 size={14} /> Zpět
+              </button>
+              <button onClick={() => setShowColFilters(s => !s)} className={`flex items-center gap-1 text-xs rounded-lg px-3 py-1.5 ${showColFilters ? 'bg-mauve/20 text-mauve' : 'bg-surface0 hover:bg-surface1 text-text'}`}>
+                <SlidersHorizontal size={14} /> Filtry
+              </button>
+              <button onClick={() => setShowReplace(s => !s)} className={`flex items-center gap-1 text-xs rounded-lg px-3 py-1.5 ${showReplace ? 'bg-mauve/20 text-mauve' : 'bg-surface0 hover:bg-surface1 text-text'}`}>
+                <Replace size={14} /> Nahradit
+              </button>
               <button onClick={() => setShowSchema(s => !s)} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5">
                 <Settings2 size={14} /> Sloupce
               </button>
@@ -429,6 +567,42 @@ export function AdminPanel() {
             <SchemaEditor schema={schema} onChange={setSchemaCols} onAddColumn={addColumn} onDeleteColumn={deleteColumn} />
           )}
 
+          {showReplace && (
+            <div className="flex flex-wrap items-end gap-2 bg-mantle rounded-2xl p-3">
+              <div className="flex-1 min-w-[140px]">
+                <label className="text-[11px] text-overlay0">Najít</label>
+                <input value={findText} onChange={e => setFindText(e.target.value)} className="w-full bg-surface0 border border-surface2 rounded-lg px-3 py-1.5 text-sm text-text focus:outline-none focus:border-mauve/50" />
+              </div>
+              <div className="flex-1 min-w-[140px]">
+                <label className="text-[11px] text-overlay0">Nahradit za</label>
+                <input value={replaceText} onChange={e => setReplaceText(e.target.value)} className="w-full bg-surface0 border border-surface2 rounded-lg px-3 py-1.5 text-sm text-text focus:outline-none focus:border-mauve/50" />
+              </div>
+              <button onClick={doReplace} disabled={!findText} className="bg-mauve/20 text-mauve border border-mauve/30 rounded-lg px-3 py-1.5 text-xs font-medium hover:bg-mauve/30 disabled:opacity-50">
+                Nahradit vše
+              </button>
+              <p className="w-full text-[11px] text-overlay0">Textová záměna ve všech sloupcích napříč celou databází (lze vrátit přes Zpět).</p>
+            </div>
+          )}
+
+          {showColFilters && (
+            <div className="bg-mantle rounded-2xl p-3 flex flex-wrap gap-2">
+              {schema.columns.map(c => (
+                <div key={c.key} className="flex flex-col">
+                  <label className="text-[10px] text-overlay0 truncate max-w-[140px]">{c.label}</label>
+                  <input
+                    value={colFilters[c.key] ?? ''}
+                    onChange={e => { setColFilters(f => ({ ...f, [c.key]: e.target.value })); setPage(0); }}
+                    placeholder="filtr…"
+                    className="w-32 bg-surface0 border border-surface2 rounded-lg px-2 py-1 text-xs text-text placeholder:text-overlay0 focus:outline-none focus:border-teal/50"
+                  />
+                </div>
+              ))}
+              {Object.values(colFilters).some(v => v) && (
+                <button onClick={() => setColFilters({})} className="self-end text-xs text-overlay0 hover:text-red px-2 py-1">Zrušit filtry</button>
+              )}
+            </div>
+          )}
+
           {/* Search + add row + count */}
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[200px]">
@@ -463,7 +637,11 @@ export function AdminPanel() {
               onDeleteRow={deleteRow}
               onDuplicateRow={duplicateRow}
               onAppendRows={appendRows}
-              resetKey={`${dbName}-${safePage}-${query}-${schema.columns.length}`}
+              onDeleteRows={deleteRows}
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={onSort}
+              resetKey={`${dbName}-${safePage}-${query}-${schema.columns.length}-${sortKey}-${sortDir}`}
             />
           )}
 
@@ -483,6 +661,28 @@ export function AdminPanel() {
               onReplace={() => applyImport('replace')}
               onAppend={() => applyImport('append')}
             />
+          )}
+
+          {confirmSave && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={e => { if (e.target === e.currentTarget) setConfirmSave(null); }}>
+              <div className="bg-base border border-surface1 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+                <h3 className="text-base font-semibold text-text flex items-center gap-2"><Save size={18} className="text-green" /> Uložit změny</h3>
+                <p className="text-sm text-subtext1">{confirmSave.summary}</p>
+                {confirmSave.issues.length > 0 && (
+                  <div className="bg-yellow/10 border border-yellow/20 rounded-xl p-3 space-y-1">
+                    <p className="text-xs text-yellow font-semibold flex items-center gap-1"><AlertTriangle size={13} /> Upozornění ({confirmSave.issues.length}):</p>
+                    <ul className="text-xs text-yellow/90 list-disc list-inside space-y-0.5">
+                      {confirmSave.issues.map((iss, i) => <li key={i}>{iss}</li>)}
+                    </ul>
+                    <p className="text-[11px] text-overlay1">Můžeš uložit i tak, ale zkontroluj data.</p>
+                  </div>
+                )}
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => setConfirmSave(null)} className="px-4 py-2 rounded-xl text-sm text-subtext1 hover:text-text">Zrušit</button>
+                  <button onClick={performSave} className="px-4 py-2 rounded-xl text-sm font-semibold bg-green text-crust hover:bg-green/90">Uložit</button>
+                </div>
+              </div>
+            </div>
           )}
         </>
       )}

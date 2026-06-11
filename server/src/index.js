@@ -5,8 +5,9 @@ import { handleBomBuild, checkClarification, postCheckClarification } from './bo
 import { handleGuidedChat } from './guidedSearch.js';
 import { COMPONENT_CATEGORIES } from './componentGuide.js';
 import { logRecord } from './collector.js';
-import { DATABASES, isValidDb, getDb, writeRows, writeSchema, readSchema, DATA_DIR } from './dataStore.js';
-import { reloadMaster, getArticleCount } from './search.js';
+import { DATABASES, isValidDb, getDb, writeRows, writeSchema, readSchema, DATA_DIR,
+  snapshotDb, listSnapshots, readSnapshot, appendAudit, readAudit } from './dataStore.js';
+import { reloadMaster, getArticleCount, searchTerm } from './search.js';
 import { readFileSync, writeFileSync, existsSync, statSync, renameSync } from 'fs';
 import { join } from 'path';
 
@@ -269,10 +270,74 @@ app.put('/api/admin/db/:name', (req, res) => {
       writeRows(name, rows);
     }
     const saved = getDb(name);
+    snapshotDb(name); // verzovací snapshot po uložení
+    appendAudit({ action: 'save', db: name, rows: saved.rows.length });
     res.json({ ok: true, count: saved.rows.length, schema: saved.schema });
   } catch (err) {
     console.error('[db:put]', err);
     res.status(500).json({ error: 'Chyba při ukládání databáze.' });
+  }
+});
+
+// ─── Admin: snapshoty / rollback ─────────────────────────────────────────────
+app.get('/api/admin/snapshots/:name', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const { name } = req.params;
+  if (!isValidDb(name)) return res.status(404).json({ error: 'Neznámá databáze.' });
+  res.json({ snapshots: listSnapshots(name) });
+});
+
+// Ruční snapshot „Zálohovat teď"
+app.post('/api/admin/snapshots/:name', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const { name } = req.params;
+  if (!isValidDb(name)) return res.status(404).json({ error: 'Neznámá databáze.' });
+  try {
+    const id = snapshotDb(name);
+    appendAudit({ action: 'snapshot', db: name });
+    res.json({ ok: true, id, snapshots: listSnapshots(name) });
+  } catch (err) {
+    console.error('[snapshot]', err);
+    res.status(500).json({ error: 'Chyba při vytváření snapshotu.' });
+  }
+});
+
+// Obnovení z konkrétního snapshotu
+app.post('/api/admin/snapshots/:name/restore/:id', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const { name, id } = req.params;
+  if (!isValidDb(name)) return res.status(404).json({ error: 'Neznámá databáze.' });
+  const snap = readSnapshot(name, id);
+  if (!snap) return res.status(404).json({ error: 'Snapshot nenalezen.' });
+  try {
+    snapshotDb(name); // záloha aktuálního stavu před obnovou (jde vrátit zpět)
+    if (snap.schema) writeSchema(name, snap.schema);
+    writeRows(name, snap.rows ?? []);
+    const saved = getDb(name);
+    appendAudit({ action: 'restore', db: name, from: id, rows: saved.rows.length });
+    res.json({ ok: true, count: saved.rows.length, schema: saved.schema });
+  } catch (err) {
+    console.error('[restore]', err);
+    res.status(500).json({ error: 'Chyba při obnově.' });
+  }
+});
+
+// ─── Admin: audit log ─────────────────────────────────────────────────────────
+app.get('/api/admin/audit', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  res.json({ records: readAudit(Math.min(Number(req.query.limit) || 200, 1000)) });
+});
+
+// ─── Admin: read-only hledání v hlavní DB (master CSV) ──────────────────────────
+app.get('/api/admin/master-search', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const q = (req.query.q ?? '').toString().trim();
+  if (!q) return res.json({ results: [] });
+  try {
+    res.json({ results: searchTerm(q, 50) });
+  } catch (err) {
+    console.error('[master-search]', err);
+    res.status(500).json({ error: 'Chyba při hledání.' });
   }
 });
 
@@ -330,6 +395,7 @@ app.put('/api/admin/master-csv/:which', (req, res) => {
     writeFileSync(tmp, buf);
     renameSync(tmp, join(DATA_DIR, MASTER_FILES[which]));
     const count = reloadMaster();
+    appendAudit({ action: 'master-csv', which, bytes: buf.length, articleCount: count });
     res.json({ ok: true, articleCount: count });
   } catch (err) {
     console.error('[admin:master-csv]', err);

@@ -92,6 +92,44 @@ export async function uploadMasterCsv(password: string, which: 'main' | 'effi', 
   return await res.json();
 }
 
+export interface SnapshotInfo { id: string; ts: string; bytes: number; rows: number | null }
+
+export async function listSnapshots(name: DbName, password: string): Promise<SnapshotInfo[]> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/snapshots/${name}`, { headers: { 'x-admin-password': password } });
+  if (!res.ok) throw new Error(`Načtení snapshotů selhalo (${res.status}).`);
+  return (await res.json()).snapshots ?? [];
+}
+
+export async function createSnapshot(name: DbName, password: string): Promise<SnapshotInfo[]> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/snapshots/${name}`, { method: 'POST', headers: { 'x-admin-password': password } });
+  if (!res.ok) throw new Error(`Vytvoření snapshotu selhalo (${res.status}).`);
+  return (await res.json()).snapshots ?? [];
+}
+
+export async function restoreSnapshot(name: DbName, password: string, id: string): Promise<{ count: number; schema: DbSchema }> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/snapshots/${name}/restore/${encodeURIComponent(id)}`, {
+    method: 'POST', headers: { 'x-admin-password': password },
+  });
+  if (!res.ok) throw new Error(`Obnova selhala (${res.status}).`);
+  return await res.json();
+}
+
+export interface AuditRecord { ts: string; action: string; db?: string; rows?: number; which?: string; from?: string; [k: string]: unknown }
+
+export async function fetchAudit(password: string): Promise<AuditRecord[]> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/audit`, { headers: { 'x-admin-password': password } });
+  if (!res.ok) throw new Error(`Načtení auditu selhalo (${res.status}).`);
+  return (await res.json()).records ?? [];
+}
+
+export async function masterSearch(password: string, q: string): Promise<DbRow[]> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/master-search?q=${encodeURIComponent(q)}`, {
+    headers: { 'x-admin-password': password },
+  });
+  if (!res.ok) throw new Error(`Hledání selhalo (${res.status}).`);
+  return (await res.json()).results ?? [];
+}
+
 export async function saveDb(
   name: DbName,
   password: string,

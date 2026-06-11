@@ -2,7 +2,7 @@
 // Backend je zdroj pravdy: čte/zapisuje public/<name>.json a public/<name>.schema.json.
 // Po zápisu volá registrované reload callbacky (vyhledávací indexy Karel Bota).
 
-import { readFileSync, writeFileSync, existsSync, renameSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, renameSync, readdirSync, unlinkSync, mkdirSync, appendFileSync, statSync } from 'fs';
 import { join } from 'path';
 
 export const DATA_DIR = process.env.DATA_DIR ?? join(import.meta.dirname, '../../public');
@@ -134,6 +134,115 @@ export function writeSchema(name, schema) {
 
 export function getDb(name) {
   return { rows: readRows(name), schema: readSchema(name) };
+}
+
+// ─── Snapshoty (rollback) ──────────────────────────────────────────────────────
+// Ukládají se do DATA_DIR/.snapshots/<name>/<ISO>.json jako { ts, rows, schema }.
+// Nejsou veřejné ani v GitHub záloze. Retence: GFS (denně 5 dní, týdně 3 týdny,
+// měsíčně 1 měsíc).
+
+const SNAP_ROOT = join(DATA_DIR, '.snapshots');
+
+function snapDir(name) { return join(SNAP_ROOT, name); }
+
+function tsToId(d = new Date()) {
+  return d.toISOString().replace(/[:.]/g, '-'); // bezpečný název souboru
+}
+
+// Vytvoří snapshot aktuálního stavu DB na disku.
+export function snapshotDb(name) {
+  const dir = snapDir(name);
+  mkdirSync(dir, { recursive: true });
+  const { rows, schema } = getDb(name);
+  const id = tsToId();
+  const file = join(dir, `${id}.json`);
+  writeFileSync(file, JSON.stringify({ ts: new Date().toISOString(), rows, schema }), 'utf-8');
+  pruneSnapshots(name);
+  return id;
+}
+
+export function listSnapshots(name) {
+  const dir = snapDir(name);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter(f => f.endsWith('.json'))
+    .map(f => {
+      const p = join(dir, f);
+      const st = statSync(p);
+      const id = f.replace(/\.json$/, '');
+      let rows = null;
+      try { rows = JSON.parse(readFileSync(p, 'utf-8')).rows?.length ?? null; } catch { /* ignore */ }
+      return { id, ts: st.mtime.toISOString(), bytes: st.size, rows };
+    })
+    .sort((a, b) => (a.ts < b.ts ? 1 : -1)); // nejnovější první
+}
+
+export function readSnapshot(name, id) {
+  const p = join(snapDir(name), `${id}.json`);
+  if (!existsSync(p)) return null;
+  try { return JSON.parse(readFileSync(p, 'utf-8')); } catch { return null; }
+}
+
+// GFS prune: zachová nejnovější/den (5 dní), nejnovější/týden (3 týdny),
+// nejnovější/měsíc (1 měsíc); starší smaže. Vždy ponechá nejnovější snapshot.
+function pruneSnapshots(name) {
+  const dir = snapDir(name);
+  if (!existsSync(dir)) return;
+  const files = readdirSync(dir).filter(f => f.endsWith('.json'));
+  const items = files.map(f => ({ f, d: new Date(statSync(join(dir, f)).mtime) }))
+    .sort((a, b) => b.d - a.d); // nejnovější první
+  if (items.length === 0) return;
+
+  const now = Date.now();
+  const DAY = 86400000;
+  const keep = new Set();
+  const seen = { week: new Set(), month: new Set() };
+  const isoWeek = d => {
+    const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const day = (t.getUTCDay() + 6) % 7;
+    t.setUTCDate(t.getUTCDate() - day + 3);
+    const first = new Date(Date.UTC(t.getUTCFullYear(), 0, 4));
+    return `${t.getUTCFullYear()}-${Math.round(((t - first) / DAY - 3 + ((first.getUTCDay() + 6) % 7)) / 7) + 1}`;
+  };
+
+  keep.add(items[0].f); // vždy nejnovější
+  for (const { f, d } of items) {
+    const ageDays = (now - d.getTime()) / DAY;
+    const weekKey = isoWeek(d);
+    const monthKey = d.toISOString().slice(0, 7);
+    if (ageDays <= 5) {
+      keep.add(f);                                   // posledních 5 dní — vše
+    } else if (ageDays <= 26) {                      // ~3 týdny — týdně
+      if (!seen.week.has(weekKey)) { seen.week.add(weekKey); keep.add(f); }
+    } else if (ageDays <= 60) {                      // ~1 měsíc — měsíčně
+      if (!seen.month.has(monthKey)) { seen.month.add(monthKey); keep.add(f); }
+    }
+  }
+  for (const { f } of items) {
+    if (!keep.has(f)) { try { unlinkSync(join(dir, f)); } catch { /* ignore */ } }
+  }
+}
+
+// ─── Audit log admin akcí ───────────────────────────────────────────────────────
+
+const AUDIT_FILE = join(DATA_DIR, '.audit.jsonl');
+
+export function appendAudit(entry) {
+  try {
+    appendFileSync(AUDIT_FILE, JSON.stringify({ ts: new Date().toISOString(), ...entry }) + '\n', 'utf-8');
+  } catch (err) {
+    console.error('[audit] zápis selhal:', err.message);
+  }
+}
+
+export function readAudit(limit = 200) {
+  if (!existsSync(AUDIT_FILE)) return [];
+  const lines = readFileSync(AUDIT_FILE, 'utf-8').split('\n').filter(Boolean);
+  const out = [];
+  for (let i = lines.length - 1; i >= 0 && out.length < limit; i--) {
+    try { out.push(JSON.parse(lines[i])); } catch { /* ignore */ }
+  }
+  return out;
 }
 
 // ─── Reload registry ───────────────────────────────────────────────────────────

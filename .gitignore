@@ -5,6 +5,11 @@ server/logs/
 # Admin perzistentní data (Docker volume)
 server/data/
 *.schema.json.tmp
+# Admin snapshoty + audit (vznikají v DATA_DIR; v dev = public/)
+.snapshots/
+public/.snapshots/
+.audit.jsonl
+public/.audit.jsonl
 *.log
 npm-debug.log*
 yarn-debug.log*

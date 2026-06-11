@@ -1,5 +1,18 @@
 # Changelog
 
+## V150626 — Admin: bezpečnost, produktivita, zálohy (2026-06-15)
+
+### Nové funkce
+- **Bezpečné ukládání** — před uložením souhrn („uloží se N řádků") + validace (duplicitní/prázdný klíč, nečíselné hodnoty v číselných sloupcích); `beforeunload` varování při neuložených změnách
+- **Produktivita v tabulce** — řazení klikem na hlavičku (asc/desc/off), filtry jednotlivých sloupců, najít & nahradit (napříč sloupci), hromadné akce na výběru (smazat řádky / vyplnit hodnotou), zpět `Ctrl/⌘+Z`, sticky sloupec čísla řádku
+- **Zálohy & rollback** — snapshoty po každém uložení s GFS retencí (vše 5 dní, týdně 3 týdny, měsíčně 1 měsíc); obnova na libovolnou verzi (před obnovou se aktuální stav zazálohuje); ruční „Zálohovat teď"
+- **Audit log** — přehled admin akcí (uložení/záloha/obnova/master CSV)
+- **Prohlížeč hlavní DB** — read-only hledání v master CSV přímo v adminu
+
+### Backend
+- `dataStore.js` — snapshoty (`.snapshots/`), GFS prune, audit (`.audit.jsonl`); nejsou veřejné ani v GitHub záloze
+- Endpointy `/api/admin/snapshots/*`, `/api/admin/audit`, `/api/admin/master-search`
+
 ## V140626 — Admin dashboard rozšíření (2026-06-14)
 
 Rozšíření admin prostředí o Excel-like tabulku, logy AI, upload hlavní DB a poznámky k řádkům.
