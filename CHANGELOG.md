@@ -1,5 +1,27 @@
 # Changelog
 
+## V130626 — Správa databází / admin (2026-06-13)
+
+Nová záložka **🛠️ Správa DB** pro tabulkovou správu databází Vodiče, Kabely a Sypký materiál.
+
+### Nové funkce
+
+**Admin správa databází**
+- Nová záložka 🛠️ Správa DB (viditelná jen když je nastaven `VITE_BACKEND_URL`), chráněná heslem přes backend (`ADMIN_PASSWORD`)
+- Tabulkový editor: editace buněk, přidávání/mazání/duplikace řádků, fulltextové hledání a stránkování
+- Správa sloupců: přidání nového sloupce, smazání sloupce, nastavení popisku, typu (text / číslo / ano-ne) a příznaku „filtrovatelný"
+- Import CSV (nahradit / přidat), export CSV i JSON pro další práci v jiných programech
+- Backend je nově zdroj pravdy — databáze se ukládají do perzistentního `DATA_DIR` a po editaci se obnoví vyhledávací indexy Karel Bota
+
+**Dynamické filtry**
+- Sloupec označený v adminu jako „filtrovatelný" se automaticky zobrazí jako filtr ve vyhledávání (Vodiče & Kabely, Sypký materiál) — např. nový sloupec „Nákupčí"
+- Vyhledávací UI načítá živá data z backendu (`/api/db/:name`) s fallbackem na statické JSON
+
+### Backend
+- `dataStore.js` — sdílené čtení/zápis databází + schémat, reload registry indexů
+- Endpointy `GET /api/db`, `GET /api/db/:name`, `GET /api/db/:name/schema`, `POST /api/admin/login`, `PUT /api/admin/db/:name`
+- Docker: perzistentní volume `./data:/app/data` + seed výchozích dat při prvním startu (`entrypoint.sh`)
+
 ## V120626 — Sypký materiál (2026-06-12)
 
 Nová karta **📦 Sypký materiál** vedle Vodičů & Kabelů — databáze kanban materiálu s filtrováním a vyhledáváním.

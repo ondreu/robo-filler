@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Copy, Check, Loader2, Search, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { type WireArticle, type CableArticle, loadWiresRaw, loadCables } from '../utils/csvParser';
+import { type WireArticle, type CableArticle, loadWiresRaw, loadCables, loadSchema } from '../utils/csvParser';
+import { DynamicFilters } from './DynamicFilters';
+import { applyDynamicFilters, type DbSchema, type DbRow, type DynamicFilterState } from '../utils/dbSchema';
 
 // ─── Wire constants ───────────────────────────────────────────────────────────
 
@@ -465,6 +467,12 @@ export function WireCableSearch() {
   const [kabelRetiez, setKabelRetiez] = useState<'' | 'ANO' | 'NE'>('');
   const [kabelOlej, setKabelOlej] = useState<'' | 'ANO' | 'NE'>('');
 
+  // Dynamické filtry řízené schématem (sloupce přidané v adminu)
+  const [wireSchema, setWireSchema] = useState<DbSchema | null>(null);
+  const [cableSchema, setCableSchema] = useState<DbSchema | null>(null);
+  const [wireDyn, setWireDyn] = useState<DynamicFilterState>({});
+  const [cableDyn, setCableDyn] = useState<DynamicFilterState>({});
+
   useEffect(() => {
     setLoading(true);
     Promise.all([loadWiresRaw(), loadCables()]).then(([w, c]) => {
@@ -472,6 +480,8 @@ export function WireCableSearch() {
       setCables(c);
       setLoading(false);
     });
+    loadSchema('wires').then(setWireSchema);
+    loadSchema('cables').then(setCableSchema);
   }, []);
 
   // ── Derived options ────────────────────────────────────────────────────
@@ -513,8 +523,9 @@ export function WireCableSearch() {
       const s = w.skupinaDleTypu ?? '';
       return wireSkupina.some(key => WIRE_SKUPINY.find(g => g.key === key)?.match(s));
     });
+    r = applyDynamicFilters(r as unknown as DbRow[], wireSchema, wireDyn) as unknown as WireArticle[];
     return r;
-  }, [wires, wireQuery, wirePrurez, wireBarva, wireSkupina, wireVyrobce]);
+  }, [wires, wireQuery, wirePrurez, wireBarva, wireSkupina, wireVyrobce, wireSchema, wireDyn]);
 
   const filteredCables = useMemo(() => {
     let r = cables;
@@ -529,22 +540,25 @@ export function WireCableSearch() {
     if (kabelBezhal)          r = r.filter(c => c.bezhalogenovy === kabelBezhal);
     if (kabelRetiez)          r = r.filter(c => c.retiez === kabelRetiez);
     if (kabelOlej)            r = r.filter(c => c.olej === kabelOlej);
+    r = applyDynamicFilters(r as unknown as DbRow[], cableSchema, cableDyn) as unknown as CableArticle[];
     return r;
-  }, [cables, cableQuery, kabelPocetZil, kabelPrurez, kabelStineni, kabelMaterial, kabelVyrobce, kabelCerts, kabelAdvCerts, kabelBezhal, kabelRetiez, kabelOlej]);
+  }, [cables, cableQuery, kabelPocetZil, kabelPrurez, kabelStineni, kabelMaterial, kabelVyrobce, kabelCerts, kabelAdvCerts, kabelBezhal, kabelRetiez, kabelOlej, cableSchema, cableDyn]);
 
   // ── Reset ─────────────────────────────────────────────────────────────
 
   const resetWireFilters = () => {
-    setWireQuery(''); setWirePrurez([]); setWireBarva([]); setWireSkupina([]); setWireVyrobce([]);
+    setWireQuery(''); setWirePrurez([]); setWireBarva([]); setWireSkupina([]); setWireVyrobce([]); setWireDyn({});
   };
   const resetCableFilters = () => {
     setCableQuery(''); setKabelPocetZil([]); setKabelPrurez([]); setKabelStineni('');
     setKabelMaterial([]); setKabelVyrobce([]); setKabelCerts([]);
-    setKabelAdvCerts([]); setKabelBezhal(''); setKabelRetiez(''); setKabelOlej('');
+    setKabelAdvCerts([]); setKabelBezhal(''); setKabelRetiez(''); setKabelOlej(''); setCableDyn({});
   };
 
-  const wireFiltersActive = !!(wireQuery || wirePrurez.length || wireBarva.length || wireSkupina.length || wireVyrobce.length);
-  const cableFiltersActive = !!(cableQuery || kabelPocetZil.length || kabelPrurez.length || kabelStineni || kabelMaterial.length || kabelVyrobce.length || kabelCerts.length || kabelAdvCerts.length || kabelBezhal || kabelRetiez || kabelOlej);
+  const wireDynActive = Object.values(wireDyn).some(a => a.length > 0);
+  const cableDynActive = Object.values(cableDyn).some(a => a.length > 0);
+  const wireFiltersActive = !!(wireQuery || wirePrurez.length || wireBarva.length || wireSkupina.length || wireVyrobce.length || wireDynActive);
+  const cableFiltersActive = !!(cableQuery || kabelPocetZil.length || kabelPrurez.length || kabelStineni || kabelMaterial.length || kabelVyrobce.length || kabelCerts.length || kabelAdvCerts.length || kabelBezhal || kabelRetiez || kabelOlej || cableDynActive);
 
   const total = subMode === 'wire' ? filteredWires.length : filteredCables.length;
   const displayed = subMode === 'wire' ? filteredWires.slice(0, 150) : filteredCables.slice(0, 150);
@@ -654,6 +668,7 @@ export function WireCableSearch() {
               selected={wireVyrobce}
               onToggle={v => setWireVyrobce(toggle(wireVyrobce, v))}
             />
+            <DynamicFilters schema={wireSchema} items={wires as unknown as DbRow[]} value={wireDyn} onChange={setWireDyn} accent="teal" />
           </>
         ) : (
           <>
@@ -737,6 +752,7 @@ export function WireCableSearch() {
                 </div>
               )}
             </div>
+            <DynamicFilters schema={cableSchema} items={cables as unknown as DbRow[]} value={cableDyn} onChange={setCableDyn} accent="teal" />
           </>
         )}
       </div>

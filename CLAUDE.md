@@ -24,7 +24,12 @@ Nástroj pro vyhledávání průmyslových artiklů a sestavení kusovníků. In
 | `src/components/ZbomEditor.tsx` | ZBOM tabulkový editor |
 | `src/components/HowItWorks.tsx` | Modal „Jak funguju?" |
 | `src/components/Changelog.tsx` | Modal se záznamy změn — verze `VDDMMYY` |
+| `src/components/AdminPanel.tsx` | Admin správa databází (mód `admin`) — tabulkový editor, CRUD řádků/sloupců, schéma, CSV/JSON import/export, heslo |
+| `src/components/DynamicFilters.tsx` | Dynamické filtry řízené schématem (sloupce `filterable:true`) — KanbanSearch + WireCableSearch |
 | `src/utils/bomExport.ts` | `ImportResult` typ + helpers pro ZBOM import |
+| `src/utils/dbSchema.ts` | Typy schématu (`DbColumn`, `DbSchema`), inference, `applyDynamicFilters`, `cellToFilterString` |
+| `src/utils/adminApi.ts` | API klient pro admin (login, fetchDb, saveDb, listDatabases) |
+| `src/utils/dbCsv.ts` | CSV parse/serialize + download helper pro admin |
 | `src/types.ts` | `BomRow`, `BomHeader` typy |
 
 ### Backend (`server/src/`)
@@ -37,7 +42,9 @@ Nástroj pro vyhledávání průmyslových artiklů a sestavení kusovníků. In
 | `server/src/manufacturers.js` | `MANUFACTURER_DOCS`, `resolveManufacturerKey`, `resolveManufacturersByCategory` — zahrnuje LAPP, Helukabel, HUBER+SUHNER, Nexans |
 | `server/src/abbreviations.js` | Průmyslové zkratky pro Karel Bot |
 | `server/src/guidedSearch.js` | Řízený vyhledávač — fáze initial/questioning, generace termínů, synthesize s doporučeními |
-| `server/src/wireSearch.js` | Vyhledávač pro Vodič DB (wires.json) — BM25 + wildcard + fuzzy, exportuje `searchWires` |
+| `server/src/wireSearch.js` | Vyhledávač pro Vodič DB (wires.json) — BM25 + wildcard + fuzzy, exportuje `searchWires`; `reloadWires()` po editaci |
+| `server/src/cableSearch.js` | Vyhledávač pro Kabely (cables.json); `reloadCables()` po editaci |
+| `server/src/dataStore.js` | Sdílený sklad admin databází — `readRows/writeRows`, `readSchema/writeSchema`, inference, `registerReload` (reload indexů po zápisu) |
 
 ## API endpointy
 
@@ -47,6 +54,11 @@ Nástroj pro vyhledávání průmyslových artiklů a sestavení kusovníků. In
 | `POST /api/bom-build` | SSE | AI stavba kusovníku — progress events per řádek |
 | `POST /api/bom-post-check` | JSON | Post-search clarification check (≥3 nenalezených) |
 | `POST /api/bom-check` | JSON | Pre-search clarification (starý endpoint, stále funkční) |
+| `GET /api/db` | JSON | Seznam databází (wires/cables/kanban) |
+| `GET /api/db/:name` | JSON | Živá data + schéma databáze (čte frontend vyhledávání) |
+| `GET /api/db/:name/schema` | JSON | Jen schéma (pro dynamické filtry) |
+| `POST /api/admin/login` | JSON | Ověření admin hesla (`ADMIN_PASSWORD`) |
+| `PUT /api/admin/db/:name` | JSON | Uložení dat a/nebo schématu (hlavička `x-admin-password`) |
 
 ### SSE event typy (`/api/bom-build`)
 ```
@@ -77,6 +89,21 @@ input → processing → post_check → clarifying → results
 ### Formát kusovníku (ZBOM)
 L/T řádky odpovídají SAP ZBOM formátu — L = materiál, T = text/placeholder.
 `buildImportResult()` převede `BomResultRow[]` → `ImportResult` pro ZBOM editor.
+
+## Admin — Správa databází
+
+### Architektura
+- **Backend je zdroj pravdy** pro `wires.json` / `cables.json` / `kanban.json`. `dataStore.js` čte/zapisuje do `DATA_DIR` (atomicky přes `.tmp` + rename).
+- **Schéma** se ukládá vedle dat jako `<name>.schema.json` (`{ columns: [{ key, label, type, filterable }] }`). Když chybí, odvodí se z dat (`inferSchema`); `reconcileSchema` doplní nové klíče a zachová nastavení.
+- **Reload indexů** — `wireSearch`/`cableSearch` registrují reloader přes `registerReload(name, fn)`; `writeRows` po zápisu zavolá příslušný reloader, takže Karel Bot vidí změny bez restartu. Kanban nemá backend index → reload se přeskočí.
+- **Frontend** — vyhledávací loadery (`loadWiresRaw`, `loadCables`, `loadKanban`) preferují backend `/api/db/:name`, fallback na statický JSON v `public/`. `loadSchema(name)` načte schéma pro dynamické filtry.
+- **Dynamické filtry** — `DynamicFilters` vykreslí chip filtr pro každý sloupec s `filterable:true`; `applyDynamicFilters` aplikuje (AND mezi sloupci, OR uvnitř). Kurátorované filtry v KanbanSearch/WireCableSearch zůstávají, dynamické se přidávají navíc.
+
+### Důležité
+- **Heslo** — `ADMIN_PASSWORD` (env na serveru). Bez něj admin endpointy vrací 503 a záložka v UI se zobrazí jen když je nastaven `VITE_BACKEND_URL`. Heslo se posílá hlavičkou `x-admin-password`, klient ho drží v `sessionStorage` (`robo-filler-admin-pw`).
+- **Persistence v Dockeru** — `DATA_DIR=/app/data` je perzistentní volume (`./data:/app/data`). `entrypoint.sh` naseeduje výchozí data z `/app/seed` jen pro chybějící soubory → editace přežijí auto-update image (watchtower).
+- **Mazání sloupce** odstraní klíč i ze všech řádků (jinak by ho `reconcileSchema` při uložení znovu obnovil).
+- **Export** CSV/JSON je čistě klientský (ke stažení), neslouží ke commitu — slouží pro práci v jiných programech.
 
 ## Changelog konvence
 

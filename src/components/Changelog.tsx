@@ -10,6 +10,19 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V130626',
+    date: '13. 6. 2026',
+    major: true,
+    changes: [
+      'Správa databází (admin) — nová záložka 🛠️ Správa DB pro úpravu databází Vodiče, Kabely a Sypký materiál jako tabulky (chráněno heslem přes backend)',
+      'Admin: přidávání/mazání řádků i sloupců, editace buněk, duplikace řádků, fulltextové hledání a stránkování',
+      'Admin: u každého sloupce lze nastavit popisek, typ (text / číslo / ano-ne) a příznak „filtrovatelný"',
+      'Dynamické filtry — sloupec označený jako filtrovatelný se automaticky objeví jako filtr ve vyhledávání (např. přidám sloupec „Nákupčí" → vyskočí filtr)',
+      'Admin: import a export CSV, export JSON pro práci v jiných programech',
+      'Databáze se nově načítají živě z backendu (zdroj pravdy) — úpravy se projeví okamžitě; při nedostupnosti backendu fallback na statická data',
+    ],
+  },
+  {
     version: 'V120626',
     date: '12. 6. 2026',
     major: true,

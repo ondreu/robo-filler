@@ -1,8 +1,6 @@
 import Fuse from 'fuse.js';
-import { readFileSync } from 'fs';
+import { readRows, registerReload, DATA_DIR } from './dataStore.js';
 import { join } from 'path';
-
-const DATA_DIR = process.env.DATA_DIR ?? join(import.meta.dirname, '../../public');
 
 const BM25_K1 = 1.5;
 const BM25_B  = 0.75;
@@ -27,17 +25,7 @@ function stripDiacriticChars(str) {
   return result;
 }
 
-function loadWires() {
-  try {
-    const content = readFileSync(join(DATA_DIR, 'wires.json'), 'utf-8');
-    return JSON.parse(content);
-  } catch {
-    console.warn('[wireSearch] Could not load wires.json');
-    return [];
-  }
-}
-
-const allWires = loadWires();
+let allWires = readRows('wires');
 if (allWires.length === 0) {
   console.error(`[wireSearch] CHYBA: wires.json nenalezen! Očekávaná cesta: ${join(DATA_DIR, 'wires.json')}`);
 } else {
@@ -95,7 +83,15 @@ function lowerBound(arr, prefix) {
   return lo;
 }
 
-const bm25Idx = buildBM25Index(allWires);
+let bm25Idx = buildBM25Index(allWires);
+
+// Obnoví data i index po editaci přes admin (volá dataStore).
+export function reloadWires() {
+  allWires = readRows('wires');
+  bm25Idx = buildBM25Index(allWires);
+  console.log(`[wireSearch] Reloaded ${allWires.length} wire articles`);
+}
+registerReload('wires', reloadWires);
 
 function bm25Search(query, topN, mfrFilter) {
   const { invertedIndex, sortedTokens, docLengths, avgDL, N } = bm25Idx;

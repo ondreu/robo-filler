@@ -1,19 +1,7 @@
-import { readFileSync } from 'fs';
 import { join } from 'path';
+import { readRows, registerReload, DATA_DIR } from './dataStore.js';
 
-const DATA_DIR = process.env.DATA_DIR ?? join(import.meta.dirname, '../../public');
-
-function loadCables() {
-  try {
-    const content = readFileSync(join(DATA_DIR, 'cables.json'), 'utf-8');
-    const data = JSON.parse(content);
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
-}
-
-const allCables = loadCables();
+let allCables = readRows('cables');
 if (allCables.length === 0) {
   console.error(`[cableSearch] CHYBA: cables.json nenalezen! Očekávaná cesta: ${join(DATA_DIR, 'cables.json')}`);
 } else {
@@ -185,7 +173,15 @@ function buildCableBM25Index() {
   return { invertedIndex, sortedTokens, docLengths, avgDL, N };
 }
 
-const cableBM25 = allCables.length > 0 ? buildCableBM25Index() : null;
+let cableBM25 = allCables.length > 0 ? buildCableBM25Index() : null;
+
+// Obnoví data i index po editaci přes admin (volá dataStore).
+export function reloadCables() {
+  allCables = readRows('cables');
+  cableBM25 = allCables.length > 0 ? buildCableBM25Index() : null;
+  console.log(`[cableSearch] Reloaded ${allCables.length} cable articles`);
+}
+registerReload('cables', reloadCables);
 
 function bm25SearchCables(query, topN, mfrFilter) {
   if (!cableBM25) return [];
