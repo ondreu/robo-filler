@@ -387,6 +387,7 @@ function App() {
           </div>
           <div className="flex bg-surface0 rounded-2xl p-1 gap-1">
             <button
+              id="onb-wirecable"
               onClick={() => setAppMode('wirecable')}
               className={`px-5 py-2 rounded-xl font-medium transition-all ${
                 appMode === 'wirecable'
@@ -397,6 +398,7 @@ function App() {
               🔌 Vodiče &amp; Kabely
             </button>
             <button
+              id="onb-kanban"
               onClick={() => setAppMode('kanban')}
               className={`px-5 py-2 rounded-xl font-medium transition-all ${
                 appMode === 'kanban'

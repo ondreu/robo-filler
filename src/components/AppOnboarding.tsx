@@ -1,6 +1,6 @@
 import { useState, useLayoutEffect, useMemo, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowRight, ArrowLeft, X, Search, Layers, Sparkles, Table2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, X, Search, Layers, Sparkles, Table2, Cable, Package } from 'lucide-react';
 
 export const APP_ONBOARDING_KEY = 'app-onboarding-v1';
 const CARD_W = 360;
@@ -45,11 +45,29 @@ const STEPS: StepDef[] = [
     nextClass: 'bg-mauve text-crust hover:bg-mauve/90',
   },
   {
+    targetId: 'onb-wirecable',
+    iconClass: 'text-teal',
+    icon: <Cable size={20} />,
+    title: '🔌 Vodiče & Kabely',
+    body: 'Samostatná databáze vodičů a kabelů (přes 600 artiklů). Hledej podle průřezu, barvy nebo skupiny. Výrobci: LAPP, Helukabel, HUBER+SUHNER, Nexans.',
+    ringHex: '#94e2d5',
+    nextClass: 'bg-teal text-crust hover:bg-teal/90',
+  },
+  {
+    targetId: 'onb-kanban',
+    iconClass: 'text-peach',
+    icon: <Package size={20} />,
+    title: '📦 Sypký materiál',
+    body: 'Kanban databáze sypkého materiálu — šrouby, matice, kabelbindy a další drobné položky (přes 500 artiklů). Filtry podle kategorie, provedení a barvy dle DIN.',
+    ringHex: '#fab387',
+    nextClass: 'bg-peach text-crust hover:bg-peach/90',
+  },
+  {
     targetId: 'onb-aimode',
     iconClass: 'text-mauve',
     icon: <Sparkles size={20} />,
     title: '✨ AI mód',
-    body: 'Tři AI nástroje na jednom místě:\n• Běžný (Karel Bot) — dotazy k aplikaci, obecná pomoc\n• Řízený — doporučený způsob hledání komponent (jistič, stykač, svorka…)\n• AI stavba kusovníku — experimentální, pro sestavení BOM z typových označení',
+    body: 'Tři AI nástroje na jednom místě:\n• Karel Bot — dotazy k aplikaci, obecná pomoc\n• Řízený — doporučený způsob hledání komponent (jistič, stykač, svorka…)\n• Stavba kusovníku — experimentální, pro sestavení BOM z typových označení',
     ringHex: '#cba6f7',
     nextClass: 'bg-mauve text-crust hover:bg-mauve/90',
   },
@@ -58,7 +76,7 @@ const STEPS: StepDef[] = [
     iconClass: 'text-teal',
     icon: <Table2 size={20} />,
     title: 'Tabulkové zpracování (ZBOM)',
-    body: 'Editor pro sestavení výstupního kusovníku ve formátu SAP ZBOM. Zadáš artikl, aplikace doplní popis z databáze. Podporuje více záložek, undo (Ctrl+Z) a export do TXT / Excel.',
+    body: 'Editor pro sestavení výstupního kusovníku ve formátu SAP ZBOM. Zadáš artikl, aplikace doplní popis z databáze. Více záložek, undo (Ctrl+Z), export do TXT a Excel.',
     ringHex: '#94e2d5',
     nextClass: 'bg-teal text-crust hover:bg-teal/90',
   },

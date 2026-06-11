@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Loader2, Upload, RefreshCw, Database, AlertTriangle, CheckCircle2, Search, X, Download } from 'lucide-react';
-import { fetchMasterCsvInfo, uploadMasterCsv, downloadMasterCsv, masterSearch, type MasterCsvInfo } from '../utils/adminApi';
+import { Loader2, Upload, RefreshCw, Database, AlertTriangle, CheckCircle2, Search, X } from 'lucide-react';
+import { fetchMasterCsvInfo, uploadMasterCsv, masterSearch, type MasterCsvInfo } from '../utils/adminApi';
 import type { DbRow } from '../utils/dbSchema';
 
 function fmtBytes(n: number): string {
@@ -32,7 +32,6 @@ export function AdminMasterCsv({ password }: { password: string }) {
   const [info, setInfo] = useState<MasterCsvInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState<'main' | 'effi' | null>(null);
-  const [downloading, setDownloading] = useState<'main' | 'effi' | null>(null);
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
   const refs = { main: useRef<HTMLInputElement>(null), effi: useRef<HTMLInputElement>(null) };
@@ -60,18 +59,6 @@ export function AdminMasterCsv({ password }: { password: string }) {
   }, [password]);
 
   useEffect(() => { load(); }, [load]);
-
-  const onDownload = async (which: 'main' | 'effi') => {
-    setDownloading(which); setError('');
-    try {
-      const filename = which === 'main' ? 'master-data.csv' : 'master-data-effi.csv';
-      await downloadMasterCsv(password, which, filename);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Download selhal.');
-    } finally {
-      setDownloading(null);
-    }
-  };
 
   const onPick = async (which: 'main' | 'effi', file: File) => {
     if (!confirm(`Nahradit ${which === 'main' ? 'hlavní' : 'Effretikon'} databázi souborem „${file.name}" (${fmtBytes(file.size)})?\n\nProjeví se okamžitě ve vyhledávání i Karel Botovi.`)) return;
@@ -132,25 +119,14 @@ export function AdminMasterCsv({ password }: { password: string }) {
                   className="hidden"
                   onChange={e => { const file = e.target.files?.[0]; if (file) onPick(which, file); e.target.value = ''; }}
                 />
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => refs[which].current?.click()}
-                    disabled={busy !== null || downloading !== null}
-                    className="flex items-center gap-2 bg-mauve/20 text-mauve border border-mauve/30 rounded-lg px-3 py-2 text-sm font-medium hover:bg-mauve/30 disabled:opacity-50"
-                  >
-                    {busy === which ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
-                    Nahradit
-                  </button>
-                  <button
-                    onClick={() => onDownload(which)}
-                    disabled={busy !== null || downloading !== null || !info?.files[which]?.bytes}
-                    className="flex items-center gap-2 bg-teal/20 text-teal border border-teal/30 rounded-lg px-3 py-2 text-sm font-medium hover:bg-teal/30 disabled:opacity-50"
-                    title="Stáhnout aktuální CSV ze serveru"
-                  >
-                    {downloading === which ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
-                    Záloha
-                  </button>
-                </div>
+                <button
+                  onClick={() => refs[which].current?.click()}
+                  disabled={busy !== null}
+                  className="flex items-center gap-2 bg-mauve/20 text-mauve border border-mauve/30 rounded-lg px-3 py-2 text-sm font-medium hover:bg-mauve/30 disabled:opacity-50"
+                >
+                  {busy === which ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
+                  Nahradit CSV
+                </button>
               </div>
             );
           })}
