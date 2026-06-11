@@ -22,6 +22,7 @@ import { AppOnboarding } from './components/AppOnboarding';
 import { WireCableSearch } from './components/WireCableSearch';
 import { KanbanSearch } from './components/KanbanSearch';
 import { AdminPanel } from './components/AdminPanel';
+import { MasterCsvPage } from './components/MasterCsvPage';
 import { VersionChecker } from './components/VersionChecker';
 import { ADMIN_AVAILABLE } from './utils/adminApi';
 
@@ -408,6 +409,18 @@ function App() {
             >
               📦 Sypký materiál
             </button>
+            {ADMIN_AVAILABLE && (
+              <button
+                onClick={() => setAppMode('master')}
+                className={`px-5 py-2 rounded-xl font-medium transition-all ${
+                  appMode === 'master'
+                    ? 'bg-teal text-crust shadow-lg'
+                    : 'text-subtext1 hover:text-text'
+                }`}
+              >
+                🗄 Master CSV
+              </button>
+            )}
           </div>
         </div>
 
@@ -415,7 +428,7 @@ function App() {
         {appMode === 'admin' && <AdminPanel />}
 
         {/* Data source toggle and advanced settings */}
-        {appMode !== 'admin' && (
+        {appMode !== 'admin' && appMode !== 'master' && (
         <div className="flex flex-wrap items-center justify-between gap-4 bg-mantle rounded-2xl p-4">
           <DataSourceToggle
             dataSource={dataSource}
@@ -502,7 +515,7 @@ function App() {
         )}
 
         {/* Loading state */}
-        {isLoading && appMode !== 'admin' && (
+        {isLoading && appMode !== 'admin' && appMode !== 'master' && (
           <div className="bg-mantle rounded-2xl p-8 flex flex-col items-center justify-center gap-4">
             <Loader2 className="text-mauve animate-spin" size={48} />
             <p className="text-subtext1">Načítám databázi...</p>
@@ -606,6 +619,8 @@ function App() {
             {appMode === 'wirecable' && <WireCableSearch />}
 
             {appMode === 'kanban' && <KanbanSearch />}
+
+            {appMode === 'master' && <MasterCsvPage />}
 
             {appMode === 'single' && (
               <>

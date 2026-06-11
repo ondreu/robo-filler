@@ -200,7 +200,7 @@ export function DataGrid({
         onKeyDown={handleKeyDown}
         onCopy={handleCopy}
         onPaste={handlePaste}
-        className="overflow-x-auto focus:outline-none border-y border-surface1 select-none max-h-[70vh]"
+        className="overflow-x-auto focus:outline-none border-y border-surface1 select-none max-h-screen"
       >
       <table className="text-xs border-collapse w-full">
         <thead>
