@@ -38,7 +38,7 @@ function checkAdmin(req, res) {
   return true;
 }
 
-const APP_VERSION = process.env.APP_VERSION || 'V150626';
+const APP_VERSION = process.env.APP_VERSION || 'V120626';
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
