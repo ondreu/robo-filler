@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Sparkles, X, RefreshCw } from 'lucide-react';
 
 const BACKEND_URL = ((import.meta.env.VITE_BACKEND_URL as string | undefined) ?? '').trim().replace(/\/$/, '');
-const CLIENT_VERSION = 'V150626';
+const CLIENT_VERSION = 'V160626';
 
 export function VersionChecker() {
   const [newVersion, setNewVersion] = useState<string | null>(null);
