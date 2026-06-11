@@ -42,6 +42,7 @@ export function inferSchema(rows: DbRow[]): DbSchema {
   for (const row of rows) {
     if (row && typeof row === 'object') {
       for (const k of Object.keys(row)) {
+        if (k.startsWith('_')) continue; // interní klíče (např. _poznamka)
         if (!seen.has(k)) { seen.add(k); keys.push(k); }
       }
     }

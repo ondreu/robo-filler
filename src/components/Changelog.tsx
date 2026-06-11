@@ -10,6 +10,17 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V140626',
+    date: '14. 6. 2026',
+    major: true,
+    changes: [
+      'Admin: Excel-like tabulka — výběr více buněk myší, kopírování (Ctrl/⌘+C) a vkládání z Excelu (Ctrl/⌘+V), editace dvojklikem nebo psaním, mazání obsahu klávesou Del',
+      'Admin: prohlížeč logů AI chatů (Karel Bot / řízený / BOM) s filtrem a rozbalením detailu',
+      'Admin: nahrání nové verze hlavní databáze (master CSV) přímo v dashboardu — okamžitě se přeindexuje vyhledávání',
+      'Admin: pole „Poznámka" u každého řádku — jen pro admina, nikde jinde (ani ve veřejném API či záloze) viditelné',
+    ],
+  },
+  {
     version: 'V130626',
     date: '13. 6. 2026',
     major: true,

@@ -30,11 +30,66 @@ export async function listDatabases(): Promise<DbInfo[]> {
   }
 }
 
-export async function fetchDb(name: DbName): Promise<{ rows: DbRow[]; schema: DbSchema }> {
-  const res = await fetch(`${BACKEND_URL}/api/db/${name}`);
+export async function fetchDb(name: DbName, password: string): Promise<{ rows: DbRow[]; schema: DbSchema }> {
+  // Admin endpoint vrací plná data včetně interních klíčů (admin poznámky).
+  const res = await fetch(`${BACKEND_URL}/api/admin/db/${name}`, {
+    headers: { 'x-admin-password': password },
+  });
+  if (res.status === 401) throw new Error('Neplatné heslo — přihlas se znovu.');
   if (!res.ok) throw new Error(`Načtení databáze selhalo (${res.status}).`);
   const data = await res.json();
   return { rows: Array.isArray(data.rows) ? data.rows : [], schema: data.schema };
+}
+
+export interface ChatLogRecord {
+  ts: string;
+  type?: string;
+  message?: string;
+  phase?: string;
+  preferences?: string;
+  result?: unknown;
+  [k: string]: unknown;
+}
+
+export async function fetchLogs(password: string, opts: { limit?: number; type?: string } = {}): Promise<{ records: ChatLogRecord[]; total: number }> {
+  const params = new URLSearchParams();
+  if (opts.limit) params.set('limit', String(opts.limit));
+  if (opts.type && opts.type !== 'all') params.set('type', opts.type);
+  const res = await fetch(`${BACKEND_URL}/api/admin/logs?${params}`, {
+    headers: { 'x-admin-password': password },
+  });
+  if (res.status === 401) throw new Error('Neplatné heslo — přihlas se znovu.');
+  if (!res.ok) throw new Error(`Načtení logů selhalo (${res.status}).`);
+  return await res.json();
+}
+
+export interface MasterCsvInfo {
+  files: Record<'main' | 'effi', { name: string; bytes: number; modified: string | null }>;
+  articleCount: number;
+}
+
+export async function fetchMasterCsvInfo(password: string): Promise<MasterCsvInfo> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/master-csv`, {
+    headers: { 'x-admin-password': password },
+  });
+  if (res.status === 401) throw new Error('Neplatné heslo — přihlas se znovu.');
+  if (!res.ok) throw new Error(`Načtení info selhalo (${res.status}).`);
+  return await res.json();
+}
+
+export async function uploadMasterCsv(password: string, which: 'main' | 'effi', dataBase64: string): Promise<{ ok: boolean; articleCount: number }> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/master-csv/${which}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+    body: JSON.stringify({ dataBase64 }),
+  });
+  if (res.status === 401) throw new Error('Neplatné heslo — přihlas se znovu.');
+  if (!res.ok) {
+    let msg = `Upload selhal (${res.status}).`;
+    try { const j = await res.json(); if (j.error) msg = j.error; } catch { /* ignore */ }
+    throw new Error(msg);
+  }
+  return await res.json();
 }
 
 export async function saveDb(

@@ -44,7 +44,8 @@ jobs:
               echo "::warning::$db vrátil 0 řádků — přeskakuji (nepřepisuji zálohu)."
               continue
             fi
-            printf '%s' "$resp" | jq '.rows'   > "public/$db.json"
+            # Odstraň interní klíče (prefix _, např. admin poznámky) — do veřejného repa nepatří
+            printf '%s' "$resp" | jq '[.rows[] | with_entries(select(.key | startswith("_") | not))]' > "public/$db.json"
             printf '%s' "$resp" | jq '.schema' > "public/$db.schema.json"
             echo "$db: $count řádků zazálohováno."
           done

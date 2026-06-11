@@ -1,5 +1,19 @@
 # Changelog
 
+## V140626 — Admin dashboard rozšíření (2026-06-14)
+
+Rozšíření admin prostředí o Excel-like tabulku, logy AI, upload hlavní DB a poznámky k řádkům.
+
+### Nové funkce
+- **Excel-like tabulka** — výběr více buněk (tažením/Shift), kopírování `Ctrl/⌘+C` (TSV), vkládání z Excelu `Ctrl/⌘+V` (přetečení vytvoří nové řádky), editace dvojklikem/psaním, `Del` smaže obsah
+- **Logy AI chatů** — nová sekce „AI logy": Karel Bot / řízený / BOM, filtr dle typu, rozbalení detailu záznamu (`GET /api/admin/logs`)
+- **Nahrání hlavní DB (master CSV)** — sekce „Hlavní DB": nahrání nové verze `master-data.csv` / `master-data-effi.csv` přímo v adminu, okamžitý reindex vyhledávání; auto-detekce kódování (UTF-8 / win-1250)
+- **Poznámka k řádku** — interní pole pro admina (`_poznamka`); ve veřejném API i v GitHub záloze se odstraňuje, nikde jinde se nezobrazuje
+
+### Backend
+- `search.js` — `reloadMaster()` po nahrání CSV; `GET /api/admin/db/:name` (plná data vč. poznámek), veřejný `GET /api/db/:name` interní klíče odstraní
+- `entrypoint.sh` — master CSV se nově seeduje jen když chybí (upload přes admin přežije update image)
+
 ## V130626 — Správa databází / admin (2026-06-13)
 
 Nová záložka **🛠️ Správa DB** pro tabulkovou správu databází Vodiče, Kabely a Sypký materiál.

@@ -1,15 +1,21 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
-  Lock, Save, Plus, Trash2, Copy, Download, Upload, RefreshCw, Loader2,
-  Search, X, Settings2, Filter, AlertTriangle, CheckCircle2,
+  Lock, Save, Plus, Trash2, Download, Upload, RefreshCw, Loader2,
+  Search, X, Settings2, Filter, AlertTriangle, CheckCircle2, Table2, MessageSquare, Database,
 } from 'lucide-react';
 import type { DbName, DbRow, DbSchema, DbColumn, ColumnType, DbInfo } from '../utils/dbSchema';
 import { coerceCell } from '../utils/dbSchema';
 import { ADMIN_AVAILABLE, loginAdmin, listDatabases, fetchDb, saveDb } from '../utils/adminApi';
 import { rowsToCsv, rowsToJson, parseCsv, downloadFile } from '../utils/dbCsv';
+import { DataGrid, type GridCol } from './DataGrid';
+import { AdminLogs } from './AdminLogs';
+import { AdminMasterCsv } from './AdminMasterCsv';
 
 const PW_KEY = 'robo-filler-admin-pw';
 const PAGE_SIZE = 25;
+const NOTE_KEY = '_poznamka';        // interní admin poznámka k řádku
+
+type SubView = 'data' | 'logs' | 'master';
 
 // ─── Login ──────────────────────────────────────────────────────────────────
 
@@ -177,6 +183,7 @@ export function AdminPanel() {
   const [page, setPage] = useState(0);
   const [showSchema, setShowSchema] = useState(false);
   const [importData, setImportData] = useState<DbRow[] | null>(null);
+  const [subView, setSubView] = useState<SubView>('data');
 
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -194,12 +201,13 @@ export function AdminPanel() {
   }, [password]);
 
   const loadDb = useCallback((name: DbName) => {
+    if (!password) return;
     setLoading(true); setError(''); setSavedMsg('');
-    fetchDb(name)
+    fetchDb(name, password)
       .then(({ rows, schema }) => { setRows(rows); setSchema(schema); setDirty(false); setPage(0); setQuery(''); })
       .catch(e => setError(e.message ?? 'Chyba načtení.'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [password]);
 
   useEffect(() => { if (password) loadDb(dbName); }, [password, dbName, loadDb]);
 
@@ -217,9 +225,16 @@ export function AdminPanel() {
   const addRow = () => {
     const blank: DbRow = {};
     schema.columns.forEach(c => { blank[c.key] = null; });
+    blank[NOTE_KEY] = null;
     setRows(prev => [...prev, blank]);
     setDirty(true); setSavedMsg('');
     setPage(Math.floor((rows.length) / PAGE_SIZE));
+  };
+
+  const appendRows = (newRows: DbRow[]) => {
+    if (!newRows.length) return;
+    setRows(prev => [...prev, ...newRows]);
+    setDirty(true); setSavedMsg('');
   };
 
   const deleteRow = (idx: number) => {
@@ -308,6 +323,12 @@ export function AdminPanel() {
   const safePage = Math.min(page, totalPages - 1);
   const pageRows = filtered.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
+  // Sloupce gridu = sloupce schématu + virtuální sloupec admin poznámky
+  const gridColumns: GridCol[] = useMemo(() => [
+    ...schema.columns.map(c => ({ key: c.key, label: c.label, type: c.type })),
+    { key: NOTE_KEY, label: 'Poznámka (admin)', type: 'text' as ColumnType, note: true },
+  ], [schema]);
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   if (!ADMIN_AVAILABLE) {
@@ -327,143 +348,143 @@ export function AdminPanel() {
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 justify-between bg-mantle rounded-2xl p-3">
-        <div className="flex bg-surface0 rounded-xl p-1 gap-1">
-          {databases.map(d => (
-            <button
-              key={d.name}
-              onClick={() => {
-                if (dirty && !confirm('Máš neuložené změny. Přepnout databázi a zahodit je?')) return;
-                setDbName(d.name);
-              }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                dbName === d.name ? 'bg-mauve text-crust' : 'text-subtext1 hover:text-text'
-              }`}
-            >
-              {d.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => setShowSchema(s => !s)} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5">
-            <Settings2 size={14} /> Sloupce
-          </button>
-          <button onClick={() => fileRef.current?.click()} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5">
-            <Upload size={14} /> Import CSV
-          </button>
-          <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) onFilePicked(f); e.target.value = ''; }} />
-          <button onClick={exportCsv} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5">
-            <Download size={14} /> CSV
-          </button>
-          <button onClick={exportJson} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5">
-            <Download size={14} /> JSON
-          </button>
-          <button onClick={() => loadDb(dbName)} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5" title="Znovu načíst ze serveru">
-            <RefreshCw size={14} />
-          </button>
+      {/* Sub-navigace */}
+      <div className="flex bg-surface0 rounded-2xl p-1 gap-1 w-fit">
+        {([
+          { v: 'data', label: 'Databáze', icon: Table2 },
+          { v: 'logs', label: 'AI logy', icon: MessageSquare },
+          { v: 'master', label: 'Hlavní DB', icon: Database },
+        ] as const).map(({ v, label, icon: Icon }) => (
           <button
-            onClick={save}
-            disabled={!dirty || saving}
-            className={`flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-semibold transition-colors ${
-              dirty ? 'bg-green text-crust hover:bg-green/90' : 'bg-surface0 text-overlay0'
+            key={v}
+            onClick={() => setSubView(v)}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              subView === v ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
             }`}
           >
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            Uložit{dirty ? ' •' : ''}
+            <Icon size={15} /> {label}
           </button>
-        </div>
+        ))}
       </div>
 
-      {/* Status */}
-      {error && <div className="bg-red/10 border border-red/30 text-red text-sm rounded-xl px-4 py-2">{error}</div>}
-      {savedMsg && <div className="flex items-center gap-2 bg-green/10 border border-green/30 text-green text-sm rounded-xl px-4 py-2"><CheckCircle2 size={15} /> {savedMsg}</div>}
+      {subView === 'logs' && <AdminLogs password={password} />}
+      {subView === 'master' && <AdminMasterCsv password={password} />}
 
-      {showSchema && (
-        <SchemaEditor schema={schema} onChange={setSchemaCols} onAddColumn={addColumn} onDeleteColumn={deleteColumn} />
-      )}
-
-      {/* Search + add row + count */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-overlay1 pointer-events-none" />
-          <input
-            value={query}
-            onChange={e => { setQuery(e.target.value); setPage(0); }}
-            placeholder="Hledat ve všech sloupcích…"
-            className="w-full bg-surface0 border border-surface2 rounded-xl pl-8 pr-8 py-2 text-sm text-text placeholder:text-overlay0 focus:outline-none focus:border-mauve/50"
-          />
-          {query && <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-overlay1 hover:text-red"><X size={13} /></button>}
-        </div>
-        <span className="text-sm text-subtext1"><span className="text-text font-medium">{filtered.length}</span> / {rows.length} řádků</span>
-        <button onClick={addRow} className="flex items-center gap-1 bg-mauve/20 text-mauve border border-mauve/30 rounded-lg px-3 py-2 text-xs font-medium hover:bg-mauve/30">
-          <Plus size={14} /> Řádek
-        </button>
-      </div>
-
-      {/* Table */}
-      {loading ? (
-        <div className="flex justify-center py-12"><Loader2 className="animate-spin text-mauve" /></div>
-      ) : (
-        <div className="overflow-x-auto border border-surface1 rounded-xl">
-          <table className="text-xs border-collapse min-w-full">
-            <thead>
-              <tr className="bg-surface0">
-                <th className="sticky left-0 z-10 bg-surface0 px-2 py-2 text-overlay0 font-medium border-b border-surface2">#</th>
-                {schema.columns.map(c => (
-                  <th key={c.key} className="px-2 py-2 text-left text-subtext1 font-semibold border-b border-surface2 whitespace-nowrap">
-                    <span className="flex items-center gap-1">
-                      {c.label}
-                      {c.filterable && <Filter size={10} className="text-teal" />}
-                    </span>
-                  </th>
-                ))}
-                <th className="px-2 py-2 border-b border-surface2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {pageRows.map(({ row, idx }) => (
-                <tr key={idx} className="even:bg-surface0/40 hover:bg-surface0">
-                  <td className="sticky left-0 z-10 bg-base px-2 py-1 text-overlay0 font-mono">{idx + 1}</td>
-                  {schema.columns.map(c => (
-                    <td key={c.key} className="px-1 py-0.5 border-b border-surface1/50">
-                      <input
-                        value={row?.[c.key] == null ? '' : String(row[c.key])}
-                        onChange={e => updateCell(idx, c.key, e.target.value)}
-                        className={`bg-transparent border border-transparent hover:border-surface2 focus:border-mauve/50 rounded px-1.5 py-1 text-text focus:outline-none focus:bg-surface0 min-w-[80px] ${c.type === 'number' ? 'text-right font-mono w-24' : 'w-40'}`}
-                      />
-                    </td>
-                  ))}
-                  <td className="px-1 py-0.5 whitespace-nowrap">
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => duplicateRow(idx)} className="text-overlay1 hover:text-teal" title="Duplikovat"><Copy size={13} /></button>
-                      <button onClick={() => deleteRow(idx)} className="text-overlay1 hover:text-red" title="Smazat řádek"><Trash2 size={13} /></button>
-                    </div>
-                  </td>
-                </tr>
+      {subView === 'data' && (
+        <>
+          {/* Toolbar */}
+          <div className="flex flex-wrap items-center gap-2 justify-between bg-mantle rounded-2xl p-3">
+            <div className="flex bg-surface0 rounded-xl p-1 gap-1">
+              {databases.map(d => (
+                <button
+                  key={d.name}
+                  onClick={() => {
+                    if (dirty && !confirm('Máš neuložené změny. Přepnout databázi a zahodit je?')) return;
+                    setDbName(d.name);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    dbName === d.name ? 'bg-mauve text-crust' : 'text-subtext1 hover:text-text'
+                  }`}
+                >
+                  {d.label}
+                </button>
               ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            </div>
 
-      {/* Pagination */}
-      {!loading && totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 text-sm">
-          <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={safePage === 0} className="px-3 py-1 rounded-lg bg-surface0 disabled:opacity-40 text-subtext1">‹</button>
-          <span className="text-subtext1">Strana {safePage + 1} / {totalPages}</span>
-          <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={safePage >= totalPages - 1} className="px-3 py-1 rounded-lg bg-surface0 disabled:opacity-40 text-subtext1">›</button>
-        </div>
-      )}
+            <div className="flex items-center gap-2 flex-wrap">
+              <button onClick={() => setShowSchema(s => !s)} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5">
+                <Settings2 size={14} /> Sloupce
+              </button>
+              <button onClick={() => fileRef.current?.click()} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5">
+                <Upload size={14} /> Import CSV
+              </button>
+              <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) onFilePicked(f); e.target.value = ''; }} />
+              <button onClick={exportCsv} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5">
+                <Download size={14} /> CSV
+              </button>
+              <button onClick={exportJson} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5">
+                <Download size={14} /> JSON
+              </button>
+              <button onClick={() => loadDb(dbName)} className="flex items-center gap-1 bg-surface0 hover:bg-surface1 text-text text-xs rounded-lg px-3 py-1.5" title="Znovu načíst ze serveru">
+                <RefreshCw size={14} />
+              </button>
+              <button
+                onClick={save}
+                disabled={!dirty || saving}
+                className={`flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-semibold transition-colors ${
+                  dirty ? 'bg-green text-crust hover:bg-green/90' : 'bg-surface0 text-overlay0'
+                }`}
+              >
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                Uložit{dirty ? ' •' : ''}
+              </button>
+            </div>
+          </div>
 
-      {importData && (
-        <ImportModal
-          count={importData.length}
-          onClose={() => setImportData(null)}
-          onReplace={() => applyImport('replace')}
-          onAppend={() => applyImport('append')}
-        />
+          {/* Status */}
+          {error && <div className="bg-red/10 border border-red/30 text-red text-sm rounded-xl px-4 py-2">{error}</div>}
+          {savedMsg && <div className="flex items-center gap-2 bg-green/10 border border-green/30 text-green text-sm rounded-xl px-4 py-2"><CheckCircle2 size={15} /> {savedMsg}</div>}
+
+          {showSchema && (
+            <SchemaEditor schema={schema} onChange={setSchemaCols} onAddColumn={addColumn} onDeleteColumn={deleteColumn} />
+          )}
+
+          {/* Search + add row + count */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-overlay1 pointer-events-none" />
+              <input
+                value={query}
+                onChange={e => { setQuery(e.target.value); setPage(0); }}
+                placeholder="Hledat ve všech sloupcích…"
+                className="w-full bg-surface0 border border-surface2 rounded-xl pl-8 pr-8 py-2 text-sm text-text placeholder:text-overlay0 focus:outline-none focus:border-mauve/50"
+              />
+              {query && <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-overlay1 hover:text-red"><X size={13} /></button>}
+            </div>
+            <span className="text-sm text-subtext1"><span className="text-text font-medium">{filtered.length}</span> / {rows.length} řádků</span>
+            <button onClick={addRow} className="flex items-center gap-1 bg-mauve/20 text-mauve border border-mauve/30 rounded-lg px-3 py-2 text-xs font-medium hover:bg-mauve/30">
+              <Plus size={14} /> Řádek
+            </button>
+          </div>
+
+          <p className="text-[11px] text-overlay0">
+            Excel-like: táhni myší pro výběr buněk · <kbd className="bg-surface1 px-1 rounded">Ctrl/⌘+C</kbd> kopírovat · <kbd className="bg-surface1 px-1 rounded">Ctrl/⌘+V</kbd> vložit z Excelu · dvojklik nebo Enter pro editaci · <kbd className="bg-surface1 px-1 rounded">Del</kbd> smazat obsah
+          </p>
+
+          {/* Grid */}
+          {loading ? (
+            <div className="flex justify-center py-12"><Loader2 className="animate-spin text-mauve" /></div>
+          ) : (
+            <DataGrid
+              columns={gridColumns}
+              pageRows={pageRows}
+              pageOffset={safePage * PAGE_SIZE}
+              onCellChange={updateCell}
+              onDeleteRow={deleteRow}
+              onDuplicateRow={duplicateRow}
+              onAppendRows={appendRows}
+              resetKey={`${dbName}-${safePage}-${query}-${schema.columns.length}`}
+            />
+          )}
+
+          {/* Pagination */}
+          {!loading && totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 text-sm">
+              <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={safePage === 0} className="px-3 py-1 rounded-lg bg-surface0 disabled:opacity-40 text-subtext1">‹</button>
+              <span className="text-subtext1">Strana {safePage + 1} / {totalPages}</span>
+              <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={safePage >= totalPages - 1} className="px-3 py-1 rounded-lg bg-surface0 disabled:opacity-40 text-subtext1">›</button>
+            </div>
+          )}
+
+          {importData && (
+            <ImportModal
+              count={importData.length}
+              onClose={() => setImportData(null)}
+              onReplace={() => applyImport('replace')}
+              onAppend={() => applyImport('append')}
+            />
+          )}
+        </>
       )}
     </div>
   );

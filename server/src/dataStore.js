@@ -60,6 +60,8 @@ export function inferSchema(rows) {
   for (const row of rows) {
     if (row && typeof row === 'object') {
       for (const k of Object.keys(row)) {
+        // klíče s prefixem `_` jsou interní (např. _poznamka admina) — nejsou sloupce
+        if (k.startsWith('_')) continue;
         if (!seen.has(k)) { seen.add(k); keys.push(k); }
       }
     }
