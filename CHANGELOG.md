@@ -1,5 +1,15 @@
 # Changelog
 
+## V160626 — Upozornění na verzi + admin vylepšení (2026-06-16)
+
+### Nové funkce
+- **Upozornění na novou verzi** — PWA prompt: při dostupné aktualizaci se zobrazí popup „Nová verze aplikace" s tlačítkem Aktualizovat (kontrola každou hodinu). `registerType` přepnut na `prompt`.
+- **Skrývání sloupců** — admin tabulka: tlačítko „Zobrazit" dočasně skryje vybrané sloupce (jen zobrazení, data zůstávají)
+- **Bez stránkování** — admin tabulka zobrazí všechny řádky na jedné stránce s vlastním scrollem
+- **Čitelné AI logy** — logy se vykreslí jako konverzace (chatové bubliny, markdown); surový JSON na klik
+- **Zálohy master CSV** — záložka Zálohy nově obsahuje cíle hlavní CSV (main/effi): snapshot při nahrání, obnova, stažení aktuální verze; volitelná denní GitHub záloha master CSV (secret `ADMIN_PASSWORD`)
+- **Snapshot před změnou + git-style audit** — snapshot se vytváří před každou změnou; audit ukazuje konkrétní diff (přidané/smazané řádky, změny buněk `from → to`)
+
 ## V150626 — Admin: bezpečnost, produktivita, zálohy (2026-06-15)
 
 ### Nové funkce

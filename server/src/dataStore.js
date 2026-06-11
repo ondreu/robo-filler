@@ -157,7 +157,7 @@ export function snapshotDb(name) {
   const id = tsToId();
   const file = join(dir, `${id}.json`);
   writeFileSync(file, JSON.stringify({ ts: new Date().toISOString(), rows, schema }), 'utf-8');
-  pruneSnapshots(name);
+  pruneDir(dir);
   return id;
 }
 
@@ -183,14 +183,13 @@ export function readSnapshot(name, id) {
   try { return JSON.parse(readFileSync(p, 'utf-8')); } catch { return null; }
 }
 
-// GFS prune: zachová nejnovější/den (5 dní), nejnovější/týden (3 týdny),
-// nejnovější/měsíc (1 měsíc); starší smaže. Vždy ponechá nejnovější snapshot.
-function pruneSnapshots(name) {
-  const dir = snapDir(name);
+// GFS prune: vše posledních 5 dní, týdně 3 týdny, měsíčně 1 měsíc; starší smaže.
+// Vždy ponechá nejnovější. Funguje nad libovolným adresářem časově pojmenovaných souborů.
+function pruneDir(dir) {
   if (!existsSync(dir)) return;
-  const files = readdirSync(dir).filter(f => f.endsWith('.json'));
+  const files = readdirSync(dir);
   const items = files.map(f => ({ f, d: new Date(statSync(join(dir, f)).mtime) }))
-    .sort((a, b) => b.d - a.d); // nejnovější první
+    .sort((a, b) => b.d - a.d);
   if (items.length === 0) return;
 
   const now = Date.now();
@@ -205,22 +204,75 @@ function pruneSnapshots(name) {
     return `${t.getUTCFullYear()}-${Math.round(((t - first) / DAY - 3 + ((first.getUTCDay() + 6) % 7)) / 7) + 1}`;
   };
 
-  keep.add(items[0].f); // vždy nejnovější
+  keep.add(items[0].f);
   for (const { f, d } of items) {
     const ageDays = (now - d.getTime()) / DAY;
     const weekKey = isoWeek(d);
     const monthKey = d.toISOString().slice(0, 7);
-    if (ageDays <= 5) {
-      keep.add(f);                                   // posledních 5 dní — vše
-    } else if (ageDays <= 26) {                      // ~3 týdny — týdně
-      if (!seen.week.has(weekKey)) { seen.week.add(weekKey); keep.add(f); }
-    } else if (ageDays <= 60) {                      // ~1 měsíc — měsíčně
-      if (!seen.month.has(monthKey)) { seen.month.add(monthKey); keep.add(f); }
-    }
+    if (ageDays <= 5) keep.add(f);
+    else if (ageDays <= 26) { if (!seen.week.has(weekKey)) { seen.week.add(weekKey); keep.add(f); } }
+    else if (ageDays <= 60) { if (!seen.month.has(monthKey)) { seen.month.add(monthKey); keep.add(f); } }
   }
   for (const { f } of items) {
     if (!keep.has(f)) { try { unlinkSync(join(dir, f)); } catch { /* ignore */ } }
   }
+}
+
+// ─── Snapshoty master CSV (hlavní DB) ──────────────────────────────────────────
+const MASTER_SNAP = which => join(SNAP_ROOT, `master-${which}`);
+
+export function snapshotMaster(which, srcPath) {
+  if (!existsSync(srcPath)) return null;
+  const dir = MASTER_SNAP(which);
+  mkdirSync(dir, { recursive: true });
+  const id = tsToId();
+  writeFileSync(join(dir, `${id}.csv`), readFileSync(srcPath));
+  pruneDir(dir);
+  return id;
+}
+
+export function listMasterSnapshots(which) {
+  const dir = MASTER_SNAP(which);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter(f => f.endsWith('.csv')).map(f => {
+    const st = statSync(join(dir, f));
+    return { id: f.replace(/\.csv$/, ''), ts: st.mtime.toISOString(), bytes: st.size };
+  }).sort((a, b) => (a.ts < b.ts ? 1 : -1));
+}
+
+export function readMasterSnapshotPath(which, id) {
+  const p = join(MASTER_SNAP(which), `${id}.csv`);
+  return existsSync(p) ? p : null;
+}
+
+// ─── Diff řádků (git-style) pro audit ───────────────────────────────────────────
+// Vrací { added, removed, modified } počty + ukázku změn (cap).
+export function diffRows(oldRows, newRows, idKey) {
+  const key = r => (r && r[idKey] != null ? String(r[idKey]) : null);
+  const oldMap = new Map(); for (const r of oldRows) { const k = key(r); if (k != null) oldMap.set(k, r); }
+  const newMap = new Map(); for (const r of newRows) { const k = key(r); if (k != null) newMap.set(k, r); }
+  const added = [], removed = [], modified = [];
+  const CAP = 200;
+  for (const [k, r] of newMap) if (!oldMap.has(k)) added.push(k);
+  for (const [k] of oldMap) if (!newMap.has(k)) removed.push(k);
+  for (const [k, nr] of newMap) {
+    const or = oldMap.get(k);
+    if (!or) continue;
+    const changes = [];
+    const keys = new Set([...Object.keys(or), ...Object.keys(nr)]);
+    for (const f of keys) {
+      const a = or[f], b = nr[f];
+      if ((a ?? '') !== (b ?? '') && String(a ?? '') !== String(b ?? '')) {
+        changes.push({ key: f, from: a ?? null, to: b ?? null });
+      }
+    }
+    if (changes.length) modified.push({ id: k, changes: changes.slice(0, 20) });
+    if (modified.length >= CAP) break;
+  }
+  return {
+    added: added.length, removed: removed.length, modified: modified.length,
+    addedIds: added.slice(0, CAP), removedIds: removed.slice(0, CAP), changes: modified.slice(0, CAP),
+  };
 }
 
 // ─── Audit log admin akcí ───────────────────────────────────────────────────────

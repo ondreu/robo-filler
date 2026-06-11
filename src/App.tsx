@@ -6,6 +6,7 @@ import { BomWizard } from './components/BomWizard';
 import { Changelog } from './components/Changelog';
 import { HowItWorks } from './components/HowItWorks';
 import { InstallPrompt } from './components/InstallPrompt';
+import { UpdatePrompt } from './components/UpdatePrompt';
 import { loadCSV, loadCSVMeta, loadWires } from './utils/csvParser';
 import { search, getUniqueManufacturers, searchSuggestions } from './utils/searchEngine';
 import { SearchBar } from './components/SearchBar';
@@ -778,6 +779,7 @@ function App() {
 
       {BACKEND_URL && <ChatBot onTeleportToAi={() => setAppMode('ai')} />}
       <AppOnboarding onSwitchToAi={() => setAppMode('ai')} />
+      <UpdatePrompt />
 
       {zbomEditorOpen && zbomTabs.length > 0 && activeZbomTabId && (() => {
         const activeTab = zbomTabs.find(t => t.id === activeZbomTabId);

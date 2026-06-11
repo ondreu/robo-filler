@@ -6,7 +6,8 @@ import { handleGuidedChat } from './guidedSearch.js';
 import { COMPONENT_CATEGORIES } from './componentGuide.js';
 import { logRecord } from './collector.js';
 import { DATABASES, isValidDb, getDb, writeRows, writeSchema, readSchema, DATA_DIR,
-  snapshotDb, listSnapshots, readSnapshot, appendAudit, readAudit } from './dataStore.js';
+  snapshotDb, listSnapshots, readSnapshot, appendAudit, readAudit, diffRows,
+  snapshotMaster, listMasterSnapshots, readMasterSnapshotPath } from './dataStore.js';
 import { reloadMaster, getArticleCount, searchTerm } from './search.js';
 import { readFileSync, writeFileSync, existsSync, statSync, renameSync } from 'fs';
 import { join } from 'path';
@@ -264,14 +265,17 @@ app.put('/api/admin/db/:name', (req, res) => {
 
   const { rows, schema } = req.body ?? {};
   try {
+    const before = getDb(name);
+    snapshotDb(name); // snapshot PŘED změnou (rollback na předchozí stav)
     if (schema !== undefined) writeSchema(name, schema);
     if (rows !== undefined) {
       if (!Array.isArray(rows)) return res.status(400).json({ error: 'rows musí být pole.' });
       writeRows(name, rows);
     }
     const saved = getDb(name);
-    snapshotDb(name); // verzovací snapshot po uložení
-    appendAudit({ action: 'save', db: name, rows: saved.rows.length });
+    const idKey = DATABASES[name].idKey;
+    const diff = Array.isArray(rows) ? diffRows(before.rows, rows, idKey) : null;
+    appendAudit({ action: 'save', db: name, rows: saved.rows.length, diff });
     res.json({ ok: true, count: saved.rows.length, schema: saved.schema });
   } catch (err) {
     console.error('[db:put]', err);
@@ -391,9 +395,11 @@ app.put('/api/admin/master-csv/:which', (req, res) => {
   try {
     const buf = Buffer.from(dataBase64, 'base64');
     if (buf.length === 0) return res.status(400).json({ error: 'Prázdný soubor.' });
-    const tmp = join(DATA_DIR, MASTER_FILES[which] + '.tmp');
+    const dest = join(DATA_DIR, MASTER_FILES[which]);
+    snapshotMaster(which, dest); // snapshot předchozí verze před přepsáním
+    const tmp = dest + '.tmp';
     writeFileSync(tmp, buf);
-    renameSync(tmp, join(DATA_DIR, MASTER_FILES[which]));
+    renameSync(tmp, dest);
     const count = reloadMaster();
     appendAudit({ action: 'master-csv', which, bytes: buf.length, articleCount: count });
     res.json({ ok: true, articleCount: count });
@@ -401,6 +407,44 @@ app.put('/api/admin/master-csv/:which', (req, res) => {
     console.error('[admin:master-csv]', err);
     res.status(500).json({ error: 'Chyba při ukládání CSV.' });
   }
+});
+
+// Snapshoty master CSV
+app.get('/api/admin/master-csv/:which/snapshots', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const { which } = req.params;
+  if (!MASTER_FILES[which]) return res.status(404).json({ error: 'Neznámý soubor.' });
+  res.json({ snapshots: listMasterSnapshots(which) });
+});
+
+app.post('/api/admin/master-csv/:which/restore/:id', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const { which, id } = req.params;
+  if (!MASTER_FILES[which]) return res.status(404).json({ error: 'Neznámý soubor.' });
+  const src = readMasterSnapshotPath(which, id);
+  if (!src) return res.status(404).json({ error: 'Snapshot nenalezen.' });
+  try {
+    const dest = join(DATA_DIR, MASTER_FILES[which]);
+    snapshotMaster(which, dest); // záloha aktuálního před obnovou
+    writeFileSync(dest, readFileSync(src));
+    const count = reloadMaster();
+    appendAudit({ action: 'master-restore', which, from: id, articleCount: count });
+    res.json({ ok: true, articleCount: count });
+  } catch (err) {
+    console.error('[master-restore]', err);
+    res.status(500).json({ error: 'Chyba při obnově.' });
+  }
+});
+
+// Stažení aktuálního master CSV (i pro GitHub zálohu)
+app.get('/api/admin/master-csv/:which/raw', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const { which } = req.params;
+  if (!MASTER_FILES[which]) return res.status(404).json({ error: 'Neznámý soubor.' });
+  const p = join(DATA_DIR, MASTER_FILES[which]);
+  if (!existsSync(p)) return res.status(404).json({ error: 'Soubor chybí.' });
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.send(readFileSync(p));
 });
 
 app.listen(PORT, () => {

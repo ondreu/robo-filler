@@ -26,7 +26,8 @@ Nástroj pro vyhledávání průmyslových artiklů a sestavení kusovníků. In
 | `src/components/Changelog.tsx` | Modal se záznamy změn — verze `VDDMMYY` |
 | `src/components/AdminPanel.tsx` | Admin správa databází (mód `admin`) — sub-navigace Databáze/AI logy/Hlavní DB, CRUD, schéma, CSV/JSON, heslo |
 | `src/components/DataGrid.tsx` | Excel-like grid pro admin — výběr buněk (drag/shift), kopírování (Ctrl+C → TSV), vkládání z Excelu (Ctrl+V), editace, sloupec admin poznámky |
-| `src/components/AdminLogs.tsx` | Prohlížeč logů AI chatů (chat/guided/bom) — čte `/api/admin/logs` |
+| `src/components/AdminLogs.tsx` | Prohlížeč logů AI chatů (chat/guided/bom) — čitelné chatové bubliny (react-markdown) + surový JSON, čte `/api/admin/logs` |
+| `src/components/UpdatePrompt.tsx` | Popup „nová verze aplikace" (PWA `useRegisterSW`, `registerType:'prompt'`), kontrola každou hodinu |
 | `src/components/AdminMasterCsv.tsx` | Nahrání nové verze master CSV (hlavní DB) + read-only prohlížeč hlavní DB — `/api/admin/master-csv`, `/api/admin/master-search` |
 | `src/components/AdminBackups.tsx` | Snapshoty/rollback (GFS retence) + audit log admin akcí — `/api/admin/snapshots`, `/api/admin/audit` |
 | `src/components/DynamicFilters.tsx` | Dynamické filtry řízené schématem (sloupce `filterable:true`) — KanbanSearch + WireCableSearch |
@@ -119,10 +120,14 @@ L/T řádky odpovídají SAP ZBOM formátu — L = materiál, T = text/placehold
 - **Admin poznámky k řádkům** — klíč `_poznamka` (prefix `_` = interní). `inferSchema` klíče s `_` ignoruje (nejsou sloupce/filtry), veřejný `GET /api/db/:name` i GitHub záloha je **odstraní** (`stripInternal`), admin je čte přes `GET /api/admin/db/:name`. V gridu jsou jako žlutý virtuální sloupec.
 - **AI logy** — `collector.js` zapisuje `server/logs/chats.jsonl`; `GET /api/admin/logs` čte posledních N (nejnovější první). Komponenta `AdminLogs`.
 - **Master CSV upload** — `AdminMasterCsv` pošle soubor jako base64 na `PUT /api/admin/master-csv/:which`; backend zapíše do `DATA_DIR` a zavolá `reloadMaster()` (search.js). `loadDataset` auto-detekuje kódování (UTF-8 / win-1250). Master CSV se nově aktualizuje takto (ne commitem do repa).
-- **Excel-like grid** (`DataGrid`) — výběr buněk myší/shift, Ctrl/⌘+C kopíruje výběr jako TSV, Ctrl/⌘+V vkládá z Excelu (přetečení = nové řádky), dvojklik/Enter edituje, Del maže obsah, klik na hlavičku řadí (asc/desc/off), sticky sloupec `#`, hromadné akce na výběru (smazat řádky / vyplnit hodnotou).
+- **Excel-like grid** (`DataGrid`) — bez stránkování (vše na jedné stránce, vlastní scroll); výběr buněk myší/shift, Ctrl/⌘+C kopíruje výběr jako TSV, Ctrl/⌘+V vkládá z Excelu (přetečení = nové řádky), dvojklik/Enter edituje, Del maže obsah, klik na hlavičku řadí (asc/desc/off), sticky sloupec `#`, hromadné akce na výběru (smazat řádky / vyplnit hodnotou).
+- **Skrývání sloupců** — tlačítko „Zobrazit" dočasně skryje sloupce (jen klient, `hiddenCols`); neovlivní data.
 - **Bezpečnost ukládání** — před uložením modal se souhrnem + validací (duplicitní/prázdný idKey, nečíselné hodnoty v číselných sloupcích); `beforeunload` varování při neuložených změnách.
 - **Produktivita** — `Ctrl/⌘+Z` undo (stack 50, mimo editaci inputu), filtry per sloupec, najít&nahradit (textová záměna napříč sloupci, lze vrátit).
-- **Snapshoty/rollback** — `dataStore` po každém uložení vytvoří snapshot do `DATA_DIR/.snapshots/<name>/`; GFS retence (vše posledních 5 dní, týdně 3 týdny, měsíčně 1 měsíc). Restore nejdřív zazálohuje aktuální stav. Snapshoty ani `.audit.jsonl` nejsou veřejné ani v GitHub záloze.
+- **Snapshoty/rollback** — snapshot se dělá **před každou změnou** (uložení i restore) do `DATA_DIR/.snapshots/<name>/`; master CSV do `.snapshots/master-<which>/` při nahrání. GFS retence (vše 5 dní, týdně 3 týdny, měsíčně 1 měsíc). Snapshoty ani `.audit.jsonl` nejsou veřejné ani v GitHub záloze.
+- **Audit + diff** — `diffRows(old,new,idKey)` spočítá git-style změny (přidané/smazané řádky, změny buněk `from→to`), uloží se do auditu; `AdminBackups` je vykreslí (`+`/`−`/`~`).
+- **Master CSV zálohy** — `AdminBackups` má cíle i pro master `main`/`effi` (snapshoty, restore, stažení aktuálního přes `/api/admin/master-csv/:which/raw`). GitHub denní záloha master CSV vyžaduje secret `ADMIN_PASSWORD` (jinak se přeskočí).
+- **Upozornění na novou verzi** — `UpdatePrompt` (PWA prompt režim) ukáže popup při dostupné aktualizaci; kontrola každou hodinu.
 - **Denní záloha na GitHub** — workflow `.github/workflows/backup-databases.yml` (cron 02:00 UTC + ruční spuštění) stáhne živá data z backendu (`GET /api/db/:name`) a commitne `public/<name>.json` + `public/<name>.schema.json` do repa. Pojistka: pokud DB vrátí 0 řádků, soubor se nepřepíše. Vyžaduje secret `VITE_BACKEND_URL` (veřejná URL API). Tím se admin editace verzují a zároveň slouží jako seed pro budoucí build image.
 
 ## Changelog konvence

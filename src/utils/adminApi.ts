@@ -114,12 +114,34 @@ export async function restoreSnapshot(name: DbName, password: string, id: string
   return await res.json();
 }
 
-export interface AuditRecord { ts: string; action: string; db?: string; rows?: number; which?: string; from?: string; [k: string]: unknown }
+export async function listMasterSnapshots(which: 'main' | 'effi', password: string): Promise<SnapshotInfo[]> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/master-csv/${which}/snapshots`, { headers: { 'x-admin-password': password } });
+  if (!res.ok) throw new Error(`Načtení snapshotů selhalo (${res.status}).`);
+  return (await res.json()).snapshots ?? [];
+}
+
+export async function restoreMasterSnapshot(which: 'main' | 'effi', password: string, id: string): Promise<{ articleCount: number }> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/master-csv/${which}/restore/${encodeURIComponent(id)}`, {
+    method: 'POST', headers: { 'x-admin-password': password },
+  });
+  if (!res.ok) throw new Error(`Obnova selhala (${res.status}).`);
+  return await res.json();
+}
+
+export interface ChangeDetail { id: string; changes: { key: string; from: unknown; to: unknown }[] }
+export interface AuditDiff { added: number; removed: number; modified: number; addedIds?: string[]; removedIds?: string[]; changes?: ChangeDetail[] }
+export interface AuditRecord { ts: string; action: string; db?: string; rows?: number; which?: string; from?: string; diff?: AuditDiff | null; [k: string]: unknown }
 
 export async function fetchAudit(password: string): Promise<AuditRecord[]> {
   const res = await fetch(`${BACKEND_URL}/api/admin/audit`, { headers: { 'x-admin-password': password } });
   if (!res.ok) throw new Error(`Načtení auditu selhalo (${res.status}).`);
   return (await res.json()).records ?? [];
+}
+
+export async function fetchMasterRaw(which: 'main' | 'effi', password: string): Promise<string> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/master-csv/${which}/raw`, { headers: { 'x-admin-password': password } });
+  if (!res.ok) throw new Error(`Stažení CSV selhalo (${res.status}).`);
+  return await res.text();
 }
 
 export async function masterSearch(password: string, q: string): Promise<DbRow[]> {

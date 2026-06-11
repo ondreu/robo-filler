@@ -10,6 +10,19 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V160626',
+    date: '16. 6. 2026',
+    major: true,
+    changes: [
+      'Upozornění na novou verzi — když je k dispozici aktualizace aplikace, vyskočí popup s tlačítkem „Aktualizovat"',
+      'Admin: možnost dočasně skrýt sloupce (tlačítko „Zobrazit") pro lepší orientaci',
+      'Admin: tabulka už není stránkovaná — všechny řádky na jedné stránce s plynulým scrollem',
+      'Admin: AI logy jsou nově čitelné jako konverzace (bubliny, formátovaný text) místo surového JSON (ten je stále k dispozici na klik)',
+      'Admin: zálohy zahrnují i hlavní CSV (Ústí i Effretikon) — snapshot při každém nahrání, obnova a stažení aktuální verze',
+      'Admin: snapshot se vytváří před každou změnou a audit ukazuje konkrétní změny (git styl: přidané/smazané řádky, úpravy buněk)',
+    ],
+  },
+  {
     version: 'V150626',
     date: '15. 6. 2026',
     major: true,

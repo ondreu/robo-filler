@@ -50,12 +50,34 @@ jobs:
             echo "$db: $count řádků zazálohováno."
           done
 
+      - name: Zálohovat master CSV (hlavní DB)
+        env:
+          BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: |
+          set -uo pipefail
+          if [ -z "${ADMIN_PASSWORD:-}" ]; then
+            echo "::notice::ADMIN_PASSWORD secret není nastaven — master CSV se nezálohuje."
+            exit 0
+          fi
+          base="${BACKEND_URL%/}"
+          for pair in "main:master-data.csv" "effi:master-data-effi.csv"; do
+            which="${pair%%:*}"; file="${pair##*:}"
+            tmp="$(mktemp)"
+            code="$(curl -s -o "$tmp" -w '%{http_code}' --max-time 120 -H "x-admin-password: $ADMIN_PASSWORD" "$base/api/admin/master-csv/$which/raw")"
+            if [ "$code" = "200" ] && [ -s "$tmp" ]; then
+              mv "$tmp" "public/$file"; echo "master $which zazálohován ($(wc -c < "public/$file") B)."
+            else
+              echo "::warning::master $which: HTTP $code — přeskakuji."; rm -f "$tmp"
+            fi
+          done
+
       - name: Commitnout změny
         run: |
           set -euo pipefail
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/*.json public/*.schema.json
+          git add public/*.json public/*.schema.json public/master-data*.csv
           if git diff --cached --quiet; then
             echo "Beze změn — nic ke commitu."
           else
