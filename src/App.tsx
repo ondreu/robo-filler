@@ -22,6 +22,7 @@ import { AppOnboarding } from './components/AppOnboarding';
 import { WireCableSearch } from './components/WireCableSearch';
 import { KanbanSearch } from './components/KanbanSearch';
 import { AdminPanel } from './components/AdminPanel';
+import { VersionChecker } from './components/VersionChecker';
 import { ADMIN_AVAILABLE } from './utils/adminApi';
 
 // Debounce hook
@@ -323,7 +324,7 @@ function App() {
               onClick={() => setAppMode(appMode === 'admin' ? 'single' : 'admin')}
               title="Správa databází"
               aria-label="Správa databází"
-              className={`p-2.5 rounded-xl transition-all ${
+              className={`ml-3 p-2.5 rounded-xl transition-all ${
                 appMode === 'admin'
                   ? 'bg-sky text-crust shadow-lg'
                   : 'bg-surface0 text-subtext1 hover:text-text hover:bg-surface1'
@@ -777,7 +778,8 @@ function App() {
       </div>
 
       {BACKEND_URL && <ChatBot onTeleportToAi={() => setAppMode('ai')} />}
-      <AppOnboarding onSwitchToAi={() => setAppMode('ai')} />
+      <AppOnboarding />
+      <VersionChecker />
 
       {zbomEditorOpen && zbomTabs.length > 0 && activeZbomTabId && (() => {
         const activeTab = zbomTabs.find(t => t.id === activeZbomTabId);

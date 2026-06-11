@@ -131,7 +131,7 @@ function StepCard({
   );
 }
 
-export function AppOnboarding({ onSwitchToAi }: { onSwitchToAi?: () => void }) {
+export function AppOnboarding() {
   const [done, setDone] = useState(() => localStorage.getItem(APP_ONBOARDING_KEY) === '1');
   const [stepIdx, setStepIdx] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
@@ -183,10 +183,6 @@ export function AppOnboarding({ onSwitchToAi }: { onSwitchToAi?: () => void }) {
 
   const next = () => {
     if (stepIdx < STEPS.length - 1) {
-      // When showing AI mode step, switch to AI mode
-      if (STEPS[stepIdx + 1].targetId === 'onb-aimode') {
-        onSwitchToAi?.();
-      }
       setStepIdx(i => i + 1);
     } else {
       finish();

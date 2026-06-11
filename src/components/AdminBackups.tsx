@@ -100,9 +100,19 @@ export function AdminBackups({ password, databases, onAfterRestore }: {
               <p className="text-sm text-subtext1">Žádné záznamy.</p>
             ) : audit.map((a, i) => (
               <div key={i} className="flex items-center gap-2 bg-surface0 rounded-lg px-3 py-1.5 text-xs">
-                <span className="text-subtext1 font-mono">{new Date(a.ts).toLocaleString('cs')}</span>
-                <span className="text-text">{ACTION_LABEL[a.action] ?? a.action}</span>
-                <span className="text-overlay0 ml-auto">{a.db ?? a.which ?? ''}{a.rows != null ? ` · ${a.rows} ř.` : ''}</span>
+                <span className="text-subtext1 font-mono shrink-0">{new Date(a.ts).toLocaleString('cs')}</span>
+                <span className="text-text shrink-0">{ACTION_LABEL[a.action] ?? a.action}</span>
+                <span className="text-overlay0 ml-auto flex items-center gap-1.5">
+                  {a.db ?? a.which ?? ''}
+                  {a.rows != null ? ` · ${a.rows} ř.` : ''}
+                  {a.diff && (
+                    <span className="font-mono ml-1">
+                      <span className="text-green">+{a.diff.added}</span>
+                      {' '}
+                      <span className="text-red">-{a.diff.removed}</span>
+                    </span>
+                  )}
+                </span>
               </div>
             ))}
           </div>
