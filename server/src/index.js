@@ -38,8 +38,14 @@ function checkAdmin(req, res) {
   return true;
 }
 
+const APP_VERSION = process.env.APP_VERSION || 'V150626';
+
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
+});
+
+app.get('/api/version', (_req, res) => {
+  res.json({ version: APP_VERSION });
 });
 
 app.post('/api/chat', async (req, res) => {
@@ -264,14 +270,30 @@ app.put('/api/admin/db/:name', (req, res) => {
 
   const { rows, schema } = req.body ?? {};
   try {
+    // Snapshot stavu PŘED zápisem — umožňuje rollback na předchozí verzi
+    snapshotDb(name);
+
+    // Diff: kolik řádků přibylo / ubylo (dle idKey)
+    let diff = null;
+    if (rows !== undefined && Array.isArray(rows)) {
+      const oldRows = getDb(name).rows;
+      const idKey = DATABASES[name]?.idKey;
+      if (idKey) {
+        const oldIds = new Set(oldRows.map(r => String(r[idKey] ?? '')).filter(Boolean));
+        const newIds = new Set(rows.map(r => String(r[idKey] ?? '')).filter(Boolean));
+        const added = rows.filter(r => { const id = String(r[idKey] ?? ''); return id && !oldIds.has(id); }).length;
+        const removed = oldRows.filter(r => { const id = String(r[idKey] ?? ''); return id && !newIds.has(id); }).length;
+        diff = { added, removed };
+      }
+    }
+
     if (schema !== undefined) writeSchema(name, schema);
     if (rows !== undefined) {
       if (!Array.isArray(rows)) return res.status(400).json({ error: 'rows musí být pole.' });
       writeRows(name, rows);
     }
     const saved = getDb(name);
-    snapshotDb(name); // verzovací snapshot po uložení
-    appendAudit({ action: 'save', db: name, rows: saved.rows.length });
+    appendAudit({ action: 'save', db: name, rows: saved.rows.length, ...(diff ? { diff } : {}) });
     res.json({ ok: true, count: saved.rows.length, schema: saved.schema });
   } catch (err) {
     console.error('[db:put]', err);
@@ -377,6 +399,16 @@ app.get('/api/admin/master-csv', (req, res) => {
       : { name, bytes: 0, modified: null };
   }
   res.json({ files: info, articleCount: getArticleCount() });
+});
+
+// Stažení aktuálního master CSV ze serveru
+app.get('/api/admin/master-csv/:which/download', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const { which } = req.params;
+  if (!MASTER_FILES[which]) return res.status(404).json({ error: 'Neznámý soubor (main|effi).' });
+  const p = join(DATA_DIR, MASTER_FILES[which]);
+  if (!existsSync(p)) return res.status(404).json({ error: 'Soubor neexistuje.' });
+  res.download(p, MASTER_FILES[which]);
 });
 
 // Nahrání nové verze master CSV. Tělo: { dataBase64 } (zachová přesné byty / kódování).

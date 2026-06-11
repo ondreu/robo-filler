@@ -114,12 +114,27 @@ export async function restoreSnapshot(name: DbName, password: string, id: string
   return await res.json();
 }
 
-export interface AuditRecord { ts: string; action: string; db?: string; rows?: number; which?: string; from?: string; [k: string]: unknown }
+export interface AuditRecord { ts: string; action: string; db?: string; rows?: number; which?: string; from?: string; diff?: { added: number; removed: number }; [k: string]: unknown }
 
 export async function fetchAudit(password: string): Promise<AuditRecord[]> {
   const res = await fetch(`${BACKEND_URL}/api/admin/audit`, { headers: { 'x-admin-password': password } });
   if (!res.ok) throw new Error(`Načtení auditu selhalo (${res.status}).`);
   return (await res.json()).records ?? [];
+}
+
+export async function downloadMasterCsv(password: string, which: 'main' | 'effi', filename: string): Promise<void> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/master-csv/${which}/download`, {
+    headers: { 'x-admin-password': password },
+  });
+  if (res.status === 401) throw new Error('Neplatné heslo — přihlas se znovu.');
+  if (!res.ok) throw new Error(`Download selhal (${res.status}).`);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export async function masterSearch(password: string, q: string): Promise<DbRow[]> {

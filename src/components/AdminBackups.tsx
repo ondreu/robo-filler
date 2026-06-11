@@ -1,7 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Loader2, RefreshCw, History, RotateCcw, Camera, ScrollText } from 'lucide-react';
+import { Loader2, RefreshCw, History, RotateCcw, Camera, ScrollText, Download, Database } from 'lucide-react';
 import type { DbName, DbInfo } from '../utils/dbSchema';
-import { listSnapshots, createSnapshot, restoreSnapshot, fetchAudit, type SnapshotInfo, type AuditRecord } from '../utils/adminApi';
+import { listSnapshots, createSnapshot, restoreSnapshot, fetchAudit, downloadMasterCsv, type SnapshotInfo, type AuditRecord } from '../utils/adminApi';
+
+const MASTER_FILES: { which: 'main' | 'effi'; label: string; filename: string }[] = [
+  { which: 'main', label: 'Ústí n. O. (master-data.csv)', filename: 'master-data.csv' },
+  { which: 'effi', label: 'Effretikon (master-data-effi.csv)', filename: 'master-data-effi.csv' },
+];
 
 const ACTION_LABEL: Record<string, string> = {
   save: 'Uložení', snapshot: 'Ruční záloha', restore: 'Obnova', 'master-csv': 'Master CSV',
@@ -17,6 +22,7 @@ export function AdminBackups({ password, databases, onAfterRestore }: {
   const [audit, setAudit] = useState<AuditRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [downloading, setDownloading] = useState<'main' | 'effi' | null>(null);
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
 
@@ -35,6 +41,13 @@ export function AdminBackups({ password, databases, onAfterRestore }: {
     try { setSnaps(await createSnapshot(db, password)); setMsg('Záloha vytvořena.'); }
     catch (e) { setError(e instanceof Error ? e.message : 'Chyba.'); }
     finally { setBusy(false); }
+  };
+
+  const onDownloadCsv = async (which: 'main' | 'effi', filename: string) => {
+    setDownloading(which); setError('');
+    try { await downloadMasterCsv(password, which, filename); }
+    catch (e) { setError(e instanceof Error ? e.message : 'Download selhal.'); }
+    finally { setDownloading(null); }
   };
 
   const restore = async (id: string) => {
@@ -100,14 +113,45 @@ export function AdminBackups({ password, databases, onAfterRestore }: {
               <p className="text-sm text-subtext1">Žádné záznamy.</p>
             ) : audit.map((a, i) => (
               <div key={i} className="flex items-center gap-2 bg-surface0 rounded-lg px-3 py-1.5 text-xs">
-                <span className="text-subtext1 font-mono">{new Date(a.ts).toLocaleString('cs')}</span>
-                <span className="text-text">{ACTION_LABEL[a.action] ?? a.action}</span>
-                <span className="text-overlay0 ml-auto">{a.db ?? a.which ?? ''}{a.rows != null ? ` · ${a.rows} ř.` : ''}</span>
+                <span className="text-subtext1 font-mono shrink-0">{new Date(a.ts).toLocaleString('cs')}</span>
+                <span className="text-text shrink-0">{ACTION_LABEL[a.action] ?? a.action}</span>
+                <span className="text-overlay0 ml-auto flex items-center gap-1.5">
+                  {a.db ?? a.which ?? ''}
+                  {a.rows != null ? ` · ${a.rows} ř.` : ''}
+                  {a.diff && (
+                    <span className="font-mono ml-1">
+                      <span className="text-green">+{a.diff.added}</span>
+                      {' '}
+                      <span className="text-red">-{a.diff.removed}</span>
+                    </span>
+                  )}
+                </span>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* Master CSV download */}
+      <div className="pt-3 border-t border-surface1 space-y-2">
+        <p className="text-xs text-overlay0 font-semibold uppercase tracking-wide flex items-center gap-1">
+          <Database size={12} /> Záloha master CSV
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {MASTER_FILES.map(({ which, label, filename }) => (
+            <button
+              key={which}
+              onClick={() => onDownloadCsv(which, filename)}
+              disabled={downloading !== null}
+              className="flex items-center gap-2 bg-teal/15 text-teal border border-teal/25 rounded-lg px-3 py-2 text-xs font-medium hover:bg-teal/25 disabled:opacity-50 transition-colors"
+            >
+              {downloading === which ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+              {label}
+            </button>
+          ))}
+        </div>
+        <p className="text-[11px] text-overlay0">Stáhne aktuální soubor přímo ze serveru (před nahráním nové verze).</p>
+      </div>
     </div>
   );
 }

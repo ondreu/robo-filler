@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Lock, Save, Plus, Trash2, Download, Upload, RefreshCw, Loader2,
   Search, X, Settings2, Filter, AlertTriangle, CheckCircle2, Table2, MessageSquare, Database,
-  History, Undo2, Replace, SlidersHorizontal,
+  History, Undo2, Replace, SlidersHorizontal, Eye, EyeOff,
 } from 'lucide-react';
 import type { DbName, DbRow, DbSchema, DbColumn, ColumnType, DbInfo } from '../utils/dbSchema';
 import { coerceCell } from '../utils/dbSchema';
@@ -14,7 +14,6 @@ import { AdminMasterCsv } from './AdminMasterCsv';
 import { AdminBackups } from './AdminBackups';
 
 const PW_KEY = 'robo-filler-admin-pw';
-const PAGE_SIZE = 25;
 const NOTE_KEY = '_poznamka';        // interní admin poznámka k řádku
 const UNDO_LIMIT = 50;
 
@@ -69,12 +68,14 @@ function LoginGate({ onAuth }: { onAuth: (pw: string) => void }) {
 // ─── Schema editor ────────────────────────────────────────────────────────────
 
 function SchemaEditor({
-  schema, onChange, onAddColumn, onDeleteColumn,
+  schema, onChange, onAddColumn, onDeleteColumn, hiddenCols, onToggleHidden,
 }: {
   schema: DbSchema;
   onChange: (cols: DbColumn[]) => void;
   onAddColumn: (key: string) => void;
   onDeleteColumn: (key: string) => void;
+  hiddenCols: Set<string>;
+  onToggleHidden: (key: string) => void;
 }) {
   const [newKey, setNewKey] = useState('');
 
@@ -86,10 +87,20 @@ function SchemaEditor({
       <div className="flex items-center gap-2 text-mauve">
         <Settings2 size={16} />
         <h3 className="text-sm font-semibold">Sloupce &amp; filtry</h3>
+        <span className="text-xs text-overlay0 ml-auto">Oko = dočasně skrýt sloupec</span>
       </div>
       <div className="space-y-2">
-        {schema.columns.map(col => (
-          <div key={col.key} className="flex flex-wrap items-center gap-2 bg-surface0 rounded-xl px-3 py-2">
+        {schema.columns.map(col => {
+          const hidden = hiddenCols.has(col.key);
+          return (
+          <div key={col.key} className={`flex flex-wrap items-center gap-2 rounded-xl px-3 py-2 ${hidden ? 'bg-surface0/40 opacity-60' : 'bg-surface0'}`}>
+            <button
+              onClick={() => onToggleHidden(col.key)}
+              className={`shrink-0 transition-colors ${hidden ? 'text-overlay0 hover:text-subtext1' : 'text-subtext1 hover:text-text'}`}
+              title={hidden ? 'Zobrazit sloupec' : 'Dočasně skrýt sloupec'}
+            >
+              {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
             <span className="font-mono text-xs text-overlay1 w-32 truncate" title={col.key}>{col.key}</span>
             <input
               value={col.label}
@@ -123,7 +134,8 @@ function SchemaEditor({
               <Trash2 size={14} />
             </button>
           </div>
-        ))}
+          );
+        })}
       </div>
       <div className="flex items-center gap-2 pt-1">
         <input
@@ -184,10 +196,10 @@ export function AdminPanel() {
   const [savedMsg, setSavedMsg] = useState('');
 
   const [query, setQuery] = useState('');
-  const [page, setPage] = useState(0);
   const [showSchema, setShowSchema] = useState(false);
   const [importData, setImportData] = useState<DbRow[] | null>(null);
   const [subView, setSubView] = useState<SubView>('data');
+  const [hiddenCols, setHiddenCols] = useState<Set<string>>(new Set());
 
   // #3 řazení + filtry sloupců + najít&nahradit
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -224,8 +236,9 @@ export function AdminPanel() {
     setLoading(true); setError(''); setSavedMsg('');
     fetchDb(name, password)
       .then(({ rows, schema }) => {
-        setRows(rows); setSchema(schema); setDirty(false); setPage(0); setQuery('');
+        setRows(rows); setSchema(schema); setDirty(false); setQuery('');
         setUndoStack([]); setSortKey(null); setSortDir(null); setColFilters({});
+        setHiddenCols(new Set());
       })
       .catch(e => setError(e.message ?? 'Chyba načtení.'))
       .finally(() => setLoading(false));
@@ -279,7 +292,6 @@ export function AdminPanel() {
     schema.columns.forEach(c => { blank[c.key] = null; });
     blank[NOTE_KEY] = null;
     commit([...rows, blank]);
-    setPage(Math.floor((rows.length) / PAGE_SIZE));
   };
 
   const appendRows = (newRows: DbRow[]) => {
@@ -361,7 +373,6 @@ export function AdminPanel() {
     if (!importData) return;
     setRows(prev => (mode === 'replace' ? importData : [...prev, ...importData]));
     setImportData(null); setDirty(true); setSavedMsg('');
-    setPage(0);
   };
 
   // ── Save (#2 validace + souhrn) ────────────────────────────────────────────
@@ -440,15 +451,21 @@ export function AdminPanel() {
     return r;
   }, [indexed, query, schema, colFilters, sortKey, sortDir, typeByKey]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages - 1);
-  const pageRows = filtered.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
+  const pageRows = filtered;
 
   // Sloupce gridu = sloupce schématu + virtuální sloupec admin poznámky
   const gridColumns: GridCol[] = useMemo(() => [
     ...schema.columns.map(c => ({ key: c.key, label: c.label, type: c.type })),
     { key: NOTE_KEY, label: 'Poznámka (admin)', type: 'text' as ColumnType, note: true },
   ], [schema]);
+
+  const visibleGridCols = useMemo(() =>
+    gridColumns.filter(c => !hiddenCols.has(c.key)),
+    [gridColumns, hiddenCols],
+  );
+
+  const toggleHidden = (key: string) =>
+    setHiddenCols(s => { const n = new Set(s); n.has(key) ? n.delete(key) : n.add(key); return n; });
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -564,7 +581,14 @@ export function AdminPanel() {
           {savedMsg && <div className="flex items-center gap-2 bg-green/10 border border-green/30 text-green text-sm rounded-xl px-4 py-2"><CheckCircle2 size={15} /> {savedMsg}</div>}
 
           {showSchema && (
-            <SchemaEditor schema={schema} onChange={setSchemaCols} onAddColumn={addColumn} onDeleteColumn={deleteColumn} />
+            <SchemaEditor
+              schema={schema}
+              onChange={setSchemaCols}
+              onAddColumn={addColumn}
+              onDeleteColumn={deleteColumn}
+              hiddenCols={hiddenCols}
+              onToggleHidden={toggleHidden}
+            />
           )}
 
           {showReplace && (
@@ -591,7 +615,7 @@ export function AdminPanel() {
                   <label className="text-[10px] text-overlay0 truncate max-w-[140px]">{c.label}</label>
                   <input
                     value={colFilters[c.key] ?? ''}
-                    onChange={e => { setColFilters(f => ({ ...f, [c.key]: e.target.value })); setPage(0); }}
+                    onChange={e => { setColFilters(f => ({ ...f, [c.key]: e.target.value })); }}
                     placeholder="filtr…"
                     className="w-32 bg-surface0 border border-surface2 rounded-lg px-2 py-1 text-xs text-text placeholder:text-overlay0 focus:outline-none focus:border-teal/50"
                   />
@@ -609,7 +633,7 @@ export function AdminPanel() {
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-overlay1 pointer-events-none" />
               <input
                 value={query}
-                onChange={e => { setQuery(e.target.value); setPage(0); }}
+                onChange={e => { setQuery(e.target.value); }}
                 placeholder="Hledat ve všech sloupcích…"
                 className="w-full bg-surface0 border border-surface2 rounded-xl pl-8 pr-8 py-2 text-sm text-text placeholder:text-overlay0 focus:outline-none focus:border-mauve/50"
               />
@@ -630,9 +654,9 @@ export function AdminPanel() {
             <div className="flex justify-center py-12"><Loader2 className="animate-spin text-mauve" /></div>
           ) : (
             <DataGrid
-              columns={gridColumns}
+              columns={visibleGridCols}
               pageRows={pageRows}
-              pageOffset={safePage * PAGE_SIZE}
+              pageOffset={0}
               onCellChange={updateCell}
               onDeleteRow={deleteRow}
               onDuplicateRow={duplicateRow}
@@ -641,17 +665,8 @@ export function AdminPanel() {
               sortKey={sortKey}
               sortDir={sortDir}
               onSort={onSort}
-              resetKey={`${dbName}-${safePage}-${query}-${schema.columns.length}-${sortKey}-${sortDir}`}
+              resetKey={`${dbName}-${query}-${schema.columns.length}-${sortKey}-${sortDir}-${hiddenCols.size}`}
             />
-          )}
-
-          {/* Pagination */}
-          {!loading && totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 text-sm">
-              <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={safePage === 0} className="px-3 py-1 rounded-lg bg-surface0 disabled:opacity-40 text-subtext1">‹</button>
-              <span className="text-subtext1">Strana {safePage + 1} / {totalPages}</span>
-              <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={safePage >= totalPages - 1} className="px-3 py-1 rounded-lg bg-surface0 disabled:opacity-40 text-subtext1">›</button>
-            </div>
           )}
 
           {importData && (
