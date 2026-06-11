@@ -101,7 +101,7 @@ L/T řádky odpovídají SAP ZBOM formátu — L = materiál, T = text/placehold
 
 ### Důležité
 - **Heslo** — `ADMIN_PASSWORD` (env na serveru). Bez něj admin endpointy vrací 503 a záložka v UI se zobrazí jen když je nastaven `VITE_BACKEND_URL`. Heslo se posílá hlavičkou `x-admin-password`, klient ho drží v `sessionStorage` (`robo-filler-admin-pw`).
-- **Persistence v Dockeru** — `DATA_DIR=/app/data` je perzistentní volume (`./data:/app/data`). `entrypoint.sh` naseeduje výchozí data z `/app/seed` jen pro chybějící soubory → editace přežijí auto-update image (watchtower).
+- **Persistence v Dockeru** — `DATA_DIR=/app/data` je perzistentní volume (`./data:/app/data`). `entrypoint.sh` rozlišuje: referenční **master CSV se vždy přepíše** z image (týdenní update z GitHubu), editovatelné **JSON (wires/cables/kanban) se naseedují jen když chybí** → admin editace přežijí auto-update image (watchtower).
 - **Mazání sloupce** odstraní klíč i ze všech řádků (jinak by ho `reconcileSchema` při uložení znovu obnovil).
 - **Export** CSV/JSON je čistě klientský (ke stažení), neslouží ke commitu — slouží pro práci v jiných programech.
 
