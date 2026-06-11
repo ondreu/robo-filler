@@ -104,6 +104,7 @@ L/T řádky odpovídají SAP ZBOM formátu — L = materiál, T = text/placehold
 - **Persistence v Dockeru** — `DATA_DIR=/app/data` je perzistentní volume (`./data:/app/data`). `entrypoint.sh` rozlišuje: referenční **master CSV se vždy přepíše** z image (týdenní update z GitHubu), editovatelné **JSON (wires/cables/kanban) se naseedují jen když chybí** → admin editace přežijí auto-update image (watchtower).
 - **Mazání sloupce** odstraní klíč i ze všech řádků (jinak by ho `reconcileSchema` při uložení znovu obnovil).
 - **Export** CSV/JSON je čistě klientský (ke stažení), neslouží ke commitu — slouží pro práci v jiných programech.
+- **Denní záloha na GitHub** — workflow `.github/workflows/backup-databases.yml` (cron 02:00 UTC + ruční spuštění) stáhne živá data z backendu (`GET /api/db/:name`) a commitne `public/<name>.json` + `public/<name>.schema.json` do repa. Pojistka: pokud DB vrátí 0 řádků, soubor se nepřepíše. Vyžaduje secret `VITE_BACKEND_URL` (veřejná URL API). Tím se admin editace verzují a zároveň slouží jako seed pro budoucí build image.
 
 ## Changelog konvence
 

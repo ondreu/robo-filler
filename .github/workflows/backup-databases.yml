@@ -1,0 +1,63 @@
+name: Daily DB Backup
+
+# Denní záloha editovatelných databází (wires/cables/kanban) z běžícího backendu
+# zpět do repozitáře. Admin změny se tak propíšou na GitHub a jsou verzované.
+#
+# Vyžaduje secret VITE_BACKEND_URL = veřejná URL API (cloudflare tunel), např.
+# https://api.tvoje-domena.cz — stejný, jaký používá frontend.
+
+on:
+  schedule:
+    - cron: '0 2 * * *'      # každý den ve 02:00 UTC
+  workflow_dispatch:          # + ruční spuštění z GitHubu
+
+permissions:
+  contents: write
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Stáhnout databáze z backendu
+        env:
+          BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${BACKEND_URL:-}" ]; then
+            echo "::error::Secret VITE_BACKEND_URL není nastaven."
+            exit 1
+          fi
+          base="${BACKEND_URL%/}"
+          for db in wires cables kanban; do
+            echo "Stahuji $db…"
+            resp="$(curl -fsS --max-time 60 "$base/api/db/$db")" || {
+              echo "::error::Stažení $db selhalo (backend nedostupný?)."; exit 1;
+            }
+            count="$(printf '%s' "$resp" | jq '.rows | length')"
+            if [ "$count" = "null" ] || [ "${count:-0}" -eq 0 ]; then
+              echo "::warning::$db vrátil 0 řádků — přeskakuji (nepřepisuji zálohu)."
+              continue
+            fi
+            printf '%s' "$resp" | jq '.rows'   > "public/$db.json"
+            printf '%s' "$resp" | jq '.schema' > "public/$db.schema.json"
+            echo "$db: $count řádků zazálohováno."
+          done
+
+      - name: Commitnout změny
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/*.json public/*.schema.json
+          if git diff --cached --quiet; then
+            echo "Beze změn — nic ke commitu."
+          else
+            git commit -m "chore: denní záloha databází ($(date -u +%F))"
+            git push
+          fi
