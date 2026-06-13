@@ -1,153 +1,205 @@
 {
   "nodes": [
-    { "id": "g-data", "type": "group", "x": -5200, "y": -1800, "width": 1400, "height": 2800, "label": "Datove zdroje (Files)", "color": "3" },
-    { "id": "g-frontend", "type": "group", "x": -3600, "y": -1800, "width": 3200, "height": 2800, "label": "Frontend (React + TypeScript + Vite)", "color": "5" },
-    { "id": "g-backend", "type": "group", "x": -200, "y": -1800, "width": 3200, "height": 3200, "label": "Backend (Node.js + Express)", "color": "4" },
-    { "id": "g-external", "type": "group", "x": 3200, "y": -1800, "width": 1200, "height": 1800, "label": "Externi API / Knihovny", "color": "6" },
+    { "id": "g-data",     "type": "group", "x": -8700, "y": -3200, "width": 2200, "height": 2200, "label": "Datove zdroje", "color": "3" },
+    { "id": "g-frontend", "type": "group", "x": -6100, "y": -3200, "width": 3000, "height": 3200, "label": "Frontend  —  React + TypeScript + Vite", "color": "5" },
+    { "id": "g-backend",  "type": "group", "x": -2700, "y": -3200, "width": 3100, "height": 4400, "label": "Backend  —  Node.js + Express", "color": "4" },
+    { "id": "g-external", "type": "group", "x":   600, "y": -3200, "width": 2000, "height": 1800, "label": "Externi sluzby", "color": "6" },
 
-    { "id": "n-master-csv", "type": "text", "x": -5100, "y": -1600, "width": 900, "height": 100, "text": "## master-data.csv\n~50 000+ artiklů, windows-1250 — Hlavni DB Usti" },
-    { "id": "n-effi-csv", "type": "text", "x": -5100, "y": -1460, "width": 900, "height": 100, "text": "## master-data-effi.csv\nEFI DB (opt-in, dataSource='effi'/'both')" },
-    { "id": "n-wires-json", "type": "text", "x": -5100, "y": -1320, "width": 900, "height": 100, "text": "## wires.json\n639 artiklů vodičů — public/ + DATA_DIR (prurez, barva, skupina)" },
-    { "id": "n-cables-json", "type": "text", "x": -5100, "y": -1180, "width": 900, "height": 100, "text": "## cables.json\nKabely DB — public/ + DATA_DIR (pocetZil, stineni, multi-value |||)" },
-    { "id": "n-kanban-json", "type": "text", "x": -5100, "y": -1040, "width": 900, "height": 100, "text": "## kanban.json\n517 artiklů sypkého materiálu — public/ + DATA_DIR (z Kanban_DB.xlsx)" },
-    { "id": "n-snapshots", "type": "text", "x": -5100, "y": -900, "width": 900, "height": 100, "text": "## DATA_DIR/.snapshots/\nGFS zálohy — vše 5 dní / týdně 3 týdny / měsíčně 1 měsíc" },
-    { "id": "n-audit-log", "type": "text", "x": -5100, "y": -760, "width": 900, "height": 100, "text": "## DATA_DIR/.audit.jsonl\nAdmin audit log — save/snapshot/restore/master-csv" },
-    { "id": "n-chats-log", "type": "text", "x": -5100, "y": -620, "width": 900, "height": 100, "text": "## server/logs/chats.jsonl\nAI chat logy — collector.js (JSONL append, nejnovější první)" },
+    { "id": "n-master-csv", "type": "text", "x": -8500, "y": -2900, "width": 1800, "height": 160,
+      "text": "## master-data.csv  +  master-data-effi.csv\nHlavni DB Usti (~50 000 artiklů, windows-1250 encoding)  |  EFI DB (opt-in, dataSource='effi'/'both')\nFormát: typoveOznaceni ; artikl ; vyrobce ; nazev ; cisloDiluVyrobce ; vybehovyDil ; status" },
 
-    { "id": "n-app", "type": "text", "x": -3500, "y": -1600, "width": 1380, "height": 200, "text": "## App.tsx — Root komponenta\n**State:** articles[], results[], zbomTabs[], AppMode, DataSource, selectedManufacturers[]\n**Logika:** debounced search (1500ms delay), CSV loading na mount/source switch, mode switching\n**Persistence:** zbomTabs + lastMode v localStorage — ZBOM_TABS_KEY, ZBOM_ACTIVE_KEY\n**DataSource:** usti | effi | both → loadCSV() + loadWiresRaw() merge (dedup by artikl)" },
-    { "id": "n-types", "type": "text", "x": -3500, "y": -1360, "width": 680, "height": 180, "text": "## src/types.ts — Core typy\nArticle { typoveOznaceni, artikl, vyrobce, nazev,\n  cisloDiluVyrobce, vybehovyDil, status,\n  prurez?, barva?, skupina? }\nSearchResult extends Article { score, matchType, highlightedFields }\nBomRow { id, type('L'|'T'), artikl, popis, mnozstvi }\nAppMode = 'single'|'bulk'|'ai'|'wirecable'|'kanban'|'admin'\nDataSource = 'usti'|'effi'|'both'" },
-    { "id": "n-search-engine", "type": "text", "x": -2780, "y": -1360, "width": 680, "height": 180, "text": "## src/utils/searchEngine.ts — Klientský vyhledávač\nFuse.js fuzzy (threshold=0.3, includeScore) + regex wildcard + combined\nremoveDiacritics() — lišta → lista\ncalculateScore() → matchType: exact|minimal|medium|large\nsearchSuggestions() — typo-corrected fallback\nVýsledek: SearchResult[] (score 0–100, highlightedFields)" },
+    { "id": "n-wires-json", "type": "text", "x": -8500, "y": -2680, "width": 1800, "height": 160,
+      "text": "## wires.json  (639 vodičů)\nExtra pole oproti hlavni DB: prurez, barva, skupina\nVodičové karty mají badge \"Vodic DB\"  |  public/ (statické) + DATA_DIR (live, admin-editovatelné)" },
 
-    { "id": "n-csv-parser", "type": "text", "x": -3500, "y": -1140, "width": 680, "height": 180, "text": "## src/utils/csvParser.ts — Data loading\nloadCSV() — windows-1250 + UTF-8 auto-detect\nloadWiresRaw() → Article[] (s prurez/barva/skupina)\nloadCables() → CableArticle[]\nloadKanban() → KanbanArticle[]\nPreference: GET /api/db/:name → fallback public/ JSON\nloadSchema(name) → DbSchema pro dynamické filtry" },
-    { "id": "n-utils-other", "type": "text", "x": -2780, "y": -1140, "width": 680, "height": 180, "text": "## Další utils\nbomExport.ts — BOM TXT/Excel export, CP1250 encoding\n  buildImportResult(BomResultRow[]) → ImportResult\ndbSchema.ts — DbSchema/DbColumn typy, inferSchema,\n  applyDynamicFilters(), cellToFilterString()\nadminApi.ts — admin API klient: login, fetchDb,\n  saveDb, listDatabases (sessionStorage pw)\ndbCsv.ts — CSV parse/serialize + download helper\nexcelHandler.ts — Excel file import/export" },
+    { "id": "n-cables-json", "type": "text", "x": -8500, "y": -2460, "width": 1800, "height": 160,
+      "text": "## cables.json  —  Kabely DB\nMulti-value pole oddělena ||| : pocetZil, prurez, stineni\nBoolean pole: stineni / pletezenePary / olej / bezhalogenovy  →  ANO / NE" },
 
-    { "id": "n-single-mode", "type": "text", "x": -3500, "y": -920, "width": 680, "height": 160, "text": "## Mod: Single search\nSearchBar.tsx — query, mode, field, maxResults selectors\nFilterPanel.tsx — výrobce chip filtry (z top 200 výsledků)\nResultCard.tsx — artikl karta: badges, status, highlighted\nDisplayedCount — paginate +3 na kliknutí\nDynamicFilters.tsx — chip filtry dle schématu (filterable:true)" },
-    { "id": "n-bulk-mode", "type": "text", "x": -2780, "y": -920, "width": 680, "height": 160, "text": "## Mod: Bulk search (BulkSearch.tsx)\nMulti-line query input nebo CSV upload\nSelectableCard.tsx — výběrové výsledkové karty\nonOpenInZbom(bulkResults, selections) callback\n→ App.tsx vytvoří novou ZBOM záložku s daty\nAltQuery fallback, pocet/oznaceniPristroje parsing" },
+    { "id": "n-kanban-json", "type": "text", "x": -8500, "y": -2240, "width": 1800, "height": 160,
+      "text": "## kanban.json  (517 artiklů sypkého materiálu)\nZdroj: Kanban_DB.xlsx  |  Kategorie matchery → podskupiny (fallback Ostatní musí být poslední)\npublic/ + DATA_DIR  |  Data se NEMERGUJÍ do hlavní DB (articles)" },
 
-    { "id": "n-ai-chat", "type": "text", "x": -3500, "y": -720, "width": 680, "height": 180, "text": "## Mod: AI — Karel Bot (AiChat.tsx)\nSSE stream: POST /api/chat\nZobrazuje: status log kroků (expand/search/synthesize)\nSession persistence v localStorage (history, model)\nComponentAdvisor toggle → productKnowledge inject\nModely: small (výchozí) / medium (kvalitnější)\nChatBot.tsx — floating chat button (pokud BACKEND_URL)" },
-    { "id": "n-ai-guided", "type": "text", "x": -2780, "y": -720, "width": 680, "height": 180, "text": "## Mod: AI — Řízeny mod (GuidedSearch.tsx)\nSSE stream: POST /api/guided-chat\nFáze UI: initial → questions form → results\nbadge: Doporučeno (bg-green)\nSession persistence, obnovitelný stav\nAiOnboarding.tsx — 5-krokový průvodce při prvním vstupu\n(localStorage key: ai-onboarding-v1)" },
+    { "id": "n-data-dir", "type": "text", "x": -8500, "y": -2020, "width": 1800, "height": 200,
+      "text": "## DATA_DIR  (/app/data)  —  Perzistentní Docker volume  (./data:/app/data)\n.snapshots/<db>/<ISO>.json  →  GFS zálohy  (vše 5 dní / týdně 3 týdny / měsíčně 1 měsíc)\n.audit.jsonl  →  Admin audit log  (save / snapshot / restore / master-csv)\nentrypoint.sh  →  seed dat ONLY IF chybí  →  přežije restart + auto-update image" },
 
-    { "id": "n-bom-builder-ui", "type": "text", "x": -3500, "y": -500, "width": 680, "height": 180, "text": "## Mod: AI — BOM Builder BETA (AiBomBuilder.tsx)\nState machine: input → processing → post_check → clarifying → results\nPre-check: POST /api/bom-check (JSON, před spuštěním)\nBuild: POST /api/bom-build (SSE, progress per řádek)\nPost-check: POST /api/bom-post-check (≥3 nenalezených)\nBOM History v localStorage (max 5, cache key = rows+prefs)" },
-    { "id": "n-zbom", "type": "text", "x": -2780, "y": -500, "width": 680, "height": 180, "text": "## ZBOM záložky + Editor\nZbomEditor.tsx — SAP ZBOM formát (L=materiál, T=text)\nBomWizard.tsx — L/T řádky editor, editable cells\nBomHeader: cisloVrcholu, cisloZavodu, platnostOd (DDMMYYYY),\n  popis (max 40 zn.), status, vyrobniDispecer\nExport: TXT (CP1250) + Excel\nImport: ExcelImport.tsx (xlsx upload → BomRow[])" },
+    { "id": "n-chats-log", "type": "text", "x": -8500, "y": -1760, "width": 1800, "height": 140,
+      "text": "## server/logs/chats.jsonl  —  AI chat logy\nZapisuje: collector.js (append-only JSONL)\nTypy: type='chat' | 'guided' | 'bom'  |  Čte: GET /api/admin/logs?type=&limit=N" },
 
-    { "id": "n-wirecable-mode", "type": "text", "x": -3500, "y": -280, "width": 680, "height": 140, "text": "## Mod: Vodice & Kabely (WireCableSearch.tsx)\nDynamicFilters — chip filtry ze schématu (filterable:true)\nKřížová záložka, cross-tab navigace\nNačítá: GET /api/db/wires + GET /api/db/cables\nWire karty: badge Vodic DB + prurez/barva" },
-    { "id": "n-kanban-mode", "type": "text", "x": -2780, "y": -280, "width": 680, "height": 140, "text": "## Mod: Kanban — Sypky material (KanbanSearch.tsx)\nKATEGORIE matchery nad sloupcem Skupina → podskupiny\nFiltry: Provedení, Barva dle DIN, Kanban\nNačítá: GET /api/db/kanban\nBarva theme: peach, data se NEMERGUJÍ do hlavní DB" },
 
-    { "id": "n-admin-mode", "type": "text", "x": -3500, "y": -100, "width": 680, "height": 220, "text": "## Mod: Admin (AdminPanel.tsx)\nAuth: x-admin-password header → sessionStorage pw\nSub-nav: Databáze / AI logy / Hlavní DB / Zálohy\nDataGrid.tsx — Excel-like CRUD\n  Shift+drag výběr, Ctrl+C → TSV, Ctrl+V z Excelu\n  Ctrl+Z undo (stack 50), dvojklik/Enter editace\n  Del maže, sort kliknutím na hlavičku\nModal validace před uložením (duplicity, typy)" },
-    { "id": "n-admin-sub", "type": "text", "x": -2780, "y": -100, "width": 680, "height": 220, "text": "## Admin sub-komponenty\nAdminLogs.tsx — prohlížeč chat/guided/bom logů\n  GET /api/admin/logs?type=&limit=\nAdminMasterCsv.tsx — base64 upload → reloadMaster()\n  PUT /api/admin/master-csv/:which\nAdminBackups.tsx — snapshoty + audit log\n  GET/POST /api/admin/snapshots/:name\n  POST /api/admin/snapshots/:name/restore/:id\n_poznamka — interni klic, žlutý sloupec v gridu" },
+    { "id": "n-app", "type": "text", "x": -5900, "y": -2900, "width": 2700, "height": 280,
+      "text": "## App.tsx  —  Root komponenta & State management\n**AppMode:** single | bulk | ai | wirecable | kanban | admin\n**DataSource:** usti | effi | both  →  loadCSV() + loadWiresRaw()  →  merge + dedup by artikl\n**Vyhledávání:** debouncedQuery (1500ms delay)  →  searchEngine.ts  →  setResults()\n**ZBOM záložky:** zbomTabs[] persisted v localStorage  (ZBOM_TABS_KEY, ZBOM_ACTIVE_KEY)\n**Persistence:** lastMode, aiOnboardingDone, appOnboardingDone v localStorage" },
 
-    { "id": "n-ui-extras", "type": "text", "x": -3500, "y": 160, "width": 1380, "height": 140, "text": "## UI extras\nAppOnboarding.tsx — 5-krokový průvodce při prvním spuštění (app-onboarding-v1)\nChangelog.tsx — verze VDDMMYY (V070626 = 7. 6. 2026), modal\nHowItWorks.tsx — modal Jak funguju? (aktualizovat při nové funkci)\nVersionChecker.tsx — auto-check nové verze\nInstallPrompt.tsx — PWA install prompt\nTooltip.tsx — reusable tooltip komponenta" },
+    { "id": "n-search-engine", "type": "text", "x": -5900, "y": -2560, "width": 1280, "height": 200,
+      "text": "## searchEngine.ts  —  Klientský vyhledávač\nFuse.js fuzzy (threshold=0.3) + regex wildcard + combined mode\nremoveDiacritics()  →  lišta → lista\ncalculateScore()  →  matchType: exact | minimal | medium | large\nVýsledek: SearchResult[]  (score 0–100, highlightedFields)" },
 
-    { "id": "n-express", "type": "text", "x": -100, "y": -1600, "width": 1380, "height": 200, "text": "## server/src/index.js — Express Server\nMiddleware: cors, json body-parser, checkAdmin (x-admin-password header)\nGET /health → { status: 'ok' }\nGET /api/version → APP_VERSION\nGET /api/db → [{ name, label, idKey }] — seznam databází\nGET /api/db/:name → { rows (stripInternal), schema } — veřejná data\nGET /api/db/:name/schema → jen schéma (pro DynamicFilters)\nGET /api/guided-categories → COMPONENT_CATEGORIES seznam\nADMIN_PASSWORD env: bez něj admin endpointy vrací 503, UI skryje admin záložku" },
+    { "id": "n-csv-parser", "type": "text", "x": -4500, "y": -2560, "width": 1300, "height": 200,
+      "text": "## csvParser.ts  —  Data loading & parsing\nloadCSV()  —  windows-1250 + UTF-8 auto-detect\nloadWiresRaw()  |  loadCables()  |  loadKanban()\nPreference: GET /api/db/:name  →  fallback na public/ JSON\nloadSchema(name)  →  DbSchema pro DynamicFilters" },
 
-    { "id": "n-sse-chat", "type": "text", "x": -100, "y": -1360, "width": 680, "height": 160, "text": "## POST /api/chat → SSE\nBody: { message, history[], webSearchEnabled, synthModel }\nEvents:\n  status { step:'expand', terms[], manufacturer }\n  status { step:'search', candidates[] }\n  status { step:'synthesize' }\n  result { answer, selected[], refinement }\n  error { error }\n→ handleChat() → collector.logRecord({type:'chat'})" },
-    { "id": "n-sse-bom", "type": "text", "x": 620, "y": -1360, "width": 680, "height": 160, "text": "## POST /api/bom-build → SSE\nBody: { rows[], preferences, answers? }\nEvents:\n  progress { rowIndex, total, typoveOznaceni, status }\n    status: waiting|searching|found|not_found|skipped|knowledge\n  result { bomRows, toCreate, produktovaHierarchie, artiklVrcholu }\n  error { error }\n→ handleBomBuild() → collector.logRecord({type:'bom'})" },
+    { "id": "n-types", "type": "text", "x": -5900, "y": -2300, "width": 1280, "height": 200,
+      "text": "## src/types.ts  —  Core typy\nArticle { typoveOznaceni, artikl, vyrobce, nazev, cisloDiluVyrobce,\n  vybehovyDil, status, prurez?, barva?, skupina? }\nSearchResult extends Article { score, matchType, highlightedFields }\nBomRow { id, type:'L'|'T', artikl, popis, mnozstvi }\nAppMode = 'single' | 'bulk' | 'ai' | 'wirecable' | 'kanban' | 'admin'" },
 
-    { "id": "n-sse-guided", "type": "text", "x": -100, "y": -1160, "width": 680, "height": 140, "text": "## POST /api/guided-chat → SSE\nBody: { message, phase, answers?, category? }\nEvents:\n  update { phase, category, questions[] }\n  progress { candidates[] }\n  result { answer, articles, expandedTerms, phase }\n→ handleGuidedChat() → collector.logRecord({type:'guided'})" },
-    { "id": "n-json-bom", "type": "text", "x": 620, "y": -1160, "width": 680, "height": 140, "text": "## JSON BOM endpointy\nPOST /api/bom-check\n  Body: { rows[], preferences }\n  → checkClarification() — pre-search AI check\n  Response: { needsClarification, questions[] }\nPOST /api/bom-post-check\n  → postCheckClarification(notFoundRows) — ≥3 nenalezených\n  Response: { needsClarification, questions[] }" },
+    { "id": "n-utils", "type": "text", "x": -4500, "y": -2300, "width": 1300, "height": 200,
+      "text": "## src/utils/\nbomExport.ts  —  TXT/Excel export, CP1250, buildImportResult(BomResultRow[])\ndbSchema.ts  —  DbSchema/DbColumn inference, applyDynamicFilters()\nadminApi.ts  —  login, fetchDb, saveDb, listDatabases  (pw v sessionStorage)\ndbCsv.ts  —  CSV parse/serialize + download helper\nexcelHandler.ts  —  xlsx import/export" },
 
-    { "id": "n-admin-endpoints", "type": "text", "x": -100, "y": -980, "width": 1380, "height": 220, "text": "## Admin API endpointy (vyžaduji x-admin-password)\nPOST /api/admin/login → ověření hesla (200/401)\nGET  /api/admin/db/:name → plná data vč. _poznamka (readRows)\nPUT  /api/admin/db/:name → uložení rows+schema → snapshotDb → writeRows → notifyReload → appendAudit\nGET  /api/admin/snapshots/:name → [{ id, ts, size }] seznam\nPOST /api/admin/snapshots/:name → ruční vytvoření\nPOST /api/admin/snapshots/:name/restore/:id → restore (nejdřív záloha aktuálního stavu)\nGET  /api/admin/audit → audit log (readAudit)\nGET  /api/admin/logs?type=chat|guided|bom&limit= → AI logy z chats.jsonl\nGET  /api/admin/master-csv → { size, count } info\nPUT  /api/admin/master-csv/:which → base64 upload → write DATA_DIR → reloadMaster()\nGET  /api/admin/master-csv/:which/download → stažení" },
+    { "id": "n-single", "type": "text", "x": -5900, "y": -2040, "width": 1280, "height": 200,
+      "text": "## Mód: Single search\nSearchBar.tsx  —  query, mode, field, maxResults\nFilterPanel.tsx  —  výrobce chip filtry (z top 200 výsledků)\nResultCard.tsx  —  artikl karta s badges a highlight\nDynamicFilters.tsx  —  chip filtry ze schématu (filterable:true)\nDisplayedCount  —  paginate +3 na kliknutí" },
 
-    { "id": "n-chat-js", "type": "text", "x": -100, "y": -720, "width": 1380, "height": 220, "text": "## server/src/chat.js — Karel Bot logika\nModel expand: mistral-small-latest → JSON { type, terms[], manufacturer }\nModel synth: mistral-small-latest (default) nebo mistral-medium-latest (toggle)\nFáze:\n  1. handleExpand(message, history) → rozpozná intent\n     type='search' → searchDB(terms, manufacturer)\n     type='web_search' → Mistral web search plugin\n  2. isWireCableQuery() → přesměruje na searchWires() nebo searchCables()\n  3. handleSynthesize(candidates) → SSE token-by-token stream\nKontext: ABBREVIATIONS_CONTEXT + MANUFACTURER_DOCS + buildKnowledgeContext(productKnowledge)" },
+    { "id": "n-bulk", "type": "text", "x": -4500, "y": -2040, "width": 1300, "height": 200,
+      "text": "## Mód: Bulk search  (BulkSearch.tsx)\nMulti-line query input nebo CSV upload\nSelectableCard.tsx  —  výběrové karty výsledků\nonOpenInZbom(results, selections)  →  nová ZBOM záložka v App.tsx\nAltQuery fallback  |  pocet / oznaceniPristroje parsing" },
 
-    { "id": "n-bom-builder-js", "type": "text", "x": -100, "y": -460, "width": 1380, "height": 240, "text": "## server/src/bomBuilder.js — AI BOM Builder\nWorker pool: max 10 paralelně (konstanta CONCURRENCY=10)\nPer řádek pipeline:\n  1. resolveManufacturerKey(typoveOznaceni) → normalize název výrobce\n  2. searchTerm() — round 1 — top 5 kandidátů\n  3. pickBestMatch(candidates) → Mistral vybere nejlepší artikl (type L)\n  4. round 2 if not found → alternativní termíny\n  5. deriveDescription(typoveOznaceni, mfrDoc) → max 40 zn, vrátí '' pokud AI není jistá\nVýsledkové typy:\n  type:'L' — BomResultRow (nalezený artikl, aiFilledPopis=true pokud AI doplnila)\n  type:'T' — ToCreateRow (nenalezený → K-Zalozeni tabulka)\nfunctions: checkClarification, postCheckClarification" },
+    { "id": "n-ai-chat-ui", "type": "text", "x": -5900, "y": -1780, "width": 1280, "height": 220,
+      "text": "## Mód: Karel Bot  (AiChat.tsx)\nSSE stream: POST /api/chat\nZobrazuje: status log kroků (expand → search → synthesize)\nSession v localStorage (history, model choice)\nComponentAdvisor toggle  →  productKnowledge inject\nModely: mistral-small (default) / mistral-medium (toggle)\nChatBot.tsx  —  floating chat button (pokud VITE_BACKEND_URL)" },
 
-    { "id": "n-guided-js", "type": "text", "x": -100, "y": -180, "width": 1380, "height": 240, "text": "## server/src/guidedSearch.js — Řízeny vyhledávač\nFáze: initial → questioning → searching → results\n1. detectCategory(message) — Mistral + keyword match → componentGuide kategorie\n2. generateQuestions(category) — Mistral vygeneruje 5-7 specifických otázek\n3. generateSearchTerms(category, answers, mfrKey) → 20-35 termínů (Mistral)\n4. executeTerm(term, field, limit) per termín:\n   → searchTerm() z master CSV\n   → nebo filterCables(answers) / filterWires(answers) pro kabelové kategorie\n5. synthesizeResults(allCandidates, answer) → top 5-8, Mistral vysvětlí výběr\nKdyž DB nenajde nic → AI doporučí typové označení z knowledge báze kategorie" },
+    { "id": "n-guided-ui", "type": "text", "x": -4500, "y": -1780, "width": 1300, "height": 220,
+      "text": "## Mód: Řízený mód  (GuidedSearch.tsx)\nSSE stream: POST /api/guided-chat\nFáze UI: initial  →  questions form  →  results\nbadge: Doporučeno  (bg-green/20 text-green)\nSession persistence + obnovitelný stav relace\nAiOnboarding.tsx  —  5-krokový průvodce (ai-onboarding-v1)\nAppOnboarding.tsx  —  celoapplikační průvodce (app-onboarding-v1)" },
 
-    { "id": "n-search-js", "type": "text", "x": -100, "y": 100, "width": 680, "height": 220, "text": "## server/src/search.js — Master CSV search\nAlgoritmus (prioritní pořadí): Wildcard > Fuzzy > BM25\n\nWildcard: každé slovo musí matchovat (regex, score=1.0)\nFuzzy: Fuse.js threshold=0.3, score=1−fuzzScore\nBM25: IDF × tf×(K1+1)/(tf+K1×(1−B+B×dl/avgDL))\n  K1=1.5, B=0.75, AND sémantika (všechny tokeny musí být)\n  Indexovaná pole: nazev, typoveOznaceni, artikl, vyrobce, cisloDiluVyrobce\n  Tokeny: bez diakritiky, lowercase, min 2 znaky\nreloadMaster() — volá se po admin upload nového CSV" },
-    { "id": "n-wire-cable-search", "type": "text", "x": 620, "y": 100, "width": 680, "height": 220, "text": "## server/src/wireSearch.js\nBM25 index pro vodiče (vč. prurez, barva, skupina)\nsearchWires(query, topN, mfrFilter) → ranked results\nfilterWires(answers) — strukturální filtr dle polí\nreloadWires() — registruje se přes registerReload('wires', fn)\n\n## server/src/cableSearch.js\nfilterCables(answers, dropKeys) — strukturální filtr\nMulti-value parsing |||: pocetZil, prurez, stineni\nBoolean fields: stineni, pletezenePary, retiez, olej,\n  bezhalogenovy → ANO/NE\nProgresivní uvolňování: dropKeys retry (méně kritérií)" },
+    { "id": "n-bom-ui", "type": "text", "x": -5900, "y": -1500, "width": 1280, "height": 240,
+      "text": "## Mód: BOM Builder BETA  (AiBomBuilder.tsx)\nState machine:\n  input  →  processing  →  post_check  →  clarifying  →  results\nPre-check:  POST /api/bom-check  (JSON, upfront clarification)\nBuild:  POST /api/bom-build  (SSE, progress event per řádek)\nPost-check:  POST /api/bom-post-check  (≥3 nenalezených  →  follow-up Q)\nBOM History v localStorage (max 5 záznamů, cache key = rows+prefs)" },
 
-    { "id": "n-datastore-js", "type": "text", "x": -100, "y": 360, "width": 1380, "height": 220, "text": "## server/src/dataStore.js — Admin DB store\nDATABASES registry: wires (idKey='artiklStroj'), cables (idKey='artikl'), kanban (idKey='artikl')\nreadRows(name) / writeRows(name, rows) — atomický zápis přes .tmp + rename\nreadSchema(name) / writeSchema(name, schema)\ninferSchema(rows) — auto-detekce typů sloupců (text/number/boolean); _prefix klíče ignoruje\nreconcileSchema(schema, rows) — merge persistovaného schématu + nových klíčů z dat\nsnapshotDb(name) → .snapshots/<name>/<ISO>.json + GFS pruneSnapshots()\nlistSnapshots / readSnapshot / restoreSnapshot\nregisterReload(name, fn) — wireSearch/cableSearch se registrují\nnotifyReload(name) — voláno po každém writeRows()\nappendAudit(entry) / readAudit(limit) → .audit.jsonl" },
+    { "id": "n-zbom-ui", "type": "text", "x": -4500, "y": -1500, "width": 1300, "height": 240,
+      "text": "## ZBOM záložky + Editor\nZbomEditor.tsx  —  SAP ZBOM tabulkový editor (multi-tab)\nBomWizard.tsx  —  L/T řádky editor s editovatelnými buňkami\nL řádky = nalezené materiály  |  T řádky = text/placeholder\nBomHeader: cisloVrcholu, cisloZavodu, platnostOd (DDMMYYYY),\n  popis (max 40 zn.), status, vyrobniDispecer\nExport: TXT (CP1250) + Excel  |  Import: ExcelImport.tsx → BomRow[]" },
 
-    { "id": "n-knowledge-js", "type": "text", "x": -100, "y": 620, "width": 1380, "height": 200, "text": "## Knowledge soubory\nserver/src/manufacturers.js (31KB)\n  resolveManufacturerKey(text) — normalizace názvu výrobce z typového označení\n  resolveManufacturersByCategory(category) — výrobci pro kategorii\n  MANUFACTURER_DOCS — plné docs výrobců (LAPP, Helukabel, HUBER+SUHNER, Nexans, WAGO, Phoenix Contact...)\n\nserver/src/productKnowledge.js (125KB) — hierarchická báze: kategorie → výrobci → produktové řady\n  buildKnowledgeContext(message, manufacturer) → inject do chat.js + bomBuilder.js\n\nserver/src/componentGuide.js (114KB) — COMPONENT_CATEGORIES[]\n  { key, label, aliases[], questions[], knowledge, examples } per kategorie\n  Používá: guidedSearch.js (detectCategory, generateSearchTerms)\n\nserver/src/abbreviations.js — průmyslové zkratky (MCC, PLC, B1, ...) inject do chat.js" },
+    { "id": "n-wirecable-ui", "type": "text", "x": -5900, "y": -1200, "width": 1280, "height": 180,
+      "text": "## Mód: Vodiče & Kabely  (WireCableSearch.tsx)\nDynamicFilters.tsx  —  chip filtry ze schématu (filterable:true)\nKřížová záložka, cross-tab navigace\nNačítá: GET /api/db/wires + GET /api/db/cables  (live data)\nWire karty mají badge \"Vodic DB\" + prurez / barva" },
 
-    { "id": "n-collector-js", "type": "text", "x": -100, "y": 860, "width": 680, "height": 120, "text": "## server/src/collector.js — JSONL logování\nappendRecord(type, data) → atomic JSONL append\nVolají: chat.js, guidedSearch.js, bomBuilder.js\nLoguje: type='chat'|'guided'|'bom' + message/rows/result\nČte: GET /api/admin/logs?type=&limit= (nejnovější první)" },
-    { "id": "n-deploy", "type": "text", "x": 620, "y": 860, "width": 680, "height": 120, "text": "## Deployment\nDocker: DATA_DIR=/app/data perzistentní volume (./data:/app/data)\nentrypoint.sh — seed dat ONLY IF chybí (přežije restart)\nGitHub Actions: backup-databases.yml (cron 02:00 UTC)\n  → GET /api/db/:name → commit public/*.json + *.schema.json" },
+    { "id": "n-kanban-ui", "type": "text", "x": -4500, "y": -1200, "width": 1300, "height": 180,
+      "text": "## Mód: Kanban  (KanbanSearch.tsx)\nSypký materiál  —  KATEGORIE matchery → podskupiny\nFiltry: Provedení / Barva dle DIN / Kanban\nNačítá: GET /api/db/kanban  (data se NEMERGUJÍ do hlavní DB)\nBarva theme: peach" },
 
-    { "id": "n-mistral", "type": "text", "x": 3300, "y": -1600, "width": 1000, "height": 220, "text": "## Mistral AI (@mistralai/mistralai SDK)\n**mistral-small-latest:**\n  chat.js — expand query → { type, terms[], manufacturer }\n  bomBuilder.js — pickBestMatch(), deriveDescription()\n  guidedSearch.js — detectCategory(), generateQuestions(),\n    generateSearchTerms(), synthesizeResults()\n\n**mistral-medium-latest:**\n  chat.js — Karel Bot synthesize (výchozí volba v UI)\n  Toggle v AiChat.tsx (model choice)\n\nVolitelné: Mistral web search plugin (webSearchEnabled=true)" },
-    { "id": "n-fuse-js", "type": "text", "x": 3300, "y": -1340, "width": 1000, "height": 120, "text": "## Fuse.js — Fuzzy vyhledávání\nKlient (searchEngine.ts): threshold=0.3, includeScore=true\nServer (search.js): fuzzySearch(), threshold=0.3\nDiacritikou-odolné — removeDiacritics() před indexací i query" },
-    { "id": "n-sse-proto", "type": "text", "x": 3300, "y": -1180, "width": 1000, "height": 160, "text": "## SSE Protokol (Server-Sent Events)\nFormát: 'event: <type>\\ndata: {...}\\n\\n'\nFrontend: fetch() + ReadableStream + TextDecoder\nEvent typy: status | result | progress | update | error\nEndpointy: /api/chat, /api/bom-build, /api/guided-chat\nKnowledge eventy (status:'knowledge') → extra položky v progressItems,\n  ne update existujícího řádku" },
-    { "id": "n-gh-actions", "type": "text", "x": 3300, "y": -980, "width": 1000, "height": 140, "text": "## GitHub Actions (CI/CD)\n.github/workflows/backup-databases.yml\n  cron: 02:00 UTC + ruční spuštění\n  Stáhne GET /api/db/:name (wires/cables/kanban)\n  Commit public/<name>.json + <name>.schema.json\n  Pojistka: 0 řádků → soubor se nepřepíše\n  Secret: VITE_BACKEND_URL" }
+    { "id": "n-admin-ui", "type": "text", "x": -5900, "y": -960, "width": 1280, "height": 260,
+      "text": "## Mód: Admin  (AdminPanel.tsx)\nAuth: x-admin-password header  →  uloženo v sessionStorage\nSub-nav: Databáze / AI logy / Hlavní DB / Zálohy\nDataGrid.tsx  —  Excel-like CRUD:\n  Shift+drag výběr  |  Ctrl+C → TSV  |  Ctrl+V z Excelu (přetečení = nové řádky)\n  Ctrl+Z undo (stack 50)  |  sort kliknutím na hlavičku  |  Del maže obsah\nModal validace před uložením (duplicity, nečíselné v num sloupcích)\nbeforeunload varování při neuložených změnách" },
+
+    { "id": "n-admin-sub-ui", "type": "text", "x": -4500, "y": -960, "width": 1300, "height": 260,
+      "text": "## Admin sub-komponenty\nAdminLogs.tsx  —  prohlížeč chat/guided/bom logů\nAdminMasterCsv.tsx  —  base64 upload → reloadMaster()\nAdminBackups.tsx  —  snapshoty viewer + audit log\n_poznamka  —  interní klíč (prefix _), žlutý sloupec v DataGrid\n  stripInternal() odstraní _ klíče z veřejného GET /api/db/:name\nGitHub záloha: backup-databases.yml stáhne a commitne JSON" },
+
+    { "id": "n-ui-extras", "type": "text", "x": -5900, "y": -640, "width": 2700, "height": 160,
+      "text": "## UI extras\nChangelog.tsx  —  verze VDDMMYY (V070626 = 7. 6. 2026)  |  HowItWorks.tsx  —  modal \"Jak funguju?\"\nVersionChecker.tsx  —  auto-check nové verze  |  InstallPrompt.tsx  —  PWA install prompt\nTooltip.tsx  —  reusable tooltip  |  Vše Catppuccin theme: bg-base/mantle, text-mauve/teal/subtext1" },
+
+
+    { "id": "n-express", "type": "text", "x": -2500, "y": -2900, "width": 2700, "height": 260,
+      "text": "## server/src/index.js  —  Express Server  (všechny endpointy)\nMiddleware: cors, json body-parser, checkAdmin (ověřuje x-admin-password header)\nGET /health  |  GET /api/version → APP_VERSION\nGET /api/db  →  [{ name, label, idKey }]  — seznam dostupných databází\nGET /api/db/:name  →  { rows (stripInternal), schema }  — veřejná live data\nGET /api/db/:name/schema  →  jen schéma  (pro DynamicFilters)\nGET /api/guided-categories  →  COMPONENT_CATEGORIES seznam\n⚠ Bez ADMIN_PASSWORD env  →  admin endpointy 503, UI admin záložku skryje" },
+
+    { "id": "n-sse-chat-ep", "type": "text", "x": -2500, "y": -2580, "width": 1280, "height": 220,
+      "text": "## POST /api/chat  →  SSE stream\nBody: { message, history[], webSearchEnabled, synthModel }\n\nEvents:\n• status { step:'expand', terms[], manufacturer }\n• status { step:'search', candidates[] }\n• status { step:'synthesize' }\n• result { answer, selected[], refinement }\n• error { error }\n\n→ handleChat()  |  collector.logRecord({type:'chat'})" },
+
+    { "id": "n-sse-bom-ep", "type": "text", "x": -1100, "y": -2580, "width": 1300, "height": 220,
+      "text": "## POST /api/bom-build  →  SSE stream\nBody: { rows[], preferences, answers? }\n\nEvents:\n• progress { rowIndex, total, typoveOznaceni, status }\n  status: waiting | searching | found | not_found | skipped | knowledge\n• result { bomRows, toCreate, produktovaHierarchie, artiklVrcholu }\n• error { error }\n\n→ handleBomBuild()  |  collector.logRecord({type:'bom'})" },
+
+    { "id": "n-sse-guided-ep", "type": "text", "x": -2500, "y": -2300, "width": 1280, "height": 200,
+      "text": "## POST /api/guided-chat  →  SSE stream\nBody: { message, phase, answers?, category? }\n\nEvents:\n• update { phase, category, questions[] }\n• progress { candidates[] }\n• result { answer, articles, expandedTerms, phase:'results' }\n\n→ handleGuidedChat()  |  collector.logRecord({type:'guided'})" },
+
+    { "id": "n-json-bom-ep", "type": "text", "x": -1100, "y": -2300, "width": 1300, "height": 200,
+      "text": "## JSON BOM endpointy\nPOST /api/bom-check\n  Body: { rows[], preferences }\n  → checkClarification()  — pre-search clarification\n  Response: { needsClarification, questions[] }\n\nPOST /api/bom-post-check\n  → postCheckClarification(notFoundRows)  — ≥3 nenalezených\n  Response: { needsClarification, questions[] }" },
+
+    { "id": "n-admin-ep", "type": "text", "x": -2500, "y": -2040, "width": 2700, "height": 280,
+      "text": "## Admin API endpointy  (všechny vyžaduji x-admin-password header)\nPOST /api/admin/login               →  ověření hesla (200 / 401)\nGET  /api/admin/db/:name            →  plná data vč. _poznamka  (readRows, neprojde stripInternal)\nPUT  /api/admin/db/:name            →  uložení rows+schema → snapshotDb() → writeRows() → notifyReload() → appendAudit()\nGET  /api/admin/snapshots/:name     →  [{ id, ts, size }]  seznam záložních bodů\nPOST /api/admin/snapshots/:name     →  ruční vytvoření snapshotu\nPOST /api/admin/snapshots/:name/restore/:id  →  obnova  (nejdřív zazálohuje aktuální stav)\nGET  /api/admin/audit               →  audit log  (readAudit)\nGET  /api/admin/logs                →  AI logy z chats.jsonl  (?type=chat|guided|bom&limit=N)\nPUT  /api/admin/master-csv/:which   →  base64 upload → zápis do DATA_DIR → reloadMaster()" },
+
+    { "id": "n-chat-js", "type": "text", "x": -2500, "y": -1700, "width": 2700, "height": 280,
+      "text": "## server/src/chat.js  —  Karel Bot logika\nModel expand:  mistral-small-latest  →  JSON { type:'search'|'web_search', terms[], manufacturer }\nModel synth:   mistral-small (default)  nebo  mistral-medium (toggle v UI)\n\nFáze:\n  1. handleExpand(message, history)  →  rozpozná intent, generuje search termy\n     type='search':     searchDB(terms)  →  searchTerm() nebo searchWires() / filterCables()\n     type='web_search': Mistral web search plugin (pokud webSearchEnabled=true)\n  2. isWireCableQuery()  →  přesměruje na searchWires() nebo filterCables()\n  3. handleSynthesize(candidates, answer)  →  SSE token-by-token stream odpovědi\n\nKontext injectován do systémové zprávy: ABBREVIATIONS + MANUFACTURER_DOCS + buildKnowledgeContext()" },
+
+    { "id": "n-bom-js", "type": "text", "x": -2500, "y": -1360, "width": 2700, "height": 300,
+      "text": "## server/src/bomBuilder.js  —  AI BOM Builder\nWorker pool: max 10 řádků paralelně  (konstanta CONCURRENCY=10)\n\nPer-řádek pipeline  (sekvenční AI volání uvnitř):\n  1. resolveManufacturerKey(typoveOznaceni)  →  normalizace výrobce z typového označení\n  2. searchTerm()  —  round 1  —  top 5 kandidátů z master CSV\n  3. pickBestMatch(candidates)  →  Mistral vybere nejlepší artikl  →  type:'L'\n  4. round 2 if not found  →  alternativní search termy\n  5. deriveDescription(typOzn, mfrDoc)  →  max 40 zn, vrátí '' pokud AI není jistá\n\nVýsledky:\n  type:'L'  =  BomResultRow  (nalezený artikl, aiFilledPopis=true pokud AI doplnila popis)\n  type:'T'  =  ToCreateRow   (nenalezený → K-Zalozeni tabulka)" },
+
+    { "id": "n-guided-js", "type": "text", "x": -2500, "y": -1000, "width": 2700, "height": 300,
+      "text": "## server/src/guidedSearch.js  —  Řízený vyhledávač\nFáze: initial  →  questioning  →  searching  →  results\n\n  1. detectCategory(message)  —  Mistral + keyword match  →  componentGuide kategorie\n  2. generateQuestions(category)  —  Mistral vygeneruje 5–7 specifických otázek\n  3. generateSearchTerms(category, answers, mfrKey)  →  20–35 termínů  (Mistral)\n  4. executeTerm(term) per termín:\n     → searchTerm() z master CSV  (nebo filterCables / filterWires pro kabelové kategorie)\n  5. synthesizeResults(allCandidates)  →  top 5–8 výsledků, Mistral vysvětlí výběr\n\nKdyž DB nenajde nic  →  AI doporučí typové označení přímo z knowledge báze kategorie\nProgresivní uvolňování: dropKeys retry (méně kritérií při nulovém výsledku)" },
+
+    { "id": "n-search-js", "type": "text", "x": -2500, "y": -640, "width": 1280, "height": 300,
+      "text": "## server/src/search.js  —  Master CSV search\nAlgoritmus  (prioritní pořadí výsledků):\n  Wildcard  →  každé slovo musí matchovat  (regex, score=1.0)\n  Fuzzy     →  Fuse.js threshold=0.3,  score = 1 − fuzzScore\n  BM25      →  IDF × tf×(K1+1) / (tf + K1×(1−B + B×dl/avgDL))\n               K1=1.5,  B=0.75,  AND sémantika (všechny tokeny musí být)\nIndexovaná pole: nazev, typoveOznaceni, artikl, vyrobce, cisloDiluVyrobce\nTokeny: bez diakritiky, lowercase, min 2 znaky\nreloadMaster()  →  volá se po admin upload nového CSV" },
+
+    { "id": "n-wire-cable-js", "type": "text", "x": -1100, "y": -640, "width": 1300, "height": 300,
+      "text": "## wireSearch.js  &  cableSearch.js\nwireSearch.js\n  BM25 index pro vodiče  (vč. prurez, barva, skupina)\n  searchWires(query, topN, mfrFilter)  →  ranked results\n  filterWires(answers)  —  strukturální filtr dle polí\n  reloadWires()  →  registruje se přes registerReload('wires', fn)\n\ncableSearch.js\n  filterCables(answers, dropKeys)  —  strukturální filtr\n  Multi-value parsing |||  →  pocetZil, prurez, stineni\n  Boolean: ANO/NE\n  Progresivní uvolňování: dropKeys retry" },
+
+    { "id": "n-datastore-js", "type": "text", "x": -2500, "y": -280, "width": 2700, "height": 300,
+      "text": "## server/src/dataStore.js  —  Admin DB store  (sdílená správa databází)\nDATABASES: wires (idKey='artiklStroj')  |  cables (idKey='artikl')  |  kanban (idKey='artikl')\n\nreadRows(name) / writeRows(name, rows)  —  atomický zápis přes .tmp + rename\nreadSchema / writeSchema  →  <name>.schema.json\ninferSchema(rows)  —  auto-detekce typů sloupců (text/number/boolean)\n  Klíče s prefixem _ ignoruje  →  nejsou sloupce ani filtry\nreconcileSchema  →  merge persistovaného schématu + nových klíčů z dat\nsnapshotDb(name)  →  .snapshots/<name>/<ISO>.json  +  GFS pruneSnapshots()\nlistSnapshots / readSnapshot / restoreSnapshot (nejdřív záloha aktuálního)\nregisterReload(name, fn)  →  wireSearch / cableSearch se registrují při startu\nnotifyReload(name)  →  volá se automaticky po každém writeRows()\nappendAudit(entry) / readAudit(limit)  →  .audit.jsonl" },
+
+    { "id": "n-knowledge-js", "type": "text", "x": -2500, "y": 80, "width": 2700, "height": 280,
+      "text": "## Knowledge soubory  (sdíleny: chat.js + bomBuilder.js + guidedSearch.js)\nmanufacturers.js  (31KB)\n  resolveManufacturerKey(text)  —  normalizace výrobce z typového označení\n  resolveManufacturersByCategory(cat)  —  výrobci pro kategorii\n  MANUFACTURER_DOCS  —  plné docs výrobců: LAPP, Helukabel, HUBER+SUHNER, Nexans, WAGO, Phoenix Contact...\n\nproductKnowledge.js  (125KB)  —  hierarchická báze:  kategorie → výrobci → produktové řady → příklady\n  buildKnowledgeContext(message, mfr)  →  inject do chat.js + bomBuilder.js\n\ncomponentGuide.js  (114KB)  —  COMPONENT_CATEGORIES[]  { key, aliases[], questions[], knowledge, examples }\n  Používá: guidedSearch.js  (detectCategory, generateSearchTerms)\n\nabbreviations.js  —  průmyslové zkratky (MCC, PLC, SCADA, B1...)  inject do chat.js systémové zprávy" },
+
+    { "id": "n-collector-js", "type": "text", "x": -2500, "y": 420, "width": 1280, "height": 180,
+      "text": "## server/src/collector.js  —  JSONL logování\nappendRecord(type, data)  →  atomic append do chats.jsonl\nTypy záznamů: 'chat'  |  'guided'  |  'bom'\nVolají: chat.js, guidedSearch.js, bomBuilder.js  (po dokončení odpovědi)\nČte: GET /api/admin/logs?type=&limit=N  (nejnovější první)" },
+
+    { "id": "n-deploy", "type": "text", "x": -1100, "y": 420, "width": 1300, "height": 180,
+      "text": "## Deployment  &  CI/CD\nDocker volume: DATA_DIR=/app/data  (./data:/app/data)\nEnv vars: ADMIN_PASSWORD  |  VITE_BACKEND_URL\nGitHub Actions: .github/workflows/backup-databases.yml\n  Cron: 02:00 UTC + ruční spuštění\n  GET /api/db/:name  →  commit public/<name>.json + *.schema.json\n  Pojistka: 0 řádků → soubor se nepřepíše" },
+
+
+    { "id": "n-mistral", "type": "text", "x": 800, "y": -2900, "width": 1600, "height": 300,
+      "text": "## Mistral AI  (@mistralai/mistralai SDK)\nmistral-small-latest  (expand + matching):\n  chat.js         →  expand query  →  { type, terms[], manufacturer }\n  bomBuilder.js   →  pickBestMatch()  |  deriveDescription()\n  guidedSearch.js →  detectCategory()  |  generateQuestions()\n                  →  generateSearchTerms()  |  synthesizeResults()\n\nmistral-medium-latest  (kvalitnější synthesis):\n  chat.js  →  Karel Bot synthesize  (volitelné přepnutím v UI)\n\nVolitelné: Mistral web search plugin  (webSearchEnabled=true v body)" },
+
+    { "id": "n-fuse-js", "type": "text", "x": 800, "y": -2540, "width": 1600, "height": 160,
+      "text": "## Fuse.js  —  Fuzzy vyhledávání\nKlient searchEngine.ts:  threshold=0.3,  includeScore=true\nServer search.js:  fuzzySearch(),  threshold=0.3\nDiacritikou-odolné  —  removeDiacritics() před indexací i dotazem" },
+
+    { "id": "n-sse-proto", "type": "text", "x": 800, "y": -2320, "width": 1600, "height": 220,
+      "text": "## SSE  —  Server-Sent Events  protokol\nFormát: 'event: <type>\\ndata: {...}\\n\\n'\nFrontend konzumace: fetch() + ReadableStream + TextDecoder\n  (ne nativní EventSource API — kvůli POST body)\nEndpointy: /api/chat  |  /api/bom-build  |  /api/guided-chat\nEvent typy: status  |  result  |  progress  |  update  |  error\n⚠ Knowledge eventy (status:'knowledge') → přidají se jako EXTRA položky\n   do progressItems, NENAHRAZUJÍ existující řádek" },
+
+    { "id": "n-gh-actions", "type": "text", "x": 800, "y": -2040, "width": 1600, "height": 200,
+      "text": "## GitHub Actions  —  Denní záloha databází\n.github/workflows/backup-databases.yml\n  Trigger: cron 02:00 UTC  |  ruční spuštění (workflow_dispatch)\n  Stáhne: GET /api/db/wires + cables + kanban\n  Commitne: public/<name>.json + public/<name>.schema.json\n  Pojistka: vrátí-li DB 0 řádků → soubor se NEPŘEPÍŠE\n  Secret: VITE_BACKEND_URL  (veřejná URL API)" }
   ],
 
   "edges": [
-    { "id": "e-master-to-parser", "fromNode": "n-master-csv", "toNode": "n-csv-parser", "label": "loadCSV()" },
-    { "id": "e-effi-to-parser", "fromNode": "n-effi-csv", "toNode": "n-csv-parser", "label": "loadCSV()" },
-    { "id": "e-wires-to-parser", "fromNode": "n-wires-json", "toNode": "n-csv-parser", "label": "loadWiresRaw()" },
-    { "id": "e-cables-to-parser", "fromNode": "n-cables-json", "toNode": "n-csv-parser", "label": "loadCables()" },
-    { "id": "e-kanban-to-parser", "fromNode": "n-kanban-json", "toNode": "n-csv-parser", "label": "loadKanban()" },
-    { "id": "e-parser-to-app", "fromNode": "n-csv-parser", "toNode": "n-app", "label": "setArticles()" },
-    { "id": "e-types-to-app", "fromNode": "n-types", "toNode": "n-app", "label": "Article, SearchResult, BomRow" },
+    { "id": "e-master-parse",   "fromNode": "n-master-csv",   "toNode": "n-csv-parser",    "label": "loadCSV()", "color": "5" },
+    { "id": "e-wires-parse",    "fromNode": "n-wires-json",   "toNode": "n-csv-parser",    "label": "loadWiresRaw()", "color": "5" },
+    { "id": "e-cables-parse",   "fromNode": "n-cables-json",  "toNode": "n-csv-parser",    "label": "loadCables()", "color": "5" },
+    { "id": "e-kanban-parse",   "fromNode": "n-kanban-json",  "toNode": "n-csv-parser",    "label": "loadKanban()", "color": "5" },
+    { "id": "e-parser-app",     "fromNode": "n-csv-parser",   "toNode": "n-app",           "label": "setArticles()", "color": "5" },
 
-    { "id": "e-app-to-single", "fromNode": "n-app", "toNode": "n-single-mode", "label": "mode='single'" },
-    { "id": "e-app-to-bulk", "fromNode": "n-app", "toNode": "n-bulk-mode", "label": "mode='bulk'" },
-    { "id": "e-app-to-ai-chat", "fromNode": "n-app", "toNode": "n-ai-chat", "label": "mode='ai' (Karel Bot)" },
-    { "id": "e-app-to-ai-guided", "fromNode": "n-app", "toNode": "n-ai-guided", "label": "mode='ai' (Řízený)" },
-    { "id": "e-app-to-bom", "fromNode": "n-app", "toNode": "n-bom-builder-ui", "label": "mode='ai' (BOM BETA)" },
-    { "id": "e-app-to-wirecable", "fromNode": "n-app", "toNode": "n-wirecable-mode", "label": "mode='wirecable'" },
-    { "id": "e-app-to-kanban", "fromNode": "n-app", "toNode": "n-kanban-mode", "label": "mode='kanban'" },
-    { "id": "e-app-to-admin", "fromNode": "n-app", "toNode": "n-admin-mode", "label": "mode='admin'" },
+    { "id": "e-app-single",     "fromNode": "n-app", "toNode": "n-single",       "label": "mode='single'" },
+    { "id": "e-app-bulk",       "fromNode": "n-app", "toNode": "n-bulk",         "label": "mode='bulk'" },
+    { "id": "e-app-chat",       "fromNode": "n-app", "toNode": "n-ai-chat-ui",   "label": "mode='ai'" },
+    { "id": "e-app-guided",     "fromNode": "n-app", "toNode": "n-guided-ui",    "label": "mode='ai'" },
+    { "id": "e-app-bom",        "fromNode": "n-app", "toNode": "n-bom-ui",       "label": "mode='ai' (BOM)" },
+    { "id": "e-app-wire",       "fromNode": "n-app", "toNode": "n-wirecable-ui", "label": "mode='wirecable'" },
+    { "id": "e-app-kanban",     "fromNode": "n-app", "toNode": "n-kanban-ui",    "label": "mode='kanban'" },
+    { "id": "e-app-admin",      "fromNode": "n-app", "toNode": "n-admin-ui",     "label": "mode='admin'" },
 
-    { "id": "e-single-to-engine", "fromNode": "n-single-mode", "toNode": "n-search-engine", "label": "search(articles, query)" },
-    { "id": "e-bulk-to-engine", "fromNode": "n-bulk-mode", "toNode": "n-search-engine", "label": "multi-query local search" },
-    { "id": "e-bulk-to-zbom", "fromNode": "n-bulk-mode", "toNode": "n-zbom", "label": "onOpenInZbom(results, selections)" },
-    { "id": "e-bom-ui-to-zbom", "fromNode": "n-bom-builder-ui", "toNode": "n-zbom", "label": "buildImportResult() → ImportResult" },
-    { "id": "e-admin-to-sub", "fromNode": "n-admin-mode", "toNode": "n-admin-sub", "label": "sub-navigace" },
+    { "id": "e-single-engine",  "fromNode": "n-single",        "toNode": "n-search-engine", "label": "search(articles, query)" },
+    { "id": "e-bulk-engine",    "fromNode": "n-bulk",          "toNode": "n-search-engine", "label": "multi-query search" },
+    { "id": "e-engine-fuse",    "fromNode": "n-search-engine", "toNode": "n-fuse-js",       "label": "fuzzy search", "color": "6" },
 
-    { "id": "e-engine-to-fuse", "fromNode": "n-search-engine", "toNode": "n-fuse-js", "label": "fuzzy search" },
+    { "id": "e-bulk-zbom",      "fromNode": "n-bulk",   "toNode": "n-zbom-ui", "label": "onOpenInZbom()" },
+    { "id": "e-bom-zbom",       "fromNode": "n-bom-ui", "toNode": "n-zbom-ui", "label": "buildImportResult()" },
+    { "id": "e-admin-sub",      "fromNode": "n-admin-ui", "toNode": "n-admin-sub-ui", "label": "sub-nav" },
 
-    { "id": "e-ai-chat-to-sse", "fromNode": "n-ai-chat", "toNode": "n-sse-chat", "label": "POST /api/chat (SSE fetch)" },
-    { "id": "e-ai-guided-to-sse", "fromNode": "n-ai-guided", "toNode": "n-sse-guided", "label": "POST /api/guided-chat (SSE fetch)" },
-    { "id": "e-bom-ui-to-sse", "fromNode": "n-bom-builder-ui", "toNode": "n-sse-bom", "label": "POST /api/bom-build (SSE fetch)" },
-    { "id": "e-bom-ui-to-json", "fromNode": "n-bom-builder-ui", "toNode": "n-json-bom", "label": "POST /api/bom-check (JSON)" },
-    { "id": "e-admin-to-adminapi", "fromNode": "n-admin-mode", "toNode": "n-admin-endpoints", "label": "GET/PUT /api/admin/db" },
-    { "id": "e-adminsub-to-adminapi", "fromNode": "n-admin-sub", "toNode": "n-admin-endpoints", "label": "logs, snapshots, master-csv" },
-    { "id": "e-wirecable-to-express", "fromNode": "n-wirecable-mode", "toNode": "n-express", "label": "GET /api/db/wires + /api/db/cables" },
-    { "id": "e-kanban-to-express", "fromNode": "n-kanban-mode", "toNode": "n-express", "label": "GET /api/db/kanban" },
+    { "id": "e-chat-ui-api",    "fromNode": "n-ai-chat-ui",   "toNode": "n-sse-chat-ep",  "label": "POST /api/chat (SSE)", "color": "4" },
+    { "id": "e-guided-ui-api",  "fromNode": "n-guided-ui",    "toNode": "n-sse-guided-ep","label": "POST /api/guided-chat (SSE)", "color": "4" },
+    { "id": "e-bom-ui-sse",     "fromNode": "n-bom-ui",       "toNode": "n-sse-bom-ep",   "label": "POST /api/bom-build (SSE)", "color": "4" },
+    { "id": "e-bom-ui-json",    "fromNode": "n-bom-ui",       "toNode": "n-json-bom-ep",  "label": "POST /api/bom-check (JSON)", "color": "4" },
+    { "id": "e-admin-ep",       "fromNode": "n-admin-ui",     "toNode": "n-admin-ep",     "label": "GET/PUT /api/admin/db", "color": "4" },
+    { "id": "e-admin-sub-ep",   "fromNode": "n-admin-sub-ui", "toNode": "n-admin-ep",     "label": "logs, snapshots, master-csv", "color": "4" },
+    { "id": "e-wire-express",   "fromNode": "n-wirecable-ui", "toNode": "n-express",      "label": "GET /api/db/wires + cables", "color": "4" },
+    { "id": "e-kanban-express",  "fromNode": "n-kanban-ui",    "toNode": "n-express",      "label": "GET /api/db/kanban", "color": "4" },
 
-    { "id": "e-sse-chat-to-chatjs", "fromNode": "n-sse-chat", "toNode": "n-chat-js", "label": "handleChat()" },
-    { "id": "e-sse-bom-to-bomjs", "fromNode": "n-sse-bom", "toNode": "n-bom-builder-js", "label": "handleBomBuild()" },
-    { "id": "e-sse-guided-to-guidedjs", "fromNode": "n-sse-guided", "toNode": "n-guided-js", "label": "handleGuidedChat()" },
-    { "id": "e-json-to-bomjs", "fromNode": "n-json-bom", "toNode": "n-bom-builder-js", "label": "checkClarification() / postCheck()" },
-    { "id": "e-adminapi-to-datastore", "fromNode": "n-admin-endpoints", "toNode": "n-datastore-js", "label": "readRows / writeRows / snapshots" },
-    { "id": "e-express-to-datastore", "fromNode": "n-express", "toNode": "n-datastore-js", "label": "getDb(name) → rows+schema" },
+    { "id": "e-sse-chat-js",    "fromNode": "n-sse-chat-ep",   "toNode": "n-chat-js",   "label": "handleChat()" },
+    { "id": "e-sse-bom-js",     "fromNode": "n-sse-bom-ep",    "toNode": "n-bom-js",    "label": "handleBomBuild()" },
+    { "id": "e-sse-guided-js",  "fromNode": "n-sse-guided-ep", "toNode": "n-guided-js", "label": "handleGuidedChat()" },
+    { "id": "e-json-bom-js",    "fromNode": "n-json-bom-ep",   "toNode": "n-bom-js",    "label": "checkClarification()" },
+    { "id": "e-admin-ds",       "fromNode": "n-admin-ep",      "toNode": "n-datastore-js", "label": "readRows / writeRows" },
+    { "id": "e-express-ds",     "fromNode": "n-express",       "toNode": "n-datastore-js", "label": "getDb() — veřejná data" },
 
-    { "id": "e-chat-to-search", "fromNode": "n-chat-js", "toNode": "n-search-js", "label": "searchTerm()" },
-    { "id": "e-chat-to-wiresearch", "fromNode": "n-chat-js", "toNode": "n-wire-cable-search", "label": "searchWires() / searchCables()" },
-    { "id": "e-bom-to-search", "fromNode": "n-bom-builder-js", "toNode": "n-search-js", "label": "searchTerm() round 1+2" },
-    { "id": "e-guided-to-search", "fromNode": "n-guided-js", "toNode": "n-search-js", "label": "executeTerm() × 20-35 termínů" },
-    { "id": "e-guided-to-wiresearch", "fromNode": "n-guided-js", "toNode": "n-wire-cable-search", "label": "filterCables() / filterWires()" },
+    { "id": "e-chat-search",    "fromNode": "n-chat-js",    "toNode": "n-search-js",     "label": "searchTerm()" },
+    { "id": "e-chat-wire",      "fromNode": "n-chat-js",    "toNode": "n-wire-cable-js", "label": "searchWires() / filterCables()" },
+    { "id": "e-bom-search",     "fromNode": "n-bom-js",     "toNode": "n-search-js",     "label": "searchTerm() round 1+2" },
+    { "id": "e-guided-search",  "fromNode": "n-guided-js",  "toNode": "n-search-js",     "label": "executeTerm() × 20–35" },
+    { "id": "e-guided-wire",    "fromNode": "n-guided-js",  "toNode": "n-wire-cable-js", "label": "filterCables() / filterWires()" },
 
-    { "id": "e-chat-to-knowledge", "fromNode": "n-chat-js", "toNode": "n-knowledge-js", "label": "buildKnowledgeContext() + MANUFACTURER_DOCS" },
-    { "id": "e-bom-to-knowledge", "fromNode": "n-bom-builder-js", "toNode": "n-knowledge-js", "label": "resolveManufacturerKey() + MANUFACTURER_DOCS" },
-    { "id": "e-guided-to-knowledge", "fromNode": "n-guided-js", "toNode": "n-knowledge-js", "label": "COMPONENT_CATEGORIES + productKnowledge" },
+    { "id": "e-chat-know",      "fromNode": "n-chat-js",   "toNode": "n-knowledge-js", "label": "buildKnowledgeContext()" },
+    { "id": "e-bom-know",       "fromNode": "n-bom-js",    "toNode": "n-knowledge-js", "label": "MANUFACTURER_DOCS" },
+    { "id": "e-guided-know",    "fromNode": "n-guided-js", "toNode": "n-knowledge-js", "label": "COMPONENT_CATEGORIES" },
 
-    { "id": "e-chat-to-mistral", "fromNode": "n-chat-js", "toNode": "n-mistral", "label": "expand + synthesize" },
-    { "id": "e-bom-to-mistral", "fromNode": "n-bom-builder-js", "toNode": "n-mistral", "label": "pickBestMatch + deriveDescription (× N rows)" },
-    { "id": "e-guided-to-mistral", "fromNode": "n-guided-js", "toNode": "n-mistral", "label": "detectCategory + questions + terms + synth" },
+    { "id": "e-chat-mistral",   "fromNode": "n-chat-js",   "toNode": "n-mistral", "label": "expand + synthesize", "color": "1" },
+    { "id": "e-bom-mistral",    "fromNode": "n-bom-js",    "toNode": "n-mistral", "label": "pickBestMatch + deriveDesc (×N řádků)", "color": "1" },
+    { "id": "e-guided-mistral", "fromNode": "n-guided-js", "toNode": "n-mistral", "label": "questions + terms + synthesize", "color": "1" },
 
-    { "id": "e-search-to-fuse", "fromNode": "n-search-js", "toNode": "n-fuse-js", "label": "fuzzySearch()" },
-    { "id": "e-search-to-master", "fromNode": "n-search-js", "toNode": "n-master-csv", "label": "loadDataset() + reloadMaster()" },
-    { "id": "e-wiresearch-to-wires", "fromNode": "n-wire-cable-search", "toNode": "n-wires-json", "label": "reloadWires()" },
-    { "id": "e-wiresearch-to-cables", "fromNode": "n-wire-cable-search", "toNode": "n-cables-json", "label": "reloadCables()" },
+    { "id": "e-search-master",  "fromNode": "n-search-js",      "toNode": "n-master-csv",  "label": "loadDataset() / reloadMaster()" },
+    { "id": "e-search-fuse",    "fromNode": "n-search-js",      "toNode": "n-fuse-js",     "label": "fuzzySearch()", "color": "6" },
+    { "id": "e-wire-wires",     "fromNode": "n-wire-cable-js",  "toNode": "n-wires-json",  "label": "reloadWires()" },
+    { "id": "e-cable-cables",   "fromNode": "n-wire-cable-js",  "toNode": "n-cables-json", "label": "reloadCables()" },
 
-    { "id": "e-datastore-to-wires", "fromNode": "n-datastore-js", "toNode": "n-wires-json", "label": "writeRows() atomic (.tmp+rename)" },
-    { "id": "e-datastore-to-cables", "fromNode": "n-datastore-js", "toNode": "n-cables-json", "label": "writeRows() atomic" },
-    { "id": "e-datastore-to-kanban", "fromNode": "n-datastore-js", "toNode": "n-kanban-json", "label": "writeRows() atomic" },
-    { "id": "e-datastore-to-snapshots", "fromNode": "n-datastore-js", "toNode": "n-snapshots", "label": "snapshotDb() GFS prune" },
-    { "id": "e-datastore-to-audit", "fromNode": "n-datastore-js", "toNode": "n-audit-log", "label": "appendAudit()" },
-    { "id": "e-datastore-to-wiresearch", "fromNode": "n-datastore-js", "toNode": "n-wire-cable-search", "label": "notifyReload() → reindex" },
+    { "id": "e-ds-wires",       "fromNode": "n-datastore-js", "toNode": "n-wires-json",  "label": "writeRows() atomic", "color": "3" },
+    { "id": "e-ds-cables",      "fromNode": "n-datastore-js", "toNode": "n-cables-json", "label": "writeRows() atomic", "color": "3" },
+    { "id": "e-ds-kanban",      "fromNode": "n-datastore-js", "toNode": "n-kanban-json", "label": "writeRows() atomic", "color": "3" },
+    { "id": "e-ds-datadir",     "fromNode": "n-datastore-js", "toNode": "n-data-dir",    "label": "snapshotDb() + appendAudit()", "color": "3" },
+    { "id": "e-ds-reload",      "fromNode": "n-datastore-js", "toNode": "n-wire-cable-js", "label": "notifyReload() → reindex" },
 
-    { "id": "e-chat-to-collector", "fromNode": "n-chat-js", "toNode": "n-collector-js", "label": "logRecord({type:'chat'})" },
-    { "id": "e-bom-to-collector", "fromNode": "n-bom-builder-js", "toNode": "n-collector-js", "label": "logRecord({type:'bom'})" },
-    { "id": "e-guided-to-collector", "fromNode": "n-guided-js", "toNode": "n-collector-js", "label": "logRecord({type:'guided'})" },
-    { "id": "e-collector-to-log", "fromNode": "n-collector-js", "toNode": "n-chats-log", "label": "JSONL append" },
-
-    { "id": "e-sse-chat-to-proto", "fromNode": "n-sse-chat", "toNode": "n-sse-proto", "label": "SSE stream" },
-    { "id": "e-sse-bom-to-proto", "fromNode": "n-sse-bom", "toNode": "n-sse-proto", "label": "SSE stream" },
-    { "id": "e-sse-guided-to-proto", "fromNode": "n-sse-guided", "toNode": "n-sse-proto", "label": "SSE stream" },
-
-    { "id": "e-express-to-search", "fromNode": "n-express", "toNode": "n-search-js", "label": "GET /api/admin/master-search" },
-    { "id": "e-adminapi-to-search", "fromNode": "n-admin-endpoints", "toNode": "n-search-js", "label": "PUT master-csv → reloadMaster()" }
+    { "id": "e-chat-log",       "fromNode": "n-chat-js",   "toNode": "n-collector-js", "label": "logRecord('chat')" },
+    { "id": "e-bom-log",        "fromNode": "n-bom-js",    "toNode": "n-collector-js", "label": "logRecord('bom')" },
+    { "id": "e-guided-log",     "fromNode": "n-guided-js", "toNode": "n-collector-js", "label": "logRecord('guided')" },
+    { "id": "e-collector-file", "fromNode": "n-collector-js", "toNode": "n-chats-log", "label": "JSONL append" }
   ]
 }
