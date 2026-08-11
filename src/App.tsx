@@ -14,7 +14,6 @@ import { FilterPanel } from './components/FilterPanel';
 import { DataSourceToggle } from './components/DataSourceToggle';
 import { AdvancedSettings } from './components/AdvancedSettings';
 import { BulkSearch } from './components/BulkSearch';
-import { ChatBot } from './components/ChatBot';
 import { AiChat } from './components/AiChat';
 import { AiBomBuilder } from './components/AiBomBuilder';
 import { AiOnboarding } from './components/AiOnboarding';
@@ -42,7 +41,6 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? '';
 
 function App() {
   // Data state
@@ -369,21 +367,6 @@ function App() {
             >
               Hromadné
             </button>
-            {BACKEND_URL && (
-              <button
-                id="onb-aimode"
-                onClick={() => setAppMode('ai')}
-                className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                  appMode === 'ai'
-                    ? 'bg-mauve text-crust shadow-lg'
-                    : 'text-subtext1 hover:text-text'
-                }`}
-              >
-                <span className="text-pink">✨</span>
-                <span className={appMode === 'ai' ? 'text-crust' : 'text-mauve font-bold'}> AI </span>
-                <span className="text-pink">✨</span>
-              </button>
-            )}
           </div>
           <div className="flex bg-surface0 rounded-2xl p-1 gap-1">
             <button
@@ -779,7 +762,6 @@ function App() {
         </footer>
       </div>
 
-      {BACKEND_URL && <ChatBot onTeleportToAi={() => setAppMode('ai')} />}
       <AppOnboarding />
       <VersionChecker />
 

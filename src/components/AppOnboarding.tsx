@@ -63,15 +63,6 @@ const STEPS: StepDef[] = [
     nextClass: 'bg-peach text-crust hover:bg-peach/90',
   },
   {
-    targetId: 'onb-aimode',
-    iconClass: 'text-mauve',
-    icon: <Sparkles size={20} />,
-    title: '✨ AI mód',
-    body: 'Tři AI nástroje na jednom místě:\n• Karel Bot — dotazy k aplikaci, obecná pomoc\n• Řízený — doporučený způsob hledání komponent (jistič, stykač, svorka…)\n• Stavba kusovníku — experimentální, pro sestavení BOM z typových označení',
-    ringHex: '#cba6f7',
-    nextClass: 'bg-mauve text-crust hover:bg-mauve/90',
-  },
-  {
     targetId: null,
     iconClass: 'text-teal',
     icon: <Table2 size={20} />,
