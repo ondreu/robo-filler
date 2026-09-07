@@ -22,6 +22,9 @@ const ENTRIES: ChangelogEntry[] = [
       'Krátká slova (do 3 znaků) se u víceslovných dotazů už nechytají uvnitř jiných slov — „UT 2,5" dřív našlo i „Dutinka 1,5-2,5mm" nebo motorový jistič „12,5A", teď vrací jen skutečné svorky UT 2,5',
       'Rozměry a průřezy s desetinnou čárkou („2,5") se berou jako jedno číslo, ne jako „2" a „5"',
       'Rozdělení do polí drží pohromadě slova napsaná vedle sebe — „phoenix UT 2,5" dá Výrobce „phoenix" + Typové označení „UT 2,5", ne rozsekané po třech polích',
+      'Mezera v označení už nehraje roli — „icotek ST9" najde artikl s typovým označením „ST 9" (dřív skončil na 67. místě, teď je první); platí i naopak a pro tečku vs čárku („UT 2.5" ≈ „UT 2,5")',
+      'Jednoznaková slova se už nezahazují — „icotek ST 9" bere v potaz i tu devítku',
+      'Kombinovaný režim už neskrývá řádky, které mají stejný (nebo prázdný) artikl — v hlavní DB je takových 101',
     ],
   },
   {
