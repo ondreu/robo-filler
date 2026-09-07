@@ -706,8 +706,9 @@ function App() {
                         .
                       </p>
                       <p className="text-xs text-overlay0 mt-1">
-                        Takový dotaz umí najít i jednoduché pole, ale míchá do výsledků i artikly, kde platí jen
-                        část slov. Rozdělením do samostatných polí dostaneš jen přesné kombinace.
+                        <span className="text-subtext1 font-medium">Nevidíš tady, co hledáš?</span>{' '}
+                        Zkus přepnout na vyhledávání ve více polích — jednoduché pole míchá do výsledků i artikly,
+                        kde platí jen část slov, zatímco samostatná pole vrátí jen přesné kombinace.
                       </p>
                     </div>
                     <button
