@@ -8,9 +8,14 @@
 - Typové označení je i nadále **jedno pole** — hledá se v typovém označení i v čísle dílu výrobce.
 - Režim vyhledávání (Fuzzy / Wild Card / Kombinovaný) i počet výsledků fungují v obou režimech; volba „Hledat v" se v pokročilém režimu skryje (každé pole má vlastní vstup).
 
+- **Vyhledávání napříč poli** — dotaz, jehož slova leží v různých polích (`siemens 3RV2011` = výrobce + typové označení), dřív v jednoduchém poli **nenašel nic** (Wild Card) nebo dal správnému artiklu **stejné skóre jako nesouvisejícím** (Fuzzy / Kombinovaný). Nyní se takový dotaz vyhodnotí napříč všemi poli: každé slovo musí být v některém poli (AND), pořadí slov ani diakritika nehrají roli.
+- **Nabídka rozdělení** — když je nejlepší shoda právě takováto (napříč poli), zobrazí se lišta s rozpadem dotazu a tlačítkem „Rozdělit do polí", které přepne na pokročilé zadání s předvyplněnými poli.
+
 ### Implementace
 - `src/utils/searchEngine.ts` — `searchAdvanced()` spustí každé kritérium jako běžné vyhledávání v daném poli a výsledky protne; skóre je minimum ze splněných kritérií (nejslabší článek), zvýraznění se sloučí napříč poli
-- `src/types.ts` — `ADVANCED_FIELDS`, `AdvancedQuery`, `AdvancedSearchOptions`
+- `src/utils/searchEngine.ts` — `crossFieldSearch()` přiřadí každé slovo dotazu k nejlépe sedícímu poli (přesná hodnota 100 / celé slovo 95 / prefix slova 85 / podřetězec 75), skóre = nejslabší slovo, strop `CROSS_FIELD_MAX_SCORE = 86`, aby jednopolová shoda (88–98) zůstala vždy výš. Shody v rámci jednoho pole se přeskočí — ty už řeší stávající cesty. Neaktivní pro konkrétní pole („Hledat v") a pro dotazy s `*`/`?`.
+- Výkon — 95 % hodnot v DB je čisté ASCII, takže se drahá normalizace diakritiky (`stripDiacriticChars`) a tokenizace dělá jen tam, kde je potřeba; režie napříč poli je ~200 ms nad 82 tis. artikly místo ~490 ms
+- `src/types.ts` — `ADVANCED_FIELDS`, `ADVANCED_FIELD_LABELS`, `AdvancedQuery`, `AdvancedSearchOptions`, `SearchResult.crossField`
 
 ## V150626 — Admin: bezpečnost, produktivita, zálohy (2026-06-15)
 

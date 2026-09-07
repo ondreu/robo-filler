@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Loader2, AlertCircle, Download, FolderOpen, Settings, Calculator, Cable } from 'lucide-react';
-import type { Article, SearchResult, SearchMode, SearchField, DataSource, AppMode, AdvancedQuery } from './types';
+import { Loader2, AlertCircle, Download, FolderOpen, Settings, Calculator, Cable, SplitSquareHorizontal } from 'lucide-react';
+import type { Article, SearchResult, SearchMode, SearchField, DataSource, AppMode, AdvancedQuery, AdvancedField } from './types';
+import { ADVANCED_FIELD_LABELS } from './types';
 import { parseBomTxt, type ImportResult } from './utils/bomExport';
 import { BomWizard } from './components/BomWizard';
 import { Changelog } from './components/Changelog';
@@ -272,6 +273,22 @@ function App() {
 
     return () => clearTimeout(timer);
   }, [debouncedQuery, debouncedAdvancedQuery, advanced, mode, field, maxResults, selectedManufacturers, activeArticles]);
+
+  // When the query's words matched across several fields at once, offer to move
+  // them into the advanced per-field inputs — that is what the user actually meant.
+  // Only when the *best* match is a cross-field one: that means no single field
+  // satisfied the query as typed, which is exactly the case worth a nudge.
+  const crossFieldSplit = useMemo(() => {
+    if (advanced || isSearching) return null;
+    const top = results[0];
+    if (!top?.crossField || Object.keys(top.crossField).length < 2) return null;
+    return top.crossField;
+  }, [advanced, isSearching, results]);
+
+  const applyCrossFieldSplit = useCallback((split: AdvancedQuery) => {
+    setAdvancedQuery(split);
+    setAdvanced(true);
+  }, []);
 
   const suggestions = useMemo(() => {
     // Suggestions ("Mysleli jste...?") only make sense for a single free-text query
@@ -673,6 +690,35 @@ function App() {
                     </p>
                   )}
                 </div>
+
+                {/* Cross-field query hint */}
+                {crossFieldSplit && (
+                  <div className="bg-mantle border-2 border-teal/30 rounded-2xl p-4 flex flex-col md:flex-row
+                    md:items-center gap-3">
+                    <SplitSquareHorizontal className="text-teal shrink-0" size={20} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-text">
+                        Tvůj dotaz se našel <span className="text-teal">napříč více poli</span>
+                        {' — '}
+                        {(Object.keys(crossFieldSplit) as AdvancedField[])
+                          .map(f => `${ADVANCED_FIELD_LABELS[f]}: „${crossFieldSplit[f]}"`)
+                          .join(' + ')}
+                        .
+                      </p>
+                      <p className="text-xs text-overlay0 mt-1">
+                        Takový dotaz umí najít i jednoduché pole, ale míchá do výsledků i artikly, kde platí jen
+                        část slov. Rozdělením do samostatných polí dostaneš jen přesné kombinace.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => applyCrossFieldSplit(crossFieldSplit)}
+                      className="shrink-0 px-4 py-2 rounded-xl font-medium bg-teal text-crust
+                        hover:bg-teal/90 transition-colors text-sm"
+                    >
+                      Rozdělit do polí
+                    </button>
+                  </div>
+                )}
 
                 {/* Results */}
                 {hasQuery && !isSearching && (
