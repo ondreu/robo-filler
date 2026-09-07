@@ -19,6 +19,9 @@ const ENTRIES: ChangelogEntry[] = [
       'Typové označení zůstává jedním polem — hledá se v něm i v čísle dílu výrobce',
       'Vyhledávání napříč poli — dotaz typu „siemens 3RV2011" (výrobce + typové označení) už funguje i v jednoduchém poli; dřív nenašel nic, nebo správný artikl utopil mezi nesouvisejícími',
       'U takového dotazu se nabídne tlačítko „Rozdělit do polí" — jedním klikem přepne na pokročilé zadání s předvyplněnými poli',
+      'Krátká slova (do 3 znaků) se u víceslovných dotazů už nechytají uvnitř jiných slov — „UT 2,5" dřív našlo i „Dutinka 1,5-2,5mm" nebo motorový jistič „12,5A", teď vrací jen skutečné svorky UT 2,5',
+      'Rozměry a průřezy s desetinnou čárkou („2,5") se berou jako jedno číslo, ne jako „2" a „5"',
+      'Rozdělení do polí drží pohromadě slova napsaná vedle sebe — „phoenix UT 2,5" dá Výrobce „phoenix" + Typové označení „UT 2,5", ne rozsekané po třech polích',
     ],
   },
   {

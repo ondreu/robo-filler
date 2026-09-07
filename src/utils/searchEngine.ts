@@ -35,6 +35,59 @@ function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// Words of this length or shorter must sit on a boundary to count as a match.
+// Without it „ut" matches inside „dutinka" and „2,5" inside „1,5-2,5mm", which
+// floods multi-word results with articles that have nothing to do with the query.
+const SHORT_WORD_MAX = 3;
+
+// Characters that begin a new token. Deliberately EXCLUDES „," and „." so a
+// cross-section like „2,5" counts as one token — that keeps it out of „12,5"
+// while it still matches in „UT 2,5-QUATTRO".
+const TOKEN_BOUNDARY = '\\s\\-_/\\\\()\\[\\]{}+;:=#%*';
+
+const boundaryRegexCache = new Map<string, RegExp>();
+
+/**
+ * Where a short word may sit: at the start, right after a separator, or across a
+ * letter/digit transition. That last case carries weight in part numbers —
+ * „24v" in „DC24V" and „2,5" in „UT2,5QUATRO" are real matches, while „2,5" in
+ * „12,5" (digit→digit) and „ut" in „dutinka" (letter→letter) are not.
+ */
+function boundaryRegex(needle: string): RegExp {
+  let re = boundaryRegexCache.get(needle);
+  if (!re) {
+    // a needle starting with a digit is bounded by any non-digit, and vice versa
+    const transition = /^[0-9]/.test(needle) ? '[^0-9]' : '[0-9]';
+    re = new RegExp(`(?:^|[${TOKEN_BOUNDARY}]|${transition})${escapeRegex(needle)}`, 'i');
+    boundaryRegexCache.set(needle, re);
+  }
+  return re;
+}
+
+/**
+ * Does `needle` occur in `hay` somewhere that actually means something?
+ *
+ * `strict` applies the boundary rule for short words and belongs to multi-word
+ * queries only. There a short word acts as an AND filter, so matching it inside
+ * an unrelated word lets junk through („UT 2,5" pulling in „Dutinka 1,5-2,5mm"
+ * because of d-„ut"-inka). A single-word query is a plain contains-search where
+ * the user sees exactly what they asked for, so „M12" should still find
+ * „IFRM12P1701" — no boundary there.
+ */
+function containsWord(needle: string, hay: string, strict: boolean): boolean {
+  if (!needle) return false;
+  if (!hay.includes(needle)) return false;
+  if (!strict || needle.length > SHORT_WORD_MAX) return true;
+  return boundaryRegex(needle).test(hay);
+}
+
+/** Both diacritic normalizations of a query word, deduplicated. */
+function wordVariants(word: string): string[] {
+  const stripped = removeDiacritics(word).toLowerCase();
+  const charless = stripDiacriticChars(word).toLowerCase();
+  return stripped === charless ? [stripped] : [stripped, charless];
+}
+
 function normalizeString(str: string): string {
   return removeDiacritics(str)
     .toLowerCase()
@@ -150,7 +203,7 @@ function scoreQuery(query: string, target: string): {
 
   let matchedCount = 0;
   for (const word of words) {
-    if (targetNorm.includes(word) || targetNorm.includes(stripDiacriticChars(word))) matchedCount++;
+    if (containsWord(word, targetNorm, true) || containsWord(stripDiacriticChars(word).toLowerCase(), targetNorm, true)) matchedCount++;
   }
 
   if (matchedCount === 0) {
@@ -176,7 +229,9 @@ function scoreQuery(query: string, target: string): {
 function wildcardSearch(articles: Article[], query: string, field: SearchField): SearchResult[] {
   const hasExplicitWildcard = query.includes('*') || query.includes('?');
 
-  let regexes: RegExp[];
+  // A matcher tests one query word against an already-normalized field value
+  type Matcher = (hay: string) => boolean;
+  let matchers: Matcher[];
 
   if (hasExplicitWildcard) {
     let pattern = query;
@@ -188,15 +243,16 @@ function wildcardSearch(articles: Article[], query: string, field: SearchField):
         if (char === '?') return '.';
         return '\\' + char;
       });
-    regexes = [new RegExp(regexPattern, 'i')];
+    // An explicit wildcard means the user is being precise on purpose — match it as written
+    const explicit = new RegExp(regexPattern, 'i');
+    matchers = [(hay: string) => explicit.test(hay)];
   } else {
-    // Each word becomes its own regex — ALL must match (AND logic)
+    // Each word gets its own matcher — ALL must match (AND logic)
     const words = query.trim().split(/\s+/).filter(Boolean);
-    regexes = words.map(w => {
-      const stripped = removeDiacritics(w);
-      const charless = stripDiacriticChars(w);
-      if (stripped === charless) return new RegExp(escapeRegex(stripped), 'i');
-      return new RegExp(`(?:${escapeRegex(stripped)}|${escapeRegex(charless)})`, 'i');
+    const strict = words.length > 1;
+    matchers = words.map(w => {
+      const variants = wordVariants(w);
+      return (hay: string) => variants.some(v => containsWord(v, hay, strict));
     });
   }
 
@@ -206,9 +262,9 @@ function wildcardSearch(articles: Article[], query: string, field: SearchField):
     const fields = getSearchableFields(article, field);
 
     for (const [fieldName, value] of Object.entries(fields)) {
-      const normalizedValue = removeDiacritics(value);
+      const normalizedValue = removeDiacritics(value).toLowerCase();
 
-      if (regexes.every(re => re.test(normalizedValue))) {
+      if (matchers.every(matches => matches(normalizedValue))) {
         // Score based on actual match quality, not hardcoded 100
         const queryForScore = hasExplicitWildcard ? query.replace(/[*?]/g, ' ').trim() : query;
         const { score, matchType } = scoreQuery(queryForScore, value);
@@ -250,7 +306,9 @@ function fuzzySearch(articles: Article[], query: string, field: SearchField): Se
 
       for (const [fieldName, value] of Object.entries(fields)) {
         const valueNorm = removeDiacritics(value).toLowerCase();
-        const matchedCount = queryWords.filter(w => valueNorm.includes(w) || valueNorm.includes(stripDiacriticChars(w))).length;
+        const matchedCount = queryWords.filter(
+          w => containsWord(w, valueNorm, true) || containsWord(stripDiacriticChars(w).toLowerCase(), valueNorm, true)
+        ).length;
 
         if (matchedCount === 0) continue;
 
@@ -505,7 +563,86 @@ function scoreNeedleInHaystack(needle: string, hay: string, words: string[]): nu
   if (hay === needle) return 100;
   if (words.includes(needle)) return 95;
   if (words.some(w => w.startsWith(needle))) return 85;
+  // A short word only counts on a boundary, otherwise it is letter-noise
+  if (needle.length <= SHORT_WORD_MAX) return boundaryRegex(needle).test(hay) ? 80 : 0;
   return 75;
+}
+
+// Searchable fields in a stable order, so a word→field assignment can be
+// represented as plain indices while refining it below. The order is also the
+// tie-break: when a word sits equally well in several fields, the identifying
+// ones win — „UT 2,5" belongs in Typové označení rather than in Název, even
+// though „Kryt na UT 2,5 / 10 GY" matches it just as strongly.
+const CROSS_FIELD_KEYS = ['typoveOznaceni', 'vyrobce', 'artikl', 'nazev', 'cisloDiluVyrobce'] as const;
+
+/**
+ * Picks which field each query word belongs to.
+ *
+ * Scoring uses the greedy per-word maximum, which is already the best possible
+ * combination: the article score is the *minimum* over words, and min is
+ * monotone, so maximizing each word independently maximizes it. Brute force over
+ * all assignments confirmed this — it never beat greedy on any article.
+ *
+ * Ties are a different story, and that is what this refinement is for. Many
+ * assignments reach the same minimum while scattering the words over different
+ * fields, and greedy picks arbitrarily among them — which is how „phoenix UT 2,5"
+ * ended up as Výrobce „phoenix" + Název „UT" + Typové označení „2,5", tearing
+ * „UT 2,5" in half. Among equally-scoring assignments, prefer the one that keeps
+ * words the user typed next to each other in the same field, then the one using
+ * fewer fields.
+ */
+function refineAssignment(matrix: number[][], greedy: number[]): number[] {
+  const wordCount = matrix.length;
+  const fieldCount = CROSS_FIELD_KEYS.length;
+
+  // 5^6 assignments is already 15 k per article — not worth it past 5 words
+  if (wordCount < 2 || wordCount > 5) return greedy;
+
+  const scoreOf = (pick: number[]) => {
+    let min = 100;
+    for (let i = 0; i < wordCount; i++) min = Math.min(min, matrix[i][pick[i]]);
+    return min;
+  };
+  const adjacencyOf = (pick: number[]) => {
+    let same = 0;
+    for (let i = 1; i < wordCount; i++) if (pick[i] === pick[i - 1]) same++;
+    return same;
+  };
+
+  let best = greedy;
+  let bestScore = scoreOf(greedy);
+  let bestAdjacency = adjacencyOf(greedy);
+  let bestFields = new Set(greedy).size;
+
+  const total = fieldCount ** wordCount;
+  const pick = new Array<number>(wordCount);
+
+  for (let code = 0; code < total; code++) {
+    let rest = code;
+    for (let i = 0; i < wordCount; i++) {
+      pick[i] = rest % fieldCount;
+      rest = Math.floor(rest / fieldCount);
+    }
+
+    const score = scoreOf(pick);
+    if (score < bestScore) continue;
+
+    const adjacency = adjacencyOf(pick);
+    const fields = new Set(pick).size;
+
+    if (
+      score > bestScore ||
+      adjacency > bestAdjacency ||
+      (adjacency === bestAdjacency && fields < bestFields)
+    ) {
+      best = [...pick];
+      bestScore = score;
+      bestAdjacency = adjacency;
+      bestFields = fields;
+    }
+  }
+
+  return best;
 }
 
 /**
@@ -521,18 +658,23 @@ function crossFieldSearch(articles: Article[], query: string): SearchResult[] {
 
   // Normalize the query once — the article loop below runs 80k+ times
   const needles = rawWords.map(w => removeDiacritics(w).toLowerCase());
+  const wordCount = needles.length;
+  const fieldCount = CROSS_FIELD_KEYS.length;
+
+  // „2,5" can never be a token under the ordinary split (it breaks on „,"), so
+  // when a word carries a decimal separator, tokenize a second way that keeps it.
+  const needsCoarseTokens = needles.some(n => /[.,]/.test(n));
 
   const results: SearchResult[] = [];
-  const bestScore = new Array<number>(needles.length);
-  const bestField = new Array<string>(needles.length);
+  const matrix: number[][] = needles.map(() => new Array<number>(fieldCount).fill(0));
 
   for (const article of articles) {
     const fields = getSearchableFields(article, 'all');
 
-    bestScore.fill(0);
-    bestField.fill('');
+    for (let i = 0; i < wordCount; i++) matrix[i].fill(0);
 
-    for (const fieldName in fields) {
+    for (let f = 0; f < fieldCount; f++) {
+      const fieldName = CROSS_FIELD_KEYS[f];
       const value = fields[fieldName];
       if (!value) continue;
 
@@ -547,7 +689,7 @@ function crossFieldSearch(articles: Article[], query: string): SearchResult[] {
       // actually contains one of the words — lazily, and at most once per hay.
       const wordLists: Array<string[] | undefined> = [undefined, undefined];
 
-      for (let i = 0; i < needles.length; i++) {
+      for (let i = 0; i < wordCount; i++) {
         const needle = needles[i];
         for (let h = 0; h < hays.length; h++) {
           const hay = hays[h];
@@ -556,39 +698,54 @@ function crossFieldSearch(articles: Article[], query: string): SearchResult[] {
           let words = wordLists[h];
           if (!words) {
             words = hay.split(/[\s,.\-_/\\]+/).filter(Boolean);
+            if (needsCoarseTokens) {
+              words = words.concat(hay.split(/[\s\-_/\\]+/).filter(Boolean));
+            }
             wordLists[h] = words;
           }
 
           const score = scoreNeedleInHaystack(needle, hay, words);
-          if (score > bestScore[i]) {
-            bestScore[i] = score;
-            bestField[i] = fieldName;
-          }
+          if (score > matrix[i][f]) matrix[i][f] = score;
         }
       }
     }
 
-    // Strict AND — every word has to land somewhere
+    // Strict AND — every word has to land somewhere. Greedy per-word maximum is
+    // the optimal score (see refineAssignment).
+    const greedy = new Array<number>(wordCount);
     let weakest = 100;
-    for (let i = 0; i < needles.length; i++) {
-      if (bestScore[i] === 0) {
+    for (let i = 0; i < wordCount; i++) {
+      let bestField = 0;
+      let bestScore = 0;
+      for (let f = 0; f < fieldCount; f++) {
+        if (matrix[i][f] > bestScore) {
+          bestScore = matrix[i][f];
+          bestField = f;
+        }
+      }
+      if (bestScore === 0) {
         weakest = 0;
         break;
       }
-      if (bestScore[i] < weakest) weakest = bestScore[i];
+      greedy[i] = bestField;
+      if (bestScore < weakest) weakest = bestScore;
     }
     if (weakest === 0) continue;
 
-    const wordsPerField = new Map<string, string[]>();
-    for (let i = 0; i < needles.length; i++) {
-      const field = bestField[i];
-      const existing = wordsPerField.get(field);
-      if (existing) existing.push(rawWords[i]);
-      else wordsPerField.set(field, [rawWords[i]]);
-    }
-
     // All words in one field — the ordinary search paths handle that better
-    if (wordsPerField.size < 2) continue;
+    if (new Set(greedy).size < 2) continue;
+
+    // Only survivors get here (a handful per query), so the combination search
+    // over ties is affordable — it costs ~0.02 ms per article.
+    const pick = refineAssignment(matrix, greedy);
+
+    const wordsPerField = new Map<string, string[]>();
+    for (let i = 0; i < wordCount; i++) {
+      const fieldName = CROSS_FIELD_KEYS[pick[i]];
+      const existing = wordsPerField.get(fieldName);
+      if (existing) existing.push(rawWords[i]);
+      else wordsPerField.set(fieldName, [rawWords[i]]);
+    }
 
     const assignment: AdvancedQuery = {};
     const highlightedFields: SearchResult['highlightedFields'] = {};

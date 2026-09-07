@@ -106,6 +106,15 @@ export function HowItWorks() {
                   </p>
                 </div>
                 <div className="bg-surface0 rounded-xl p-3 mt-3">
+                  <p className="text-xs font-semibold text-text mb-1">Krátká slova a rozměry</p>
+                  <p className="text-xs text-subtext1">
+                    U víceslovných dotazů musí krátké slovo (do 3 znaků) ležet na začátku slova v databázi — jinak by
+                    „UT 2,5" našlo i „Dutinka 1,5-2,5mm" kvůli d-<span className="text-teal">ut</span>-inka. Rozměry
+                    s desetinnou čárkou („2,5") se berou jako jedno číslo. U jednoslovného dotazu toto pravidlo neplatí,
+                    takže „M12" i dál najde „IFRM12P1701".
+                  </p>
+                </div>
+                <div className="bg-surface0 rounded-xl p-3 mt-3">
                   <p className="text-xs font-semibold text-text mb-1">Pokročilé zadání</p>
                   <p className="text-xs text-subtext1">
                     Přepínačem „Pokročilé" se jedno vyhledávací pole rozdělí na samostatná pole — Typové označení,
