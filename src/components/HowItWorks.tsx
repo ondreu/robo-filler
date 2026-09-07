@@ -115,6 +115,14 @@ export function HowItWorks() {
                   </p>
                 </div>
                 <div className="bg-surface0 rounded-xl p-3 mt-3">
+                  <p className="text-xs font-semibold text-text mb-1">Mezery v označení</p>
+                  <p className="text-xs text-subtext1">
+                    Nezáleží na tom, jak napíšeš mezery a tečky v označení — „icotek ST9" najde artikl s typovým
+                    označením „ST 9" a naopak, stejně jako „UT 2.5" najde „UT 2,5". Oddělovač, který napíšeš ty,
+                    ale zůstává povinný: „2,5" nenajde „M25".
+                  </p>
+                </div>
+                <div className="bg-surface0 rounded-xl p-3 mt-3">
                   <p className="text-xs font-semibold text-text mb-1">Pokročilé zadání</p>
                   <p className="text-xs text-subtext1">
                     Přepínačem „Pokročilé" se jedno vyhledávací pole rozdělí na samostatná pole — Typové označení,

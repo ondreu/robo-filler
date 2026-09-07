@@ -81,6 +81,82 @@ function containsWord(needle: string, hay: string, strict: boolean): boolean {
   return boundaryRegex(needle).test(hay);
 }
 
+// Separators that industrial part numbers use interchangeably. „ST9" and „ST 9"
+// are the same designation, and the database is inconsistent about which form it
+// stores, so a word has to be comparable with these removed.
+const SEPARATORS = /[\s.,\-_/\\]+/g;
+
+const HAS_SEPARATOR = /[\s.,\-_/\\]/;
+
+function stripSeparators(str: string): string {
+  return str.replace(SEPARATORS, '');
+}
+
+const HAS_LETTER = /[a-z]/i;
+const HAS_DIGIT = /[0-9]/;
+
+/**
+ * Is the separator-insensitive retry worth doing for this word at all?
+ *
+ * It only pays off where the database and the user disagree about a separator,
+ * and that happens in designations — a word that mixes letters and digits
+ * („ST9" vs „ST 9", „3RV2011"), or that already carries one („2,5"). A purely
+ * alphabetic word like „siemens" or „spoustec" is never written „siem ens", so
+ * retrying it would only cost a full extra pass over every field value.
+ */
+function needsCompactRetry(word: string): boolean {
+  if (HAS_SEPARATOR.test(word)) return true;
+  return HAS_LETTER.test(word) && HAS_DIGIT.test(word);
+}
+
+const tolerantRegexCache = new Map<string, RegExp>();
+
+/**
+ * A pattern that matches the word even if the value spells it with different
+ * separators — „ST9" against „ST 9", „UT2,5" against „UT 2,5". Built from the
+ * word with separators removed and an optional separator run allowed between
+ * every character, so it works in both directions.
+ *
+ * This is tested against the value as written rather than against a stripped
+ * copy of it: allocating a compacted string for all five fields of 80k articles
+ * costs more than the search itself, while a cached regex costs one test.
+ * Testing the written form is also the better semantics — in „KEL ST 9" the
+ * word „ST9" sits behind a space, which is a boundary; compacting to
+ * „kelst9" would have hidden that.
+ */
+function tolerantRegex(needle: string): RegExp {
+  let re = tolerantRegexCache.get(needle);
+  if (!re) {
+    const sep = `[${TOKEN_BOUNDARY},.]`;
+
+    // Runs of non-separator characters. Inside a run the value may insert
+    // separators freely („ST9" → „ST 9"), but where the word itself has one the
+    // value must have one too — otherwise „2,5" would match „M25" and a
+    // cross-section would be confused with a thread size.
+    const runs = needle.split(SEPARATORS).filter(Boolean);
+    const body = runs.map(run => Array.from(run, escapeRegex).join(`${sep}*`)).join(`${sep}+`);
+
+    // Short words keep the boundary requirement (see containsWord)
+    const transition = /^[0-9]/.test(runs[0] ?? '') ? '[^0-9]' : '[0-9]';
+    const prefix =
+      stripSeparators(needle).length <= SHORT_WORD_MAX ? `(?:^|${sep}|${transition})` : '';
+
+    re = new RegExp(prefix + body, 'i');
+    tolerantRegexCache.set(needle, re);
+  }
+  return re;
+}
+
+/**
+ * Does the value spell the word with separators the query did not use (or the
+ * other way round)? Only asked for words where that can happen — see
+ * needsCompactRetry — and only after the plain comparison has already failed.
+ */
+function matchesAcrossSeparators(needle: string, hay: string): boolean {
+  if (!stripSeparators(needle)) return false;
+  return tolerantRegex(needle).test(hay);
+}
+
 /** Both diacritic normalizations of a query word, deduplicated. */
 function wordVariants(word: string): string[] {
   const stripped = removeDiacritics(word).toLowerCase();
@@ -199,11 +275,16 @@ function scoreQuery(query: string, target: string): {
   }
 
   const targetNorm = removeDiacritics(target).toLowerCase();
+  const wantsCompact = words.some(needsCompactRetry);
   const targetWordCount = targetNorm.split(/\s+/).filter(Boolean).length;
 
   let matchedCount = 0;
   for (const word of words) {
-    if (containsWord(word, targetNorm, true) || containsWord(stripDiacriticChars(word).toLowerCase(), targetNorm, true)) matchedCount++;
+    if (
+      containsWord(word, targetNorm, true) ||
+      containsWord(stripDiacriticChars(word).toLowerCase(), targetNorm, true) ||
+      (wantsCompact && matchesAcrossSeparators(word, targetNorm))
+    ) matchedCount++;
   }
 
   if (matchedCount === 0) {
@@ -229,9 +310,11 @@ function scoreQuery(query: string, target: string): {
 function wildcardSearch(articles: Article[], query: string, field: SearchField): SearchResult[] {
   const hasExplicitWildcard = query.includes('*') || query.includes('?');
 
-  // A matcher tests one query word against an already-normalized field value
-  type Matcher = (hay: string) => boolean;
+  // A matcher tests one query word against an already-normalized field value,
+  // either as written or with separators removed on both sides
+  type Matcher = { plain: (hay: string) => boolean; acrossSeparators: (hay: string) => boolean };
   let matchers: Matcher[];
+  let anyNeedsCompact = false;
 
   if (hasExplicitWildcard) {
     let pattern = query;
@@ -245,14 +328,18 @@ function wildcardSearch(articles: Article[], query: string, field: SearchField):
       });
     // An explicit wildcard means the user is being precise on purpose — match it as written
     const explicit = new RegExp(regexPattern, 'i');
-    matchers = [(hay: string) => explicit.test(hay)];
+    matchers = [{ plain: (hay: string) => explicit.test(hay), acrossSeparators: () => false }];
   } else {
     // Each word gets its own matcher — ALL must match (AND logic)
     const words = query.trim().split(/\s+/).filter(Boolean);
     const strict = words.length > 1;
+    anyNeedsCompact = words.some(needsCompactRetry);
     matchers = words.map(w => {
       const variants = wordVariants(w);
-      return (hay: string) => variants.some(v => containsWord(v, hay, strict));
+      return {
+        plain: (hay: string) => variants.some(v => containsWord(v, hay, strict)),
+        acrossSeparators: (hay: string) => variants.some(v => matchesAcrossSeparators(v, hay)),
+      };
     });
   }
 
@@ -264,7 +351,16 @@ function wildcardSearch(articles: Article[], query: string, field: SearchField):
     for (const [fieldName, value] of Object.entries(fields)) {
       const normalizedValue = removeDiacritics(value).toLowerCase();
 
-      if (matchers.every(matches => matches(normalizedValue))) {
+      // Retry with separators removed only when the value as written did not
+      // satisfy every word — stripping is a whole extra pass over the string
+      let matched = matchers.every(m => m.plain(normalizedValue));
+      if (!matched && anyNeedsCompact) {
+        matched = matchers.every(
+          m => m.plain(normalizedValue) || m.acrossSeparators(normalizedValue)
+        );
+      }
+
+      if (matched) {
         // Score based on actual match quality, not hardcoded 100
         const queryForScore = hasExplicitWildcard ? query.replace(/[*?]/g, ' ').trim() : query;
         const { score, matchType } = scoreQuery(queryForScore, value);
@@ -307,7 +403,9 @@ function fuzzySearch(articles: Article[], query: string, field: SearchField): Se
       for (const [fieldName, value] of Object.entries(fields)) {
         const valueNorm = removeDiacritics(value).toLowerCase();
         const matchedCount = queryWords.filter(
-          w => containsWord(w, valueNorm, true) || containsWord(stripDiacriticChars(w).toLowerCase(), valueNorm, true)
+          w =>
+            containsWord(w, valueNorm, true) ||
+            containsWord(stripDiacriticChars(w).toLowerCase(), valueNorm, true)
         ).length;
 
         if (matchedCount === 0) continue;
@@ -653,7 +751,11 @@ function refineAssignment(matrix: number[][], greedy: number[]): number[] {
  * because the ordinary search paths already score those higher.
  */
 function crossFieldSearch(articles: Article[], query: string): SearchResult[] {
-  const rawWords = query.trim().split(/\s+/).filter(w => removeDiacritics(w).length >= 2);
+  // A one-character word carries real information in a designation — „ST 9" is
+  // meaningless without the „9" — and here it cannot flood anything: every word
+  // has to match (AND) and the boundary rule applies, so „9" hits „ST 9" but not
+  // the „9" inside „1819".
+  const rawWords = query.trim().split(/\s+/).filter(w => removeDiacritics(w).length >= 1);
   if (rawWords.length < 2) return [];
 
   // Normalize the query once — the article loop below runs 80k+ times
@@ -664,6 +766,10 @@ function crossFieldSearch(articles: Article[], query: string): SearchResult[] {
   // „2,5" can never be a token under the ordinary split (it breaks on „,"), so
   // when a word carries a decimal separator, tokenize a second way that keeps it.
   const needsCoarseTokens = needles.some(n => /[.,]/.test(n));
+
+  // Compact forms for the separator-insensitive retry („ST9" vs „ST 9"), empty
+  // for words that cannot benefit from it — see needsCompactRetry
+  const compactNeedles = needles.map(n => (needsCompactRetry(n) ? stripSeparators(n) : ''));
 
   const results: SearchResult[] = [];
   const matrix: number[][] = needles.map(() => new Array<number>(fieldCount).fill(0));
@@ -706,6 +812,24 @@ function crossFieldSearch(articles: Article[], query: string): SearchResult[] {
 
           const score = scoreNeedleInHaystack(needle, hay, words);
           if (score > matrix[i][f]) matrix[i][f] = score;
+        }
+
+        // The value may spell the word with a separator the query did not use
+        // („ST9" against typové označení „ST 9"), so retry tolerantly.
+        if (matrix[i][f] > 0) continue;
+        if (!compactNeedles[i]) continue;
+
+        for (let h = 0; h < hays.length; h++) {
+          if (!matchesAcrossSeparators(needle, hays[h])) continue;
+
+          // Whole field is the word once separators are ignored → exact
+          if (stripSeparators(hays[h]) === compactNeedles[i]) {
+            matrix[i][f] = 100;
+            break;
+          }
+          // A separator was ignored to get here, so stay just below a clean
+          // token match (95) — the value as written did not contain the word
+          if (matrix[i][f] < 90) matrix[i][f] = 90;
         }
       }
     }
