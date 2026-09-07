@@ -1,10 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Search, X } from 'lucide-react';
-import type { SearchMode, SearchField } from '../types';
+import { Search, X, SlidersHorizontal } from 'lucide-react';
+import type { SearchMode, SearchField, AdvancedQuery, AdvancedField } from '../types';
 import { Tooltip } from './Tooltip';
 
 const HISTORY_KEY = 'robo-filler-search-history';
 const MAX_HISTORY = 15;
+
+const ADVANCED_INPUTS: Array<{ key: AdvancedField; label: string; placeholder: string }> = [
+  { key: 'typoveOznaceni', label: 'Typové označení', placeholder: 'např. 3RV2011-1CA10' },
+  { key: 'vyrobce', label: 'Výrobce', placeholder: 'např. Siemens' },
+  { key: 'nazev', label: 'Název', placeholder: 'např. motorový spouštěč' },
+  { key: 'artikl', label: 'Artikl', placeholder: 'např. 1000123' },
+];
 
 interface SearchBarProps {
   query: string;
@@ -15,6 +22,10 @@ interface SearchBarProps {
   onFieldChange: (field: SearchField) => void;
   maxResults: number;
   onMaxResultsChange: (max: number) => void;
+  advanced: boolean;
+  onAdvancedChange: (advanced: boolean) => void;
+  advancedQuery: AdvancedQuery;
+  onAdvancedQueryChange: (query: AdvancedQuery) => void;
 }
 
 export function SearchBar({
@@ -26,6 +37,10 @@ export function SearchBar({
   onFieldChange,
   maxResults,
   onMaxResultsChange,
+  advanced,
+  onAdvancedChange,
+  advancedQuery,
+  onAdvancedQueryChange,
 }: SearchBarProps) {
   const [history, setHistory] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem(HISTORY_KEY) ?? '[]'); }
@@ -52,28 +67,113 @@ export function SearchBar({
 
   // Save to history after 7 s of stable query (user is clearly looking at results)
   useEffect(() => {
+    if (advanced) return;
     if (!query.trim() || query.trim().length < 2) return;
     const timer = setTimeout(() => saveToHistory(query), 7000);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, advanced]);
+
+  const filledCount = ADVANCED_INPUTS.filter(f => (advancedQuery[f.key] ?? '').trim()).length;
 
   return (
     <div className="space-y-4">
-      {/* Search input */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-overlay1" size={20} />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
-          placeholder="Zadejte hledaný výraz..."
-          className="w-full pl-12 pr-4 py-3 bg-surface0 text-text rounded-2xl border-2 border-surface2
-            focus:border-mauve focus:outline-none transition-colors placeholder:text-overlay1"
-        />
+      {/* Simple / advanced toggle */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-subtext1 text-sm font-medium">Zadání dotazu:</span>
+        <Tooltip content="Pokročilé zadání umožní vyplnit více polí zároveň (např. výrobce + typové označení) — musí platit všechna" />
+        <div className="flex gap-2">
+          <button
+            onClick={() => onAdvancedChange(false)}
+            className={`px-4 py-2 rounded-xl font-medium transition-all ${
+              !advanced
+                ? 'bg-mauve text-crust shadow-lg'
+                : 'bg-surface0 text-subtext1 hover:bg-surface1'
+            }`}
+          >
+            Jednoduché
+          </button>
+          <button
+            onClick={() => onAdvancedChange(true)}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl font-medium transition-all ${
+              advanced
+                ? 'bg-mauve text-crust shadow-lg'
+                : 'bg-surface0 text-subtext1 hover:bg-surface1'
+            }`}
+          >
+            <SlidersHorizontal size={15} />
+            Pokročilé (více polí)
+          </button>
+        </div>
+        {advanced && filledCount > 1 && (
+          <span className="text-xs text-teal">Kombinuji {filledCount} pole (AND)</span>
+        )}
       </div>
 
+      {/* Search input(s) */}
+      {advanced ? (
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {ADVANCED_INPUTS.map(({ key, label, placeholder }) => (
+              <div key={key} className="space-y-1">
+                <label htmlFor={`adv-${key}`} className="flex items-center gap-1.5 text-xs font-medium text-subtext1">
+                  {label}
+                  {key === 'typoveOznaceni' && (
+                    <Tooltip content="Zahrnuje i číslo dílu výrobce — jsou to jedno pole" />
+                  )}
+                </label>
+                <div className="relative">
+                  <input
+                    id={`adv-${key}`}
+                    type="text"
+                    value={advancedQuery[key] ?? ''}
+                    onChange={(e) => onAdvancedQueryChange({ ...advancedQuery, [key]: e.target.value })}
+                    placeholder={placeholder}
+                    className="w-full pl-3 pr-9 py-2.5 bg-surface0 text-text rounded-xl border-2 border-surface2
+                      focus:border-mauve focus:outline-none transition-colors placeholder:text-overlay1"
+                  />
+                  {(advancedQuery[key] ?? '') !== '' && (
+                    <button
+                      onClick={() => onAdvancedQueryChange({ ...advancedQuery, [key]: '' })}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-overlay0 hover:text-red transition-colors"
+                      aria-label={`Vymazat ${label}`}
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-overlay0">
+              Vyplňte libovolnou kombinaci polí — prázdná se ignorují, vyplněná musí platit všechna zároveň.
+            </p>
+            {filledCount > 0 && (
+              <button
+                onClick={() => onAdvancedQueryChange({})}
+                className="ml-auto shrink-0 text-xs text-subtext1 hover:text-red transition-colors"
+              >
+                Vymazat vše
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-overlay1" size={20} />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => onQueryChange(e.target.value)}
+            placeholder="Zadejte hledaný výraz..."
+            className="w-full pl-12 pr-4 py-3 bg-surface0 text-text rounded-2xl border-2 border-surface2
+              focus:border-mauve focus:outline-none transition-colors placeholder:text-overlay1"
+          />
+        </div>
+      )}
+
       {/* Search history chips */}
-      {history.length > 0 && (
+      {!advanced && history.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-overlay0 text-xs">Nedávné:</span>
           {history.map(item => (
@@ -123,7 +223,8 @@ export function SearchBar({
         )}
       </div>
 
-      {/* Search field */}
+      {/* Search field — in advanced mode each field has its own input instead */}
+      {!advanced && (
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-subtext1 text-sm font-medium">Hledat v:</span>
         <Tooltip content="Vyberte pole, ve kterém chcete vyhledávat" />
@@ -148,6 +249,7 @@ export function SearchBar({
           <Tooltip content="Vyhledávání v typovém označení zahrnuje i číslo dílu výrobce" />
         )}
       </div>
+      )}
 
       {/* Max results */}
       <div className="flex items-center gap-3">

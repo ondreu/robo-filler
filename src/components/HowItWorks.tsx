@@ -96,6 +96,16 @@ export function HowItWorks() {
                   </div>
                 </div>
                 <p className="text-xs text-subtext0 mt-2">Výsledky všech tří metod se sloučí, duplikáty odstraní a seřadí od nejpřesnějšího.</p>
+                <div className="bg-surface0 rounded-xl p-3 mt-3">
+                  <p className="text-xs font-semibold text-text mb-1">Pokročilé zadání</p>
+                  <p className="text-xs text-subtext1">
+                    Přepínačem „Pokročilé" se jedno vyhledávací pole rozdělí na samostatná pole — Typové označení,
+                    Výrobce, Název a Artikl. Vyplněná pole musí platit všechna zároveň (např. výrobce Siemens
+                    <span className="text-teal"> a </span>
+                    typové označení 3RV2011), prázdná se ignorují. Typové označení zůstává jedním polem — hledá se v něm
+                    i v čísle dílu výrobce.
+                  </p>
+                </div>
               </section>
 
               {/* Karel Bot */}

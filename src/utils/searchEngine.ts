@@ -1,6 +1,13 @@
 import Fuse from 'fuse.js';
-import type { Article, SearchResult, SearchOptions, SearchField } from '../types';
-import { MANUFACTURER_PREFIXES } from '../types';
+import type {
+  Article,
+  SearchResult,
+  SearchOptions,
+  SearchField,
+  AdvancedField,
+  AdvancedSearchOptions,
+} from '../types';
+import { ADVANCED_FIELDS, MANUFACTURER_PREFIXES } from '../types';
 
 function removeDiacritics(str: string): string {
   return str.normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -486,6 +493,96 @@ export function search(
     results = results.filter(r =>
       options.manufacturers!.includes(r.vyrobce)
     );
+  }
+
+  results.sort((a, b) => b.score - a.score);
+
+  return results.slice(0, options.maxResults);
+}
+
+// ---------------------------------------------------------------------------
+// Advanced (multi-field) search — several field criteria combined with AND
+// ---------------------------------------------------------------------------
+
+// Articles are not guaranteed to have a unique `artikl` (wire DB is merged in),
+// so identity for intersecting per-criterion result sets uses several fields.
+function articleKey(a: Article): string {
+  return `${a.artikl}|${a.typoveOznaceni}|${a.vyrobce}|${a.nazev}`;
+}
+
+function runSingleFieldSearch(
+  articles: Article[],
+  query: string,
+  field: SearchField,
+  mode: SearchOptions['mode'],
+): SearchResult[] {
+  switch (mode) {
+    case 'wildcard':
+      return wildcardSearch(articles, query, field);
+    case 'fuzzy':
+      return fuzzySearch(articles, query, field);
+    case 'combined':
+      return combinedSearch(articles, query, field);
+  }
+}
+
+/** Criteria with a non-empty value, in a stable order. */
+export function activeCriteria(criteria: AdvancedSearchOptions['criteria']): Array<[AdvancedField, string]> {
+  return ADVANCED_FIELDS
+    .map((f) => [f, (criteria[f] ?? '').trim()] as [AdvancedField, string])
+    .filter(([, value]) => value.length > 0);
+}
+
+export function searchAdvanced(
+  articles: Article[],
+  options: AdvancedSearchOptions,
+): SearchResult[] {
+  const criteria = activeCriteria(options.criteria);
+
+  if (criteria.length === 0) {
+    return [];
+  }
+
+  // Run each criterion as an ordinary single-field search, then keep only the
+  // articles returned by every criterion (AND) and merge their scores/highlights.
+  let candidates: Map<string, SearchResult> | null = null;
+
+  for (const [field, query] of criteria) {
+    const perCriterion = new Map<string, SearchResult>();
+    for (const r of runSingleFieldSearch(articles, query, field, options.mode)) {
+      const key = articleKey(r);
+      const existing = perCriterion.get(key);
+      if (!existing || r.score > existing.score) {
+        perCriterion.set(key, r);
+      }
+    }
+
+    if (candidates === null) {
+      candidates = perCriterion;
+      continue;
+    }
+
+    const merged = new Map<string, SearchResult>();
+    for (const [key, prev] of candidates) {
+      const next = perCriterion.get(key);
+      if (!next) continue; // fails this criterion → drop
+      merged.set(key, {
+        ...prev,
+        // AND match quality is limited by its weakest criterion
+        score: Math.min(prev.score, next.score),
+        matchType: next.score < prev.score ? next.matchType : prev.matchType,
+        highlightedFields: { ...prev.highlightedFields, ...next.highlightedFields },
+      });
+    }
+    candidates = merged;
+
+    if (candidates.size === 0) break;
+  }
+
+  let results = Array.from(candidates!.values());
+
+  if (options.manufacturers && options.manufacturers.length > 0) {
+    results = results.filter((r) => options.manufacturers!.includes(r.vyrobce));
   }
 
   results.sort((a, b) => b.score - a.score);

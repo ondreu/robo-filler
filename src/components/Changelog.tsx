@@ -10,6 +10,16 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V070926',
+    date: '7. 9. 2026',
+    major: true,
+    changes: [
+      'Pokročilé vyhledávání — nový přepínač „Jednoduché / Pokročilé" v jednotlivém vyhledávání',
+      'V pokročilém režimu lze vyplnit libovolnou kombinaci polí zároveň (typové označení, výrobce, název, artikl) — prázdná se ignorují, vyplněná musí platit všechna',
+      'Typové označení zůstává jedním polem — hledá se v něm i v čísle dílu výrobce',
+    ],
+  },
+  {
     version: 'V150626',
     date: '15. 6. 2026',
     major: true,
