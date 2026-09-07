@@ -16,6 +16,12 @@ export type SearchMode = 'fuzzy' | 'wildcard' | 'combined';
 export type SearchField = 'all' | 'nazev' | 'typoveOznaceni' | 'vyrobce' | 'artikl';
 export type DataSource = 'usti' | 'effi' | 'both';
 
+// Fields usable as separate criteria in advanced (multi-field) search.
+// 'typoveOznaceni' covers manufacturer part number as well (see getSearchableFields).
+export const ADVANCED_FIELDS = ['nazev', 'typoveOznaceni', 'vyrobce', 'artikl'] as const;
+export type AdvancedField = typeof ADVANCED_FIELDS[number];
+export type AdvancedQuery = Partial<Record<AdvancedField, string>>;
+
 export interface SearchResult extends Article {
   score: number;
   matchType: 'wildcard' | 'exact' | 'minimal' | 'medium' | 'large';
@@ -34,6 +40,14 @@ export interface SearchOptions {
   mode: SearchMode;
   field: SearchField;
   query: string;
+  maxResults: number;
+  manufacturers?: string[];
+}
+
+export interface AdvancedSearchOptions {
+  mode: SearchMode;
+  /** Per-field criteria; empty/whitespace values are ignored. All filled ones must match (AND). */
+  criteria: AdvancedQuery;
   maxResults: number;
   manufacturers?: string[];
 }

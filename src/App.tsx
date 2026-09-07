@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Loader2, AlertCircle, Download, FolderOpen, Settings, Calculator, Cable } from 'lucide-react';
-import type { Article, SearchResult, SearchMode, SearchField, DataSource, AppMode } from './types';
+import type { Article, SearchResult, SearchMode, SearchField, DataSource, AppMode, AdvancedQuery } from './types';
 import { parseBomTxt, type ImportResult } from './utils/bomExport';
 import { BomWizard } from './components/BomWizard';
 import { Changelog } from './components/Changelog';
 import { HowItWorks } from './components/HowItWorks';
 import { InstallPrompt } from './components/InstallPrompt';
 import { loadCSV, loadCSVMeta, loadWires } from './utils/csvParser';
-import { search, getUniqueManufacturers, searchSuggestions } from './utils/searchEngine';
+import { search, searchAdvanced, activeCriteria, getUniqueManufacturers, searchSuggestions } from './utils/searchEngine';
 import { SearchBar } from './components/SearchBar';
 import { ResultCard } from './components/ResultCard';
 import { FilterPanel } from './components/FilterPanel';
@@ -56,6 +56,9 @@ function App() {
   const [mode, setMode] = useState<SearchMode>('combined');
   const [field, setField] = useState<SearchField>('all');
   const [maxResults, setMaxResults] = useState(10);
+  // Advanced (multi-field) search — arbitrary combination of field criteria, AND-ed
+  const [advanced, setAdvanced] = useState(false);
+  const [advancedQuery, setAdvancedQuery] = useState<AdvancedQuery>({});
 
   // Filter state
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
@@ -169,6 +172,12 @@ function App() {
 
   // Debounced query for search
   const debouncedQuery = useDebounce(query, 1500);
+  const debouncedAdvancedQuery = useDebounce(advancedQuery, 1500);
+
+  // Is there anything to search for in the currently active input style?
+  const hasQuery = advanced
+    ? activeCriteria(advancedQuery).length > 0
+    : query.trim().length > 0;
 
   // Active articles (custom or default)
   const activeArticles = customArticles || articles;
@@ -223,17 +232,14 @@ function App() {
   // Reset displayed count on new query
   useEffect(() => {
     setDisplayedCount(10);
-  }, [debouncedQuery]);
+  }, [debouncedQuery, debouncedAdvancedQuery, advanced]);
 
   // Perform search when query or parameters change
   useEffect(() => {
-    if (!debouncedQuery.trim()) {
-      setResults([]);
-      setIsSearching(false);
-      return;
-    }
+    const criteria = activeCriteria(debouncedAdvancedQuery);
+    const hasDebouncedQuery = advanced ? criteria.length > 0 : debouncedQuery.trim().length > 0;
 
-    if (activeArticles.length === 0) {
+    if (!hasDebouncedQuery || activeArticles.length === 0) {
       setResults([]);
       setIsSearching(false);
       return;
@@ -243,25 +249,35 @@ function App() {
 
     // Use setTimeout to make search async and show loading state
     const timer = setTimeout(() => {
-      const searchResults = search(activeArticles, {
-        mode,
-        field,
-        query: debouncedQuery,
-        maxResults,
-        manufacturers: selectedManufacturers.length > 0 ? selectedManufacturers : undefined,
-      });
+      const manufacturers = selectedManufacturers.length > 0 ? selectedManufacturers : undefined;
+
+      const searchResults = advanced
+        ? searchAdvanced(activeArticles, {
+            mode,
+            criteria: debouncedAdvancedQuery,
+            maxResults,
+            manufacturers,
+          })
+        : search(activeArticles, {
+            mode,
+            field,
+            query: debouncedQuery,
+            maxResults,
+            manufacturers,
+          });
 
       setResults(searchResults);
       setIsSearching(false);
     }, 0);
 
     return () => clearTimeout(timer);
-  }, [debouncedQuery, mode, field, maxResults, selectedManufacturers, activeArticles]);
+  }, [debouncedQuery, debouncedAdvancedQuery, advanced, mode, field, maxResults, selectedManufacturers, activeArticles]);
 
   const suggestions = useMemo(() => {
-    if (results.length > 0 || !debouncedQuery.trim() || isSearching) return [];
+    // Suggestions ("Mysleli jste...?") only make sense for a single free-text query
+    if (advanced || results.length > 0 || !debouncedQuery.trim() || isSearching) return [];
     return searchSuggestions(activeArticles, debouncedQuery, field);
-  }, [results, debouncedQuery, isSearching, activeArticles, field]);
+  }, [advanced, results, debouncedQuery, isSearching, activeArticles, field]);
 
   const handleCustomDataLoad = (data: Article[]) => {
     setCustomArticles(data);
@@ -603,6 +619,10 @@ function App() {
                     onFieldChange={setField}
                     maxResults={maxResults}
                     onMaxResultsChange={setMaxResults}
+                    advanced={advanced}
+                    onAdvancedChange={setAdvanced}
+                    advancedQuery={advancedQuery}
+                    onAdvancedQueryChange={setAdvancedQuery}
                   />
                 </div>
 
@@ -640,7 +660,7 @@ function App() {
                       </span>
                     )}
                   </p>
-                  {query && (
+                  {hasQuery && (
                     <p>
                       {isSearching ? (
                         <span className="flex items-center gap-2">
@@ -655,7 +675,7 @@ function App() {
                 </div>
 
                 {/* Results */}
-                {query && !isSearching && (
+                {hasQuery && !isSearching && (
                   <div className="space-y-4">
                     {results.length === 0 ? (
                       <div className="bg-mantle rounded-2xl p-8 text-center">
@@ -708,7 +728,7 @@ function App() {
                 )}
 
                 {/* Welcome message */}
-                {!query && (
+                {!hasQuery && (
                   <div className="bg-mantle rounded-2xl p-8 text-center space-y-4">
                     <p className="text-subtext1 text-lg">
                       Zadejte hledaný výraz pro zahájení vyhledávání

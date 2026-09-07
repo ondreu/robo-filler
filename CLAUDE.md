@@ -143,6 +143,7 @@ Po vydání nové verze aktualizuj:
 - **Řízený mód** — byl BETA, nyní má badge „Doporučeno" (bg-green/20 text-green)
 - **Paralelismus** — worker pool max 10 (konstanta `CONCURRENCY` v `handleBomBuild`), každý řádek má 2-4 sekvenční AI volání uvnitř
 - **Poradce komponent** — toggle v nastavení Karel Bota; posílá `componentAdvisor: true` na backend, který injektuje znalosti z `componentGuide.js` do kontextu
+- **Pokročilé vyhledávání (jednotlivý režim)** — `SearchBar` má přepínač Jednoduché/Pokročilé; v pokročilém se místo jednoho dotazu vyplní kombinace polí (`ADVANCED_FIELDS` v `types.ts`: typoveOznaceni, vyrobce, nazev, artikl). `searchAdvanced()` v `searchEngine.ts` spustí každé kritérium jako běžné single-field hledání a průsečík AND-uje (skóre = minimum, zvýraznění sloučené). Typové označení zahrnuje i `cisloDiluVyrobce`.
 - **ZBOM z hromadného vyhledávání** — `BulkSearch` volá `onOpenInZbom(bulkResults, selections)` callback; `App.tsx` vytvoří novou ZBOM záložku s daty → plnohodnotný editor s persistencí
 - **Onboarding** — `app-onboarding-v1` (AppOnboarding, 5 kroků při prvním spuštění), `ai-onboarding-v1` (AiOnboarding, 5 kroků při prvním vstupu do AI módu); reset tlačítkem „průvodce" v zápatí
 - **ZbomTab typ** — `{ id, name, importData?: ImportResult, bulkResults?: BulkQueryResult[], bulkSelections?: Record<number, SearchResult | null> }`

@@ -1,5 +1,17 @@
 # Changelog
 
+## V070926 — Pokročilé vyhledávání (2026-09-07)
+
+### Nové funkce
+- **Pokročilý režim zadání** — přepínač „Jednoduché / Pokročilé" v jednotlivém vyhledávání. V pokročilém režimu je místo jednoho pole samostatný vstup pro **Typové označení**, **Výrobce**, **Název** a **Artikl**.
+- **Kombinace polí (AND)** — vyplnit lze libovolnou kombinaci; prázdná pole se ignorují, vyplněná musí platit všechna zároveň (např. výrobce *Siemens* **a** typové označení *3RV2011*).
+- Typové označení je i nadále **jedno pole** — hledá se v typovém označení i v čísle dílu výrobce.
+- Režim vyhledávání (Fuzzy / Wild Card / Kombinovaný) i počet výsledků fungují v obou režimech; volba „Hledat v" se v pokročilém režimu skryje (každé pole má vlastní vstup).
+
+### Implementace
+- `src/utils/searchEngine.ts` — `searchAdvanced()` spustí každé kritérium jako běžné vyhledávání v daném poli a výsledky protne; skóre je minimum ze splněných kritérií (nejslabší článek), zvýraznění se sloučí napříč poli
+- `src/types.ts` — `ADVANCED_FIELDS`, `AdvancedQuery`, `AdvancedSearchOptions`
+
 ## V150626 — Admin: bezpečnost, produktivita, zálohy (2026-06-15)
 
 ### Nové funkce
