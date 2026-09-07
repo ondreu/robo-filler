@@ -11,7 +11,14 @@
 - **Vyhledávání napříč poli** — dotaz, jehož slova leží v různých polích (`siemens 3RV2011` = výrobce + typové označení), dřív v jednoduchém poli **nenašel nic** (Wild Card) nebo dal správnému artiklu **stejné skóre jako nesouvisejícím** (Fuzzy / Kombinovaný). Nyní se takový dotaz vyhodnotí napříč všemi poli: každé slovo musí být v některém poli (AND), pořadí slov ani diakritika nehrají roli.
 - **Nabídka rozdělení** — když je nejlepší shoda právě takováto (napříč poli), zobrazí se lišta s rozpadem dotazu a tlačítkem „Rozdělit do polí", které přepne na pokročilé zadání s předvyplněnými poli.
 
+- **Krátká slova se nechytají uvnitř jiných slov** — u víceslovných dotazů musí slovo do 3 znaků ležet na hranici tokenu (začátek, za oddělovačem, nebo přechod písmeno↔číslice). Dřív `UT 2,5` našlo 73 shod, z nichž **56 (77 %) byl šum** — „ut" uvnitř *d-ut-inka*, „2,5" uvnitř *1,5-2,5mm* nebo *12,5A*. Nyní 19 shod bez šumu. U `ut 2.5` bylo šumu 28 z 32.
+- **Desetinná čárka drží pohromadě** — `2,5` je jeden token, ne `2` a `5`, takže `UT 2,5` skóruje jako typové označení a ne jako dvě nezávislá čísla.
+- **Rozdělení do polí drží souvislá slova** — `phoenix UT 2,5` dá `Výrobce: phoenix` + `Typové označení: UT 2,5`; dřív se rozsekalo na tři pole (`Název: UT` + `Typové označení: 2,5`).
+- Jednoslovné dotazy zůstaly bez změny — `M12` i dál najde `IFRM12P1701`. Pravidlo hranice tokenu se uplatní jen tam, kde slovo funguje jako AND filtr, tedy u víceslovných dotazů.
+
 ### Implementace
+- `src/utils/searchEngine.ts` — `containsWord()` / `boundaryRegex()` sdílí pravidlo hranice tokenu mezi Wild Card, Fuzzy i vyhledáváním napříč poli
+- `src/utils/searchEngine.ts` — `refineAssignment()` vybírá mezi stejně skórujícími přiřazeními slov k polím to, které drží sousední slova spolu; skórování zůstává greedy (brute force nad všemi kombinacemi neporazil greedy ani u jednoho artiklu, protože skóre je `min` přes slova)
 - `src/utils/searchEngine.ts` — `searchAdvanced()` spustí každé kritérium jako běžné vyhledávání v daném poli a výsledky protne; skóre je minimum ze splněných kritérií (nejslabší článek), zvýraznění se sloučí napříč poli
 - `src/utils/searchEngine.ts` — `crossFieldSearch()` přiřadí každé slovo dotazu k nejlépe sedícímu poli (přesná hodnota 100 / celé slovo 95 / prefix slova 85 / podřetězec 75), skóre = nejslabší slovo, strop `CROSS_FIELD_MAX_SCORE = 86`, aby jednopolová shoda (88–98) zůstala vždy výš. Shody v rámci jednoho pole se přeskočí — ty už řeší stávající cesty. Neaktivní pro konkrétní pole („Hledat v") a pro dotazy s `*`/`?`.
 - Výkon — 95 % hodnot v DB je čisté ASCII, takže se drahá normalizace diakritiky (`stripDiacriticChars`) a tokenizace dělá jen tam, kde je potřeba; režie napříč poli je ~200 ms nad 82 tis. artikly místo ~490 ms
