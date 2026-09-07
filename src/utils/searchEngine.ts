@@ -480,16 +480,20 @@ function combinedSearch(articles: Article[], query: string, field: SearchField):
   const wildcardResults = wildcardSearch(articles, query, field);
   const fuzzyResults = fuzzySearch(articles, query, field);
 
-  const byArtikl = new Map<string, SearchResult>();
+  // Keyed on articleKey, not on `artikl` alone: 67 rows in the master data have
+  // an empty artikl (and some share one), so keying on it collapsed all of them
+  // into a single result and they shadowed each other in this mode.
+  const byKey = new Map<string, SearchResult>();
 
   for (const r of [...wildcardResults, ...fuzzyResults]) {
-    const existing = byArtikl.get(r.artikl);
+    const key = articleKey(r);
+    const existing = byKey.get(key);
     if (!existing || r.score > existing.score) {
-      byArtikl.set(r.artikl, r);
+      byKey.set(key, r);
     }
   }
 
-  return Array.from(byArtikl.values());
+  return Array.from(byKey.values());
 }
 
 function getSearchableFields(article: Article, field: SearchField): Record<string, string> {
