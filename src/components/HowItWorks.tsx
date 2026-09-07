@@ -97,6 +97,15 @@ export function HowItWorks() {
                 </div>
                 <p className="text-xs text-subtext0 mt-2">Výsledky všech tří metod se sloučí, duplikáty odstraní a seřadí od nejpřesnějšího.</p>
                 <div className="bg-surface0 rounded-xl p-3 mt-3">
+                  <p className="text-xs font-semibold text-text mb-1">Dotaz napříč poli</p>
+                  <p className="text-xs text-subtext1">
+                    Když napíšeš víc slov, která nejsou v jednom poli (např. „siemens 3RV2011" = výrobce
+                    + typové označení), vyhledávač je poskládá napříč poli — každé slovo musí být v některém
+                    z nich. Pořadí slov ani diakritika nehrají roli. Takové shody se řadí pod shody nalezené
+                    v jednom poli a nabídne se u nich rozdělení do samostatných polí.
+                  </p>
+                </div>
+                <div className="bg-surface0 rounded-xl p-3 mt-3">
                   <p className="text-xs font-semibold text-text mb-1">Pokročilé zadání</p>
                   <p className="text-xs text-subtext1">
                     Přepínačem „Pokročilé" se jedno vyhledávací pole rozdělí na samostatná pole — Typové označení,

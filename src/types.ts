@@ -20,12 +20,25 @@ export type DataSource = 'usti' | 'effi' | 'both';
 // 'typoveOznaceni' covers manufacturer part number as well (see getSearchableFields).
 export const ADVANCED_FIELDS = ['nazev', 'typoveOznaceni', 'vyrobce', 'artikl'] as const;
 export type AdvancedField = typeof ADVANCED_FIELDS[number];
+export const ADVANCED_FIELD_LABELS: Record<AdvancedField, string> = {
+  typoveOznaceni: 'Typové označení',
+  vyrobce: 'Výrobce',
+  nazev: 'Název',
+  artikl: 'Artikl',
+};
 export type AdvancedQuery = Partial<Record<AdvancedField, string>>;
 
 export interface SearchResult extends Article {
   score: number;
   matchType: 'wildcard' | 'exact' | 'minimal' | 'medium' | 'large';
   fromAlt?: boolean;
+  /**
+   * Set when the query's words were matched across several fields at once
+   * (e.g. „siemens 3RV2011" = výrobce + typové označení). Maps each field to
+   * the query words that hit it, so the UI can offer to split the query into
+   * the advanced per-field inputs.
+   */
+  crossField?: AdvancedQuery;
   highlightedFields: {
     typoveOznaceni?: string;
     artikl?: string;

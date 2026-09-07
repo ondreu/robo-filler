@@ -5,6 +5,7 @@ import type {
   SearchOptions,
   SearchField,
   AdvancedField,
+  AdvancedQuery,
   AdvancedSearchOptions,
 } from '../types';
 import { ADVANCED_FIELDS, MANUFACTURER_PREFIXES } from '../types';
@@ -467,6 +468,154 @@ function highlightMatch(text: string, query: string): string {
   return `${before}<mark>${match}</mark>${after}`;
 }
 
+// ---------------------------------------------------------------------------
+// Cross-field matching — query words spread over several fields
+// ---------------------------------------------------------------------------
+
+// Articles are not guaranteed to have a unique `artikl` (wire DB is merged in),
+// so identity for merging result sets uses several fields.
+function articleKey(a: Article): string {
+  return `${a.artikl}|${a.typoveOznaceni}|${a.vyrobce}|${a.nazev}`;
+}
+
+// Cross-field hits stay below the single-field "all words matched" band
+// (scoreQuery gives those 88–98), so a match inside one field always wins.
+const CROSS_FIELD_MAX_SCORE = 86;
+
+// Which advanced input a searchable field belongs to — číslo dílu výrobce is
+// part of the typové označení input, same as everywhere else in the app.
+function advancedFieldOf(fieldName: string): AdvancedField | null {
+  if (fieldName === 'cisloDiluVyrobce') return 'typoveOznaceni';
+  return (ADVANCED_FIELDS as readonly string[]).includes(fieldName)
+    ? (fieldName as AdvancedField)
+    : null;
+}
+
+const NON_ASCII = /[^\x00-\x7F]/;
+
+function dedupeHaystacks(a: string, b: string): string[] {
+  return a === b ? [a] : [a, b];
+}
+
+/**
+ * How well a query word sits in one already-normalized field value that is
+ * known to contain it. `words` is that value pre-split into tokens.
+ */
+function scoreNeedleInHaystack(needle: string, hay: string, words: string[]): number {
+  if (hay === needle) return 100;
+  if (words.includes(needle)) return 95;
+  if (words.some(w => w.startsWith(needle))) return 85;
+  return 75;
+}
+
+/**
+ * Matches a multi-word query whose words live in *different* fields — the
+ * typical "výrobce + typové označení" query that no single field can satisfy.
+ * Strict AND: every word must be found in some field, otherwise the article is
+ * rejected. Only meaningful for field 'all'; single-field hits are skipped
+ * because the ordinary search paths already score those higher.
+ */
+function crossFieldSearch(articles: Article[], query: string): SearchResult[] {
+  const rawWords = query.trim().split(/\s+/).filter(w => removeDiacritics(w).length >= 2);
+  if (rawWords.length < 2) return [];
+
+  // Normalize the query once — the article loop below runs 80k+ times
+  const needles = rawWords.map(w => removeDiacritics(w).toLowerCase());
+
+  const results: SearchResult[] = [];
+  const bestScore = new Array<number>(needles.length);
+  const bestField = new Array<string>(needles.length);
+
+  for (const article of articles) {
+    const fields = getSearchableFields(article, 'all');
+
+    bestScore.fill(0);
+    bestField.fill('');
+
+    for (const fieldName in fields) {
+      const value = fields[fieldName];
+      if (!value) continue;
+
+      // 95 % of the database is plain ASCII, and normalizing is by far the most
+      // expensive step here (~80k articles × 5 fields per query), so pay for it
+      // only where diacritics actually occur.
+      const hays = NON_ASCII.test(value)
+        ? dedupeHaystacks(removeDiacritics(value).toLowerCase(), stripDiacriticChars(value).toLowerCase())
+        : [value.toLowerCase()];
+
+      // Splitting into tokens is also costly, so do it only for a field that
+      // actually contains one of the words — lazily, and at most once per hay.
+      const wordLists: Array<string[] | undefined> = [undefined, undefined];
+
+      for (let i = 0; i < needles.length; i++) {
+        const needle = needles[i];
+        for (let h = 0; h < hays.length; h++) {
+          const hay = hays[h];
+          if (!hay.includes(needle)) continue;
+
+          let words = wordLists[h];
+          if (!words) {
+            words = hay.split(/[\s,.\-_/\\]+/).filter(Boolean);
+            wordLists[h] = words;
+          }
+
+          const score = scoreNeedleInHaystack(needle, hay, words);
+          if (score > bestScore[i]) {
+            bestScore[i] = score;
+            bestField[i] = fieldName;
+          }
+        }
+      }
+    }
+
+    // Strict AND — every word has to land somewhere
+    let weakest = 100;
+    for (let i = 0; i < needles.length; i++) {
+      if (bestScore[i] === 0) {
+        weakest = 0;
+        break;
+      }
+      if (bestScore[i] < weakest) weakest = bestScore[i];
+    }
+    if (weakest === 0) continue;
+
+    const wordsPerField = new Map<string, string[]>();
+    for (let i = 0; i < needles.length; i++) {
+      const field = bestField[i];
+      const existing = wordsPerField.get(field);
+      if (existing) existing.push(rawWords[i]);
+      else wordsPerField.set(field, [rawWords[i]]);
+    }
+
+    // All words in one field — the ordinary search paths handle that better
+    if (wordsPerField.size < 2) continue;
+
+    const assignment: AdvancedQuery = {};
+    const highlightedFields: SearchResult['highlightedFields'] = {};
+
+    for (const [fieldName, words] of wordsPerField) {
+      const joined = words.join(' ');
+      highlightedFields[fieldName as keyof SearchResult['highlightedFields']] =
+        highlightMatchWildcard(fields[fieldName], joined);
+
+      const target = advancedFieldOf(fieldName);
+      if (target) {
+        assignment[target] = assignment[target] ? `${assignment[target]} ${joined}` : joined;
+      }
+    }
+
+    results.push({
+      ...article,
+      score: Math.min(CROSS_FIELD_MAX_SCORE, weakest),
+      matchType: weakest >= 95 ? 'medium' : 'large',
+      highlightedFields,
+      crossField: assignment,
+    });
+  }
+
+  return results;
+}
+
 export function search(
   articles: Article[],
   options: SearchOptions
@@ -489,6 +638,33 @@ export function search(
       break;
   }
 
+  // Users often type a query whose words live in different fields
+  // („siemens 3RV2011" = výrobce + typové označení). No single field can match
+  // that, so the paths above find nothing (wildcard) or rank the right article
+  // no higher than wrong ones (fuzzy). Add those matches on top; single-field
+  // hits keep their higher scores and stay above them.
+  if (options.field === 'all' && !options.query.includes('*') && !options.query.includes('?')) {
+    const crossFieldResults = crossFieldSearch(articles, options.query);
+
+    if (crossFieldResults.length > 0) {
+      const byKey = new Map<string, SearchResult>();
+      for (const r of results) byKey.set(articleKey(r), r);
+
+      for (const r of crossFieldResults) {
+        const key = articleKey(r);
+        const existing = byKey.get(key);
+        // A single-field hit that already scored higher wins and keeps no
+        // crossField mark — the query worked as typed for that article, so the
+        // UI has no reason to suggest splitting it.
+        if (!existing || r.score > existing.score) {
+          byKey.set(key, r);
+        }
+      }
+
+      results = Array.from(byKey.values());
+    }
+  }
+
   if (options.manufacturers && options.manufacturers.length > 0) {
     results = results.filter(r =>
       options.manufacturers!.includes(r.vyrobce)
@@ -503,12 +679,6 @@ export function search(
 // ---------------------------------------------------------------------------
 // Advanced (multi-field) search — several field criteria combined with AND
 // ---------------------------------------------------------------------------
-
-// Articles are not guaranteed to have a unique `artikl` (wire DB is merged in),
-// so identity for intersecting per-criterion result sets uses several fields.
-function articleKey(a: Article): string {
-  return `${a.artikl}|${a.typoveOznaceni}|${a.vyrobce}|${a.nazev}`;
-}
 
 function runSingleFieldSearch(
   articles: Article[],

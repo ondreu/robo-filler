@@ -17,6 +17,8 @@ const ENTRIES: ChangelogEntry[] = [
       'Pokročilé vyhledávání — nový přepínač „Jednoduché / Pokročilé" v jednotlivém vyhledávání',
       'V pokročilém režimu lze vyplnit libovolnou kombinaci polí zároveň (typové označení, výrobce, název, artikl) — prázdná se ignorují, vyplněná musí platit všechna',
       'Typové označení zůstává jedním polem — hledá se v něm i v čísle dílu výrobce',
+      'Vyhledávání napříč poli — dotaz typu „siemens 3RV2011" (výrobce + typové označení) už funguje i v jednoduchém poli; dřív nenašel nic, nebo správný artikl utopil mezi nesouvisejícími',
+      'U takového dotazu se nabídne tlačítko „Rozdělit do polí" — jedním klikem přepne na pokročilé zadání s předvyplněnými poli',
     ],
   },
   {

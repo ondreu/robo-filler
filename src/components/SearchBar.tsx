@@ -1,17 +1,25 @@
 import { useState, useEffect } from 'react';
 import { Search, X, SlidersHorizontal } from 'lucide-react';
 import type { SearchMode, SearchField, AdvancedQuery, AdvancedField } from '../types';
+import { ADVANCED_FIELD_LABELS } from '../types';
 import { Tooltip } from './Tooltip';
 
 const HISTORY_KEY = 'robo-filler-search-history';
 const MAX_HISTORY = 15;
 
-const ADVANCED_INPUTS: Array<{ key: AdvancedField; label: string; placeholder: string }> = [
-  { key: 'typoveOznaceni', label: 'Typové označení', placeholder: 'např. 3RV2011-1CA10' },
-  { key: 'vyrobce', label: 'Výrobce', placeholder: 'např. Siemens' },
-  { key: 'nazev', label: 'Název', placeholder: 'např. motorový spouštěč' },
-  { key: 'artikl', label: 'Artikl', placeholder: 'např. 1000123' },
-];
+const ADVANCED_PLACEHOLDERS: Record<AdvancedField, string> = {
+  typoveOznaceni: 'např. 3RV2011-1CA10',
+  vyrobce: 'např. Siemens',
+  nazev: 'např. motorový spouštěč',
+  artikl: 'např. 1000123',
+};
+
+const ADVANCED_INPUTS: Array<{ key: AdvancedField; label: string; placeholder: string }> =
+  (['typoveOznaceni', 'vyrobce', 'nazev', 'artikl'] as const).map(key => ({
+    key,
+    label: ADVANCED_FIELD_LABELS[key],
+    placeholder: ADVANCED_PLACEHOLDERS[key],
+  }));
 
 interface SearchBarProps {
   query: string;
