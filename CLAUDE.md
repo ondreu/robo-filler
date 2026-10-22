@@ -130,6 +130,22 @@ L/T řádky odpovídají SAP ZBOM formátu — L = materiál, T = text/placehold
 - **Snapshoty/rollback** — `dataStore` po každém uložení vytvoří snapshot do `DATA_DIR/.snapshots/<name>/`; GFS retence (vše posledních 5 dní, týdně 3 týdny, měsíčně 1 měsíc). Restore nejdřív zazálohuje aktuální stav. Snapshoty ani `.audit.jsonl` nejsou veřejné ani v GitHub záloze.
 - **Denní záloha na GitHub** — workflow `.github/workflows/backup-databases.yml` (cron 02:00 UTC + ruční spuštění) stáhne živá data z backendu (`GET /api/db/:name`) a commitne `public/<name>.json` + `public/<name>.schema.json` do repa. Pojistka: pokud DB vrátí 0 řádků, soubor se nepřepíše. Vyžaduje secret `VITE_BACKEND_URL` (veřejná URL API). Tím se admin editace verzují a zároveň slouží jako seed pro budoucí build image.
 
+## Skill pro agenty (`skills/schoogle-article-search/`)
+
+Aplikace je čistě statická (GitHub Pages), takže agenti hledají přes **skill**:
+`SKILL.md` + `scripts/search.py` (jen standardní knihovna Pythonu) stáhne master
+CSV z `raw.githubusercontent.com`, uloží je do cache na 6 h a hledá v nich.
+Do claude.ai se nahrává jako ZIP složky.
+
+- **Stejný algoritmus má nástroj `find_article` v DZL Konfigurátoru**
+  (`packages/api/src/articles/articleSearch.ts`). Změna normalizace nebo
+  skórování patří do obou — na 30 dotazech nad celou DB dávají shodné
+  výsledky včetně skóre.
+- Je záměrně jednodušší než `src/utils/searchEngine.ts` (bez fuzzy): agent
+  formuluje dotaz přesně a potřebuje předvídatelný výsledek.
+- Přejmenování nebo přesun `public/master-data*.csv` rozbije skill i DZL
+  (oba čtou tyhle adresy).
+
 ## Changelog konvence
 
 Verze v `Changelog.tsx`: formát `VDDMMYY` (např. `V070626` = 7. 6. 2026).
