@@ -1,4 +1,4 @@
-import { Search, Copy, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Copy, CheckCircle, AlertTriangle, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import type { SearchResult } from '../types';
 
@@ -12,7 +12,7 @@ export function ResultCard({ result }: ResultCardProps) {
   const getMatchColor = () => {
     switch (result.matchType) {
       case 'wildcard':
-        return 'border-l-purple-500';
+        return 'border-l-lavender';
       case 'exact':
         return 'border-l-green';
       case 'minimal':
@@ -42,128 +42,125 @@ export function ResultCard({ result }: ResultCardProps) {
     window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
   };
 
+  const matchLabel =
+    result.matchType === 'exact' ? 'Přesná shoda'
+    : result.matchType === 'minimal' ? 'Minimální rozdíl'
+    : result.matchType === 'medium' ? 'Střední rozdíl'
+    : result.matchType === 'large' ? 'Velký rozdíl'
+    : 'Wild Card';
+
+  const matchTone =
+    result.matchType === 'wildcard' ? 'bg-lavender/10 text-lavender border-lavender/25'
+    : result.matchType === 'exact' ? 'bg-green/10 text-green border-green/25'
+    : result.matchType === 'minimal' ? 'bg-yellow/10 text-yellow border-yellow/25'
+    : result.matchType === 'medium' ? 'bg-peach/10 text-peach border-peach/25'
+    : 'bg-red/10 text-red border-red/25';
+
   const renderField = (label: string, value: string, highlighted?: string, withSearch = false) => (
-    <div className="flex items-start gap-2">
-      <span className="text-subtext0 text-sm min-w-[140px]">{label}:</span>
-      <div className="flex-1 flex items-center gap-2">
+    <div className="min-w-0">
+      <dt className="field-label mb-0.5">{label}</dt>
+      <dd className="flex items-center gap-1.5 min-w-0">
         {highlighted ? (
           <span
-            className="text-text font-medium"
+            className="font-mono text-[13px] text-text break-all"
             dangerouslySetInnerHTML={{ __html: highlighted }}
           />
         ) : (
-          <span className="text-text font-medium">{value}</span>
+          <span className="font-mono text-[13px] text-text break-all">{value || '—'}</span>
         )}
         {withSearch && value && (
           <button
             onClick={() => handleGoogleSearch(value)}
-            className="text-overlay1 hover:text-mauve transition-colors flex-shrink-0"
-            aria-label={`Vyhledat ${value} na Google`}
-            title="Vyhledat na Google"
+            className="text-overlay0 hover:text-text transition-colors flex-shrink-0"
+            aria-label={`Vyhledat ${value} na webu`}
+            title="Vyhledat na webu"
           >
-            <Search size={16} />
+            <ExternalLink size={13} />
           </button>
         )}
-      </div>
+      </dd>
     </div>
   );
 
-  return (
-    <div
-      className={`bg-surface0 rounded-2xl p-5 border-l-4 ${getMatchColor()}
-        hover:bg-surface1 transition-all animate-fade-in shadow-lg`}
+  const copyButton = (title: string) => (
+    <button
+      onClick={handleCopy}
+      className="text-overlay0 hover:text-text transition-colors flex-shrink-0"
+      aria-label={title}
+      title={title}
     >
-      {/* Score badge */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+      {copied ? <CheckCircle size={14} className="text-green" /> : <Copy size={14} />}
+    </button>
+  );
+
+  return (
+    <article
+      className={`panel border-l-[3px] ${getMatchColor()} px-4 py-3 hover:border-surface2 transition-colors animate-fade-in`}
+    >
+      {/* Title row */}
+      <div className="flex items-start gap-3">
+        <h3
+          className="flex-1 min-w-0 text-[15px] font-medium text-text leading-snug"
+          dangerouslySetInnerHTML={{ __html: result.highlightedFields.nazev || result.nazev }}
+        />
+        <div className="flex items-center gap-2 shrink-0">
+          {result.vyrobce && (
+            <span className="text-xs font-medium text-subtext1 px-2 py-0.5 bg-surface0 border border-surface1 rounded">
+              {result.vyrobce}
+            </span>
+          )}
           <span
-            className={`px-3 py-1 rounded-xl text-sm font-bold ${
-              result.matchType === 'wildcard'
-                ? 'bg-purple-500/20 text-purple-500'
-                : result.matchType === 'exact'
-                ? 'bg-green/20 text-green'
-                : result.matchType === 'minimal'
-                ? 'bg-yellow/20 text-yellow'
-                : result.matchType === 'medium'
-                ? 'bg-peach/20 text-peach'
-                : 'bg-red/20 text-red'
-            }`}
+            className={`text-xs font-medium px-2 py-0.5 rounded border tabular-nums ${matchTone}`}
+            title={matchLabel}
           >
-            {result.matchType === 'wildcard'
-              ? `Wild card • ${result.score.toFixed(0)}%`
-              : `${result.score.toFixed(0)}% shoda`}
-          </span>
-          <span className="text-xs text-overlay1">
-            {result.matchType === 'exact' && '(Přesná shoda)'}
-            {result.matchType === 'minimal' && '(Minimální rozdíl)'}
-            {result.matchType === 'medium' && '(Střední rozdíl)'}
-            {result.matchType === 'large' && '(Velký rozdíl)'}
-            {result.matchType === 'wildcard' && '(Wildcard shoda)'}
+            {result.score.toFixed(0)} %
+            <span className="hidden sm:inline font-normal opacity-80"> · {matchLabel}</span>
           </span>
         </div>
-        <span className="text-xs text-subtext0 font-medium px-3 py-1 bg-surface2 rounded-xl">
-          {result.vyrobce}
-        </span>
       </div>
 
+      {(result.status === 'U' || result.vybehovyDil) && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {result.status === 'U' && (
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-red/10 border border-red/25 rounded text-red text-xs font-medium">
+              <AlertTriangle size={12} /> Materiál není aktivní
+            </span>
+          )}
+          {result.vybehovyDil && (
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-peach/10 border border-peach/25 rounded text-peach text-xs font-medium">
+              <AlertTriangle size={12} /> Výběhový díl — použijte náhradu
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Fields */}
-      <div className="space-y-2">
-        {result.status === 'U' && (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-red/10 border border-red/30 rounded-xl">
-            <AlertTriangle size={14} className="text-red flex-shrink-0" />
-            <span className="text-red text-xs font-medium">Materiál není aktivní!</span>
-          </div>
-        )}
-        {result.vybehovyDil && (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-peach/10 border border-peach/30 rounded-xl">
-            <AlertTriangle size={14} className="text-peach flex-shrink-0" />
-            <span className="text-peach text-xs font-medium">Výběhový díl</span>
-          </div>
-        )}
-
-        {renderField('Název', result.nazev, result.highlightedFields.nazev)}
-
-        <div className="flex items-start gap-2">
-          <span className="text-subtext0 text-sm min-w-[140px]">Artikl:</span>
-          <div className="flex-1 flex items-center gap-2">
+      <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-2 mt-3">
+        <div className="min-w-0">
+          <dt className="field-label mb-0.5">Artikl</dt>
+          <dd className="flex items-center gap-1.5">
             <span
-              className={`font-medium ${result.vybehovyDil ? 'text-overlay1 line-through text-sm' : 'text-text'}`}
+              className={`font-mono text-[13px] ${result.vybehovyDil ? 'text-overlay1 line-through' : 'text-text font-semibold'}`}
               dangerouslySetInnerHTML={{
                 __html: result.highlightedFields.artikl || result.artikl,
               }}
             />
-            {!result.vybehovyDil && (
-              <button
-                onClick={handleCopy}
-                className="text-overlay1 hover:text-mauve transition-colors flex-shrink-0"
-                aria-label="Kopírovat artikl"
-                title="Kopírovat artikl"
-              >
-                {copied ? <CheckCircle size={16} className="text-green" /> : <Copy size={16} />}
-              </button>
-            )}
-          </div>
+            {!result.vybehovyDil && copyButton('Kopírovat artikl')}
+          </dd>
         </div>
 
         {result.vybehovyDil && (
-          <div className="flex items-start gap-2">
-            <span className="text-peach text-sm font-semibold min-w-[140px]">Výběhový díl:</span>
-            <div className="flex-1 flex items-center gap-2">
+          <div className="min-w-0">
+            <dt className="field-label mb-0.5 !text-peach">Náhrada (výběhový díl)</dt>
+            <dd className="flex items-center gap-1.5">
               <span
-                className="text-peach font-bold"
+                className="font-mono text-[13px] text-peach font-semibold"
                 dangerouslySetInnerHTML={{
                   __html: result.highlightedFields.vybehovyDil || result.vybehovyDil,
                 }}
               />
-              <button
-                onClick={handleCopy}
-                className="text-overlay1 hover:text-peach transition-colors flex-shrink-0"
-                aria-label="Kopírovat artikl náhrady"
-                title="Kopírovat artikl náhrady"
-              >
-                {copied ? <CheckCircle size={16} className="text-green" /> : <Copy size={16} />}
-              </button>
-            </div>
+              {copyButton('Kopírovat artikl náhrady')}
+            </dd>
           </div>
         )}
 
@@ -180,7 +177,7 @@ export function ResultCard({ result }: ResultCardProps) {
           result.highlightedFields.cisloDiluVyrobce,
           true
         )}
-      </div>
-    </div>
+      </dl>
+    </article>
   );
 }

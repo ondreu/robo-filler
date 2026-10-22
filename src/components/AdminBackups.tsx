@@ -57,7 +57,7 @@ export function AdminBackups({ password, databases, onAfterRestore }: {
         <div className="flex bg-surface0 rounded-lg p-0.5 gap-0.5 ml-2">
           {databases.map(d => (
             <button key={d.name} onClick={() => setDb(d.name)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${db === d.name ? 'bg-mauve text-crust' : 'text-subtext1 hover:text-text'}`}>
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${db === d.name ? 'bg-mauve text-on-accent' : 'text-subtext1 hover:text-text'}`}>
               {d.label}
             </button>
           ))}

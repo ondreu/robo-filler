@@ -53,12 +53,12 @@ export function InstallPrompt() {
             className="w-9 h-9 rounded-lg flex-shrink-0"
           />
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-text leading-tight">Nainstalovat Robo Filler</p>
+            <p className="text-sm font-semibold text-text leading-tight">Nainstalovat Schoogle</p>
             <p className="text-xs text-subtext0 leading-tight">Otevírej jako aplikaci bez prohlížeče</p>
           </div>
           <button
             onClick={handleInstall}
-            className="flex-shrink-0 px-3 py-1.5 bg-mauve text-crust text-sm font-semibold rounded-xl hover:bg-mauve/80 transition-colors"
+            className="flex-shrink-0 px-3 py-1.5 bg-mauve text-on-accent text-sm font-semibold rounded-xl hover:bg-mauve/80 transition-colors"
           >
             Instalovat
           </button>
@@ -74,7 +74,7 @@ export function InstallPrompt() {
 
       <button
         onClick={handleInstall}
-        className="inline-flex items-center gap-1.5 text-overlay0 hover:text-subtext0 transition-colors text-sm"
+        className="inline-flex items-center gap-1.5 text-overlay1 hover:text-text transition-colors text-xs"
         title="Nainstalovat jako aplikaci"
       >
         <MonitorDown size={13} />

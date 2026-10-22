@@ -56,7 +56,7 @@ function LoginGate({ onAuth }: { onAuth: (pw: string) => void }) {
       <button
         onClick={submit}
         disabled={busy || !pw}
-        className="w-full bg-mauve text-crust font-medium rounded-xl py-2.5 disabled:opacity-50 flex items-center justify-center gap-2"
+        className="w-full bg-mauve text-on-accent font-medium rounded-xl py-2.5 disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {busy ? <Loader2 size={16} className="animate-spin" /> : <Lock size={16} />}
         Přihlásit
@@ -497,7 +497,7 @@ export function AdminPanel() {
             key={v}
             onClick={() => setSubView(v)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-              subView === v ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
+              subView === v ? 'bg-mauve text-on-accent shadow' : 'text-subtext1 hover:text-text'
             }`}
           >
             <Icon size={15} /> {label}
@@ -527,7 +527,7 @@ export function AdminPanel() {
                     setDbName(d.name);
                   }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    dbName === d.name ? 'bg-mauve text-crust' : 'text-subtext1 hover:text-text'
+                    dbName === d.name ? 'bg-mauve text-on-accent' : 'text-subtext1 hover:text-text'
                   }`}
                 >
                   {d.label}
@@ -539,7 +539,7 @@ export function AdminPanel() {
                   setDbName('master');
                 }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  dbName === 'master' ? 'bg-teal text-crust' : 'text-subtext1 hover:text-text'
+                  dbName === 'master' ? 'bg-teal text-on-accent' : 'text-subtext1 hover:text-text'
                 }`}
               >
                 Master CSV
@@ -576,7 +576,7 @@ export function AdminPanel() {
                 onClick={save}
                 disabled={!dirty || saving}
                 className={`flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-semibold transition-colors ${
-                  dirty ? 'bg-green text-crust hover:bg-green/90' : 'bg-surface0 text-overlay0'
+                  dirty ? 'bg-green text-on-accent hover:bg-green/90' : 'bg-surface0 text-overlay0'
                 }`}
               >
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
@@ -706,7 +706,7 @@ export function AdminPanel() {
                 )}
                 <div className="flex justify-end gap-2">
                   <button onClick={() => setConfirmSave(null)} className="px-4 py-2 rounded-xl text-sm text-subtext1 hover:text-text">Zrušit</button>
-                  <button onClick={performSave} className="px-4 py-2 rounded-xl text-sm font-semibold bg-green text-crust hover:bg-green/90">Uložit</button>
+                  <button onClick={performSave} className="px-4 py-2 rounded-xl text-sm font-semibold bg-green text-on-accent hover:bg-green/90">Uložit</button>
                 </div>
               </div>
             </div>

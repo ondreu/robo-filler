@@ -1,5 +1,9 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Loader2, AlertCircle, Download, FolderOpen, Settings, Calculator, Cable, SplitSquareHorizontal } from 'lucide-react';
+import {
+  Loader2, AlertCircle, AlertTriangle, Download, FolderOpen, FilePlus2, FileUp, Settings, Calculator, Cable,
+  SplitSquareHorizontal, Search, SearchX, ListChecks, Package, BookOpen, Table2, ChevronDown, Plus, Database,
+  Combine, Asterisk, ScanSearch, Compass,
+} from 'lucide-react';
 import type { Article, SearchResult, SearchMode, SearchField, DataSource, AppMode, AdvancedQuery, AdvancedField } from './types';
 import { ADVANCED_FIELD_LABELS } from './types';
 import { parseBomTxt, type ImportResult } from './utils/bomExport';
@@ -23,6 +27,9 @@ import { WireCableSearch } from './components/WireCableSearch';
 import { KanbanSearch } from './components/KanbanSearch';
 import { AdminPanel } from './components/AdminPanel';
 import { VersionChecker } from './components/VersionChecker';
+import { BrandMark } from './components/BrandMark';
+import { ThemeToggle } from './components/ThemeToggle';
+import { Segmented } from './components/ui/Segmented';
 import { ADMIN_AVAILABLE } from './utils/adminApi';
 
 // Debounce hook
@@ -56,7 +63,7 @@ function App() {
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState<SearchMode>('combined');
   const [field, setField] = useState<SearchField>('all');
-  const [maxResults, setMaxResults] = useState(10);
+  const [maxResults, setMaxResults] = useState(200);
   // Advanced (multi-field) search — arbitrary combination of field criteria, AND-ed
   const [advanced, setAdvanced] = useState(false);
   const [advancedQuery, setAdvancedQuery] = useState<AdvancedQuery>({});
@@ -325,166 +332,166 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
+  const navTab = (id: string, target: AppMode, label: string, icon: React.ReactNode, deprecated = false) => {
+    const active = appMode === target;
+    return (
+      <button
+        id={id}
+        onClick={() => setAppMode(target)}
+        aria-current={active ? 'page' : undefined}
+        className={`relative flex items-center gap-2 h-12 px-3 text-sm whitespace-nowrap transition-colors ${
+          active ? 'text-nav-text font-medium' : 'text-nav-muted hover:text-nav-text'
+        }`}
+      >
+        {icon}
+        {label}
+        {deprecated && (
+          <span
+            className="rounded px-1 py-px text-[9px] font-semibold uppercase tracking-wide leading-none
+              text-amber-400 border border-amber-400/40 bg-amber-400/10"
+            title="Tato sekce se už nerozvíjí — zůstává funkční, ale může být později odstraněna."
+          >
+            deprecated
+          </span>
+        )}
+        {active && <span className="absolute left-2 right-2 bottom-0 h-0.5 rounded-t bg-[#e5484d]" />}
+      </button>
+    );
+  };
+
+  const navIconLink = (href: string, title: string, icon: React.ReactNode) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={title}
+      aria-label={title}
+      className="btn-icon text-nav-muted hover:text-nav-text hover:bg-nav-hover"
+    >
+      {icon}
+    </a>
+  );
+
+  const deprecatedNotice = (
+    <div className="flex items-start gap-2.5 px-4 py-2.5 rounded-lg border border-yellow/30 bg-yellow/10 text-sm">
+      <span className="badge-deprecated mt-0.5">deprecated</span>
+      <p className="text-subtext1">
+        Tato sekce se už nerozvíjí. Zůstává funkční, ale může být v budoucnu odstraněna —
+        artikly hledejte přednostně ve vyhledávání v hlavní databázi.
+      </p>
+    </div>
+  );
+
+  const dbLabel = customArticles
+    ? `Vlastní databáze · ${activeArticles.length.toLocaleString('cs-CZ')} záznamů`
+    : (() => {
+        const wireCount = articles.filter(a => a.skupina).length;
+        const mainCount = activeArticles.length - activeArticles.filter(a => a.skupina).length;
+        const label = `${dataSource === 'usti' ? 'Ústí' : dataSource === 'effi' ? 'Effretikon' : 'Ústí + Effretikon'} · ${mainCount.toLocaleString('cs-CZ')} artiklů`;
+        const wireLabel = wireCount > 0 ? ` + ${wireCount.toLocaleString('cs-CZ')} vodičů` : '';
+        return label + wireLabel;
+      })();
+
   return (
-    <div className="min-h-screen bg-base text-text p-4 md:p-8">
-      <div className="max-w-[1600px] mx-auto space-y-6 relative">
-        {/* Externí nástroje + admin — vpravo nahoře */}
-        <div className="absolute right-0 top-0 z-20 flex items-center gap-2">
-          <a
-            href="https://ondreju-sag.github.io/Electrical-engineering-calculator/"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Elektro kalkulačka"
-            aria-label="Elektro kalkulačka"
-            className="p-2.5 rounded-xl bg-surface0 text-subtext1 hover:text-text hover:bg-surface1 transition-all"
-          >
-            <Calculator size={20} />
-          </a>
-          <a
-            href="https://ondreu.github.io/IEC-60364-5-52-Installation-Methods/"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="IEC 60364-5-52 — způsoby uložení vedení"
-            aria-label="IEC 60364-5-52 — způsoby uložení vedení"
-            className="p-2.5 rounded-xl bg-surface0 text-subtext1 hover:text-text hover:bg-surface1 transition-all"
-          >
-            <Cable size={20} />
-          </a>
-          {ADMIN_AVAILABLE && (
-            <button
-              onClick={() => setAppMode(appMode === 'admin' ? 'single' : 'admin')}
-              title="Správa databází"
-              aria-label="Správa databází"
-              className={`ml-3 p-2.5 rounded-xl transition-all ${
-                appMode === 'admin'
-                  ? 'bg-sky text-crust shadow-lg'
-                  : 'bg-surface0 text-subtext1 hover:text-text hover:bg-surface1'
-              }`}
-            >
-              <Settings size={20} className={appMode === 'admin' ? '' : 'hover:rotate-45 transition-transform'} />
-            </button>
-          )}
-        </div>
-        {/* Header */}
-        <header className="text-center space-y-3">
-          <h1 className="text-4xl md:text-5xl font-bold text-mauve">
-            Article Search
-          </h1>
-          <p className="text-subtext1 text-lg">
-            Vyhledávání článků v databázi Robo Filler
-          </p>
-        </header>
-
-        {/* Mode tabs */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex bg-surface0 rounded-2xl p-1 gap-1">
-            <button
-              id="onb-single"
-              onClick={() => setAppMode('single')}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                appMode === 'single'
-                  ? 'bg-mauve text-crust shadow-lg'
-                  : 'text-subtext1 hover:text-text'
-              }`}
-            >
-              Jednotlivé
-            </button>
-            <button
-              id="onb-bulk"
-              onClick={() => setAppMode('bulk')}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                appMode === 'bulk'
-                  ? 'bg-mauve text-crust shadow-lg'
-                  : 'text-subtext1 hover:text-text'
-              }`}
-            >
-              Hromadné
-            </button>
-          </div>
-          <div className="flex bg-surface0 rounded-2xl p-1 gap-1">
-            <button
-              id="onb-wirecable"
-              onClick={() => setAppMode('wirecable')}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                appMode === 'wirecable'
-                  ? 'bg-teal text-crust shadow-lg'
-                  : 'text-subtext1 hover:text-text'
-              }`}
-            >
-              🔌 Vodiče &amp; Kabely
-            </button>
-            <button
-              id="onb-kanban"
-              onClick={() => setAppMode('kanban')}
-              className={`px-5 py-2 rounded-xl font-medium transition-all ${
-                appMode === 'kanban'
-                  ? 'bg-peach text-crust shadow-lg'
-                  : 'text-subtext1 hover:text-text'
-              }`}
-            >
-              📦 Sypký materiál
-            </button>
+    <div className="min-h-screen bg-base text-text flex flex-col">
+      {/* Horní lišta — tmavá v obou režimech, jako v DZL */}
+      <header className="sticky top-0 z-40 bg-nav text-nav-text border-b border-black/30">
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-12 flex items-center gap-6">
+          <button onClick={() => setAppMode('single')} className="rounded-md" aria-label="Schoogle — úvod">
+            <BrandMark />
+          </button>
+          <nav className="flex items-center gap-1 overflow-x-auto min-w-0" aria-label="Hlavní navigace">
+            {navTab('onb-single', 'single', 'Vyhledávání', <Search size={16} />)}
+            {navTab('onb-bulk', 'bulk', 'Hromadné', <ListChecks size={16} />)}
+            <span className="w-px h-5 bg-white/10 mx-1 shrink-0" />
+            {navTab('onb-wirecable', 'wirecable', 'Vodiče a kabely', <Cable size={16} />, true)}
+            {navTab('onb-kanban', 'kanban', 'Sypký materiál', <Package size={16} />, true)}
+          </nav>
+          <div className="ml-auto flex items-center gap-1 shrink-0">
+            {navIconLink('https://ondreju-sag.github.io/Electrical-engineering-calculator/', 'Elektro kalkulačka', <Calculator size={18} />)}
+            {navIconLink('https://ondreu.github.io/IEC-60364-5-52-Installation-Methods/', 'IEC 60364-5-52 — způsoby uložení vedení', <BookOpen size={18} />)}
+            {ADMIN_AVAILABLE && (
+              <button
+                onClick={() => setAppMode(appMode === 'admin' ? 'single' : 'admin')}
+                title="Správa databází"
+                aria-label="Správa databází"
+                className={`btn-icon ${
+                  appMode === 'admin'
+                    ? 'bg-nav-hover text-nav-text'
+                    : 'text-nav-muted hover:text-nav-text hover:bg-nav-hover'
+                }`}
+              >
+                <Settings size={18} />
+              </button>
+            )}
+            <span className="w-px h-5 bg-white/10 mx-1" />
+            <ThemeToggle />
           </div>
         </div>
+      </header>
 
+      <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 md:px-6 py-5 space-y-4">
         {/* Admin — správa databází (nezávislé na hlavní DB) */}
         {appMode === 'admin' && <AdminPanel />}
 
-        {/* Data source toggle and advanced settings */}
+        {/* Data source toggle and tools */}
         {appMode !== 'admin' && (
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-mantle rounded-2xl p-4">
+        <div className="panel flex flex-wrap items-center justify-between gap-3 px-4 py-2.5">
           <DataSourceToggle
             dataSource={dataSource}
             onDataSourceChange={setDataSource}
             isLoading={isLoading}
           />
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <div ref={zbomDropdownRef} className="relative">
-              <button
-                onClick={() => zbomTabs.length > 0 ? (setZbomEditorOpen(true), setZbomDropdownOpen(false)) : setZbomDropdownOpen(o => !o)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text"
-              >
-                <FolderOpen size={18} />
-                Tabulkové zpracování
-                {zbomTabs.length > 0 && (
-                  <span className="bg-mauve text-crust text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0">
-                    {zbomTabs.length}
-                  </span>
-                )}
-                <svg
-                  onClick={e => { e.stopPropagation(); setZbomDropdownOpen(o => !o); }}
-                  className={`w-3 h-3 transition-transform ${zbomDropdownOpen ? 'rotate-180' : ''}`}
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-                ><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-              </button>
+              <div className="flex">
+                <button
+                  onClick={() => zbomTabs.length > 0 ? (setZbomEditorOpen(true), setZbomDropdownOpen(false)) : setZbomDropdownOpen(o => !o)}
+                  className="btn btn-secondary rounded-r-none"
+                >
+                  <Table2 size={16} />
+                  Tabulkové zpracování
+                  {zbomTabs.length > 0 && (
+                    <span className="bg-mauve text-on-accent text-[11px] font-semibold rounded min-w-[18px] h-[18px] px-1 flex items-center justify-center">
+                      {zbomTabs.length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setZbomDropdownOpen(o => !o)}
+                  className="btn btn-secondary rounded-l-none border-l-0 px-2"
+                  aria-label="Možnosti tabulkového zpracování"
+                >
+                  <ChevronDown size={14} className={`transition-transform ${zbomDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
               {zbomDropdownOpen && (
-                <div className="absolute left-0 top-full mt-1 z-30 bg-mantle border border-surface1 rounded-xl shadow-xl overflow-hidden min-w-[180px]">
+                <div className="absolute left-0 top-full mt-1 z-30 bg-mantle border border-surface1 rounded-lg shadow-xl overflow-hidden min-w-[200px] py-1">
                   {zbomTabs.length > 0 && (
                     <>
                       <button
                         onClick={() => { setZbomEditorOpen(true); setZbomDropdownOpen(false); }}
-                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-mauve hover:bg-surface0 transition-colors text-left font-medium"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text hover:bg-surface0 transition-colors text-left font-medium"
                       >
-                        <FolderOpen size={14} className="flex-shrink-0" />
+                        <FolderOpen size={15} className="flex-shrink-0 text-overlay1" />
                         Pokračovat v práci
                       </button>
-                      <div className="border-t border-surface1" />
+                      <div className="border-t border-surface1 my-1" />
                     </>
                   )}
                   <button
                     onClick={() => { openNewZbomTab(); setZbomDropdownOpen(false); }}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-subtext1 hover:bg-surface0 hover:text-text transition-colors text-left"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-subtext1 hover:bg-surface0 hover:text-text transition-colors text-left"
                   >
-                    <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    <FilePlus2 size={15} className="flex-shrink-0 text-overlay1" />
                     Nový kusovník
                   </button>
-                  <div className="border-t border-surface1" />
                   <button
                     onClick={() => { zbomInputRef.current?.click(); setZbomDropdownOpen(false); }}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-subtext1 hover:bg-surface0 hover:text-text transition-colors text-left"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-subtext1 hover:bg-surface0 hover:text-text transition-colors text-left"
                   >
-                    <FolderOpen size={16} className="flex-shrink-0" />
-                    Z exportu
+                    <FileUp size={15} className="flex-shrink-0 text-overlay1" />
+                    Otevřít z exportu…
                   </button>
                 </div>
               )}
@@ -493,10 +500,10 @@ function App() {
             {results.length > 0 && (
               <button
                 onClick={handleExportCSV}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-surface0 text-subtext1 hover:bg-surface1 hover:text-text"
+                className="btn btn-secondary"
                 title="Exportovat výsledky do CSV"
               >
-                <Download size={18} />
+                <Download size={16} />
                 Export CSV
               </button>
             )}
@@ -511,17 +518,17 @@ function App() {
 
         {/* Error state */}
         {error && (
-          <div className="bg-red/10 border border-red/30 rounded-2xl p-4 flex items-center gap-3">
-            <AlertCircle className="text-red flex-shrink-0" size={24} />
-            <p className="text-red">{error}</p>
+          <div className="rounded-lg border border-red/30 bg-red/10 px-4 py-3 flex items-center gap-3">
+            <AlertCircle className="text-red flex-shrink-0" size={20} />
+            <p className="text-red text-sm">{error}</p>
           </div>
         )}
 
         {/* Loading state */}
         {isLoading && appMode !== 'admin' && (
-          <div className="bg-mantle rounded-2xl p-8 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="text-mauve animate-spin" size={48} />
-            <p className="text-subtext1">Načítám databázi...</p>
+          <div className="panel p-10 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="text-overlay1 animate-spin" size={28} />
+            <p className="text-subtext1 text-sm">Načítám databázi…</p>
           </div>
         )}
 
@@ -531,37 +538,25 @@ function App() {
             {appMode === 'ai' && (
               <div className="space-y-4">
                 {/* AI sub-mode toggle */}
-                <div className="flex bg-surface0 rounded-xl p-1 gap-1 w-fit">
-                  <button
-                    id="onb-chat"
-                    onClick={() => setAiSubMode('chat')}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                      aiSubMode === 'chat' ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
-                    }`}
-                  >
-                    Chat bot
-                  </button>
-                  <button
-                    id="onb-bom"
-                    onClick={() => aiSubMode === 'bom' ? undefined : setShowBomWarning(true)}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                      aiSubMode === 'bom' ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
-                    }`}
-                  >
-                    Stavba kusovníku
-                    <span className="ml-1.5 text-[10px] font-semibold bg-yellow/20 text-yellow rounded px-1 py-0.5 leading-none align-middle">BETA</span>
-                  </button>
-                </div>
+                <Segmented
+                  ariaLabel="AI režim"
+                  value={aiSubMode}
+                  onChange={v => v === 'chat' ? setAiSubMode('chat') : (aiSubMode === 'bom' ? undefined : setShowBomWarning(true))}
+                  options={[
+                    { value: 'chat', label: 'Chat bot' },
+                    { value: 'bom', label: <>Stavba kusovníku <span className="ml-1 text-[10px] font-semibold bg-yellow/15 text-yellow rounded px-1 py-0.5 leading-none">BETA</span></> },
+                  ]}
+                />
 
-                <p className="text-[11px] text-overlay0">Jedná se o umělou inteligenci, která může dělat chyby. Odpovědi si prosím pečlivě zkontrolujte.</p>
+                <p className="text-[11px] text-overlay1">Jedná se o umělou inteligenci, která může dělat chyby. Odpovědi si prosím pečlivě zkontrolujte.</p>
 
                 <AiOnboarding />
                 {aiSubMode === 'chat' && <AiChat />}
                 {aiSubMode === 'bom' && (
-                  <div className="bg-mantle rounded-2xl border border-surface1 p-6">
+                  <div className="panel p-6">
                     <div className="mb-5">
                       <h2 className="text-text font-semibold text-base">AI stavba kusovníku</h2>
-                      <p className="text-overlay0 text-xs mt-0.5">
+                      <p className="text-overlay1 text-xs mt-0.5">
                         Zadej typová označení — AI agent každé vyhledá v databázi a sestaví kusovník a seznam k&nbsp;založení.
                       </p>
                     </div>
@@ -576,15 +571,15 @@ function App() {
                 {/* BOM builder cost warning modal */}
                 {showBomWarning && (
                   <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-crust/70 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
                     onClick={() => setShowBomWarning(false)}
                   >
                     <div
-                      className="bg-mantle border border-surface1 rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4"
+                      className="bg-mantle border border-surface1 rounded-xl shadow-xl p-6 max-w-sm w-full mx-4"
                       onClick={e => e.stopPropagation()}
                     >
                       <div className="flex items-start gap-3 mb-4">
-                        <span className="text-yellow text-xl leading-none mt-0.5">⚠</span>
+                        <AlertTriangle size={20} className="text-yellow shrink-0 mt-0.5" />
                         <div>
                           <h3 className="text-text font-semibold text-base mb-1">Pozor — nákladný režim</h3>
                           <p className="text-subtext1 text-sm leading-relaxed">
@@ -593,15 +588,12 @@ function App() {
                         </div>
                       </div>
                       <div className="flex gap-2 justify-end">
-                        <button
-                          onClick={() => setShowBomWarning(false)}
-                          className="px-4 py-1.5 rounded-lg text-sm font-medium text-subtext1 hover:text-text transition-colors"
-                        >
+                        <button onClick={() => setShowBomWarning(false)} className="btn btn-secondary">
                           Zrušit
                         </button>
                         <button
                           onClick={() => { setAiSubMode('bom'); setShowBomWarning(false); }}
-                          className="px-4 py-1.5 rounded-lg text-sm font-medium bg-mauve text-crust hover:bg-mauve/90 transition-colors"
+                          className="btn btn-primary"
                         >
                           Rozumím, pokračovat
                         </button>
@@ -619,14 +611,14 @@ function App() {
               />
             )}
 
-            {appMode === 'wirecable' && <WireCableSearch />}
+            {appMode === 'wirecable' && <>{deprecatedNotice}<WireCableSearch /></>}
 
-            {appMode === 'kanban' && <KanbanSearch />}
+            {appMode === 'kanban' && <>{deprecatedNotice}<KanbanSearch /></>}
 
             {appMode === 'single' && (
               <>
                 {/* Search bar */}
-                <div className="bg-mantle rounded-2xl p-6">
+                <section className="panel p-4 md:p-5">
                   <SearchBar
                     query={query}
                     onQueryChange={setQuery}
@@ -641,80 +633,70 @@ function App() {
                     advancedQuery={advancedQuery}
                     onAdvancedQueryChange={setAdvancedQuery}
                   />
-                </div>
+                </section>
 
-                {/* Filters */}
-                {manufacturers.length > 0 && (
+                {/* Results info + filters */}
+                <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-subtext1">
                   <div className="flex flex-wrap items-center gap-3">
-                    <FilterPanel
-                      manufacturers={manufacturers}
-                      selectedManufacturers={selectedManufacturers}
-                      onSelectionChange={setSelectedManufacturers}
-                    />
+                    {manufacturers.length > 0 && (
+                      <FilterPanel
+                        manufacturers={manufacturers}
+                        selectedManufacturers={selectedManufacturers}
+                        onSelectionChange={setSelectedManufacturers}
+                      />
+                    )}
                     {selectedManufacturers.length > 0 && (
-                      <span className="text-sm text-subtext1">
+                      <span className="text-xs text-subtext1">
                         Filtrováno: {selectedManufacturers.join(', ')}
                       </span>
                     )}
-                  </div>
-                )}
-
-                {/* Results info */}
-                <div className="flex items-center justify-between text-sm text-subtext1">
-                  <p>
-                    {customArticles
-                      ? `Vlastní databáze: ${activeArticles.length.toLocaleString('cs-CZ')} záznamů`
-                      : (() => {
-                          const wireCount = articles.filter(a => a.skupina).length;
-                          const mainCount = activeArticles.length - activeArticles.filter(a => a.skupina).length;
-                          const label = `Databáze ${dataSource === 'usti' ? 'Ústí' : dataSource === 'effi' ? 'Effretikon' : 'Ústí + Effretikon'}: ${mainCount.toLocaleString('cs-CZ')} artiklů`;
-                          const wireLabel = wireCount > 0 ? ` + ${wireCount.toLocaleString('cs-CZ')} vodičů` : '';
-                          return label + wireLabel;
-                        })()}
-                    {!customArticles && dbLastModified && (
-                      <span className="ml-2 text-overlay1">
-                        • aktualizováno {dbLastModified.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' })}
-                      </span>
-                    )}
-                  </p>
-                  {hasQuery && (
-                    <p>
-                      {isSearching ? (
-                        <span className="flex items-center gap-2">
-                          <Loader2 className="animate-spin" size={16} />
-                          Vyhledávám...
-                        </span>
-                      ) : (
-                        `Nalezeno ${results.length} výsledků`
+                    <span className="flex items-center gap-1.5 text-xs text-overlay1">
+                      <Database size={13} />
+                      {dbLabel}
+                      {!customArticles && dbLastModified && (
+                        <> · aktualizováno {dbLastModified.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' })}</>
                       )}
+                    </span>
+                  </div>
+                  {hasQuery && (
+                    <p className="text-xs">
+                      {isSearching ? (
+                        <span className="flex items-center gap-2 text-overlay1">
+                          <Loader2 className="animate-spin" size={14} />
+                          Vyhledávám…
+                        </span>
+                      ) : results.length > 0 ? (
+                        <span className="tabular-nums">
+                          Nalezeno <strong className="text-text font-semibold">{results.length}</strong> výsledků
+                          {results.length > displayedCount && <> · zobrazeno {displayedCount}</>}
+                        </span>
+                      ) : null}
                     </p>
                   )}
                 </div>
 
                 {/* Cross-field query hint */}
                 {crossFieldSplit && (
-                  <div className="bg-mantle border-2 border-teal/30 rounded-2xl p-4 flex flex-col md:flex-row
-                    md:items-center gap-3">
-                    <SplitSquareHorizontal className="text-teal shrink-0" size={20} />
+                  <div className="panel border-l-[3px] border-l-teal px-4 py-3 flex flex-col md:flex-row md:items-center gap-3">
+                    <SplitSquareHorizontal className="text-teal shrink-0" size={18} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-text">
-                        Tvůj dotaz se našel <span className="text-teal">napříč více poli</span>
+                        Dotaz se našel <span className="text-teal font-medium">napříč více poli</span>
                         {' — '}
                         {(Object.keys(crossFieldSplit) as AdvancedField[])
                           .map(f => `${ADVANCED_FIELD_LABELS[f]}: „${crossFieldSplit[f]}"`)
                           .join(' + ')}
                         .
                       </p>
-                      <p className="text-xs text-overlay0 mt-1">
-                        <span className="text-subtext1 font-medium">Nevidíš tady, co hledáš?</span>{' '}
-                        Zkus přepnout na vyhledávání ve více polích — jednoduché pole míchá do výsledků i artikly,
+                      <p className="text-xs text-overlay1 mt-1">
+                        <span className="text-subtext1 font-medium">Nevidíte tady, co hledáte?</span>{' '}
+                        Zkuste vyhledávání ve více polích — jedno pole míchá do výsledků i artikly,
                         kde platí jen část slov, zatímco samostatná pole vrátí jen přesné kombinace.
                       </p>
                     </div>
                     <button
                       onClick={() => applyCrossFieldSplit(crossFieldSplit)}
-                      className="shrink-0 px-4 py-2 rounded-xl font-medium bg-teal text-crust
-                        hover:bg-teal/90 transition-colors text-sm"
+                      className="btn btn-secondary shrink-0"
                     >
                       Rozdělit do polí
                     </button>
@@ -723,82 +705,68 @@ function App() {
 
                 {/* Results */}
                 {hasQuery && !isSearching && (
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {results.length === 0 ? (
-                      <div className="bg-mantle rounded-2xl p-8 text-center">
-                        <p className="text-overlay1 text-lg">
-                          Žádné výsledky nenalezeny
+                      <div className="panel p-10 text-center">
+                        <SearchX size={28} className="mx-auto text-overlay0" />
+                        <p className="text-text font-medium mt-3">
+                          Žádné výsledky
                         </p>
-                        <p className="text-overlay0 text-sm mt-2">
-                          Zkuste změnit režim vyhledávání nebo použít jiný výraz
+                        <p className="text-overlay1 text-sm mt-1">
+                          Zkuste změnit režim vyhledávání nebo použít jiný výraz.
                         </p>
                         {suggestions.length > 0 && (
                           <div className="mt-6 text-left space-y-2">
-                            <p className="text-subtext0 text-sm font-medium">Mysleli jste...?</p>
+                            <p className="field-label">Mysleli jste…?</p>
                             {suggestions.map((s, idx) => (
                               <ResultCard key={`${s.artikl}-${idx}`} result={s} />
                             ))}
                           </div>
                         )}
                       </div>
-                    ) : (() => {
-                      const visible = results.slice(0, displayedCount);
-                      const canShowMore = displayedCount < results.length;
-                      return (
-                        <>
-                          {visible.slice(0, canShowMore ? -1 : undefined).map((result, index) => (
-                            <ResultCard key={`${result.artikl}-${index}`} result={result} />
-                          ))}
-                          {canShowMore && (
-                            <div className="flex flex-col md:flex-row gap-4 items-stretch">
-                              <div className="flex-1">
-                                <ResultCard
-                                  result={visible[visible.length - 1]}
-                                />
-                              </div>
-                              <button
-                                onClick={() => setDisplayedCount(c => c + 3)}
-                                className="flex items-center justify-center px-6 py-3 md:py-0 rounded-2xl
-                                  bg-surface0 hover:bg-surface1 text-mauve font-bold text-2xl
-                                  transition-all shadow border-2 border-surface2 hover:border-mauve
-                                  min-w-[56px]"
-                                title="Zobrazit další 3 výsledky"
-                              >
-                                +
-                              </button>
-                            </div>
-                          )}
-                        </>
-                      );
-                    })()}
+                    ) : (
+                      <>
+                        {results.slice(0, displayedCount).map((result, index) => (
+                          <ResultCard key={`${result.artikl}-${index}`} result={result} />
+                        ))}
+                        {displayedCount < results.length && (
+                          <button
+                            onClick={() => setDisplayedCount(c => c + 3)}
+                            className="w-full flex items-center justify-center gap-2 h-10 rounded-xl border border-dashed
+                              border-surface2 text-sm text-subtext1 hover:text-text hover:border-overlay0 hover:bg-mantle transition-colors"
+                            title="Zobrazit další 3 výsledky"
+                          >
+                            <Plus size={16} />
+                            Zobrazit další
+                            <span className="text-overlay1 tabular-nums">({displayedCount} z {results.length})</span>
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
                 )}
 
                 {/* Welcome message */}
                 {!hasQuery && (
-                  <div className="bg-mantle rounded-2xl p-8 text-center space-y-4">
-                    <p className="text-subtext1 text-lg">
-                      Zadejte hledaný výraz pro zahájení vyhledávání
+                  <div className="panel p-6 md:p-8">
+                    <p className="text-text font-medium">Zadejte hledaný výraz</p>
+                    <p className="text-sm text-overlay1 mt-1">
+                      Hledá se v typovém označení, názvu, výrobci, artiklu i čísle dílu výrobce. Výsledky se seřadí podle shody.
                     </p>
-                    <div className="grid md:grid-cols-3 gap-4 text-left">
-                      <div className="bg-surface0 rounded-xl p-4">
-                        <h3 className="text-mauve font-semibold mb-2">Fuzzy Search</h3>
-                        <p className="text-sm text-subtext0">
-                          Hledá podobné shody s tolerancí překlépnutí a formátování
-                        </p>
-                      </div>
-                      <div className="bg-surface0 rounded-xl p-4">
-                        <h3 className="text-mauve font-semibold mb-2">Wild Card</h3>
-                        <p className="text-sm text-subtext0">
-                          Automaticky hledá výraz kdekoli v textu (*výraz*)
-                        </p>
-                      </div>
-                      <div className="bg-surface0 rounded-xl p-4">
-                        <h3 className="text-mauve font-semibold mb-2">Kombinovaný</h3>
-                        <p className="text-sm text-subtext0">
-                          Nejdříve zkusí Wild Card, pak Fuzzy search
-                        </p>
-                      </div>
+                    <div className="grid md:grid-cols-3 gap-3 mt-5">
+                      {[
+                        { icon: <Combine size={18} />, title: 'Kombinovaný', text: 'Nejdříve zkusí Wild Card, pak Fuzzy. Výchozí a nejčastěji nejlepší volba.' },
+                        { icon: <Asterisk size={18} />, title: 'Wild Card', text: 'Hledá výraz kdekoli v textu (*výraz*) — vhodné pro části typového označení.' },
+                        { icon: <ScanSearch size={18} />, title: 'Fuzzy', text: 'Hledá podobné shody s tolerancí překlepů a rozdílného formátování.' },
+                      ].map(c => (
+                        <div key={c.title} className="rounded-lg border border-surface1 bg-surface0/50 p-4">
+                          <div className="flex items-center gap-2 text-text font-medium text-sm">
+                            <span className="text-overlay1">{c.icon}</span>
+                            {c.title}
+                          </div>
+                          <p className="text-sm text-subtext0 mt-1.5 leading-relaxed">{c.text}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -806,11 +774,13 @@ function App() {
             )}
           </>
         )}
+      </main>
 
-        {/* Footer */}
-        <footer className="text-center text-overlay0 text-sm pt-8 space-y-1">
-          <p>Article Search App • Robo Filler</p>
-          <div className="flex items-center justify-center gap-2">
+      {/* Footer */}
+      <footer className="border-t border-surface1 bg-mantle">
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-3 flex flex-wrap items-center justify-between gap-2 text-xs text-overlay1">
+          <p>Schoogle · interní vyhledávač artiklů Schaltag</p>
+          <div className="flex items-center gap-3">
             <Changelog />
             <HowItWorks />
             <InstallPrompt />
@@ -820,14 +790,15 @@ function App() {
                 localStorage.removeItem('app-onboarding-v1');
                 window.location.reload();
               }}
-              className="text-overlay0 hover:text-subtext0 transition-colors text-xs"
+              className="flex items-center gap-1 text-overlay1 hover:text-text transition-colors"
               title="Znovu spustit průvodce aplikací"
             >
-              průvodce
+              <Compass size={13} />
+              Průvodce
             </button>
           </div>
-        </footer>
-      </div>
+        </div>
+      </footer>
 
       <AppOnboarding />
       <VersionChecker />

@@ -12,15 +12,15 @@ export function HowItWorks() {
           onClick={() => setOpen(true)}
           onMouseEnter={() => setTooltipVisible(true)}
           onMouseLeave={() => setTooltipVisible(false)}
-          className="text-overlay1 hover:text-teal transition-colors"
-          aria-label="Jak funguju?"
+          className="inline-flex items-center gap-1 text-overlay1 hover:text-text transition-colors"
+          aria-label="Jak to funguje"
         >
-          <HelpCircle size={15} />
+          <HelpCircle size={13} />
+          Nápověda
         </button>
         {tooltipVisible && (
-          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-surface1 text-text rounded-lg shadow-lg whitespace-nowrap pointer-events-none z-50">
-            jak funguju?
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-surface1 rotate-45 -mt-1" />
+          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-nav text-nav-text rounded-md shadow-lg whitespace-nowrap pointer-events-none z-50">
+            jak to funguje?
           </div>
         )}
       </div>
@@ -30,14 +30,14 @@ export function HowItWorks() {
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           onClick={() => setOpen(false)}
         >
-          <div className="absolute inset-0 bg-crust/80 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
           <div
             className="relative z-10 bg-mantle rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col"
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-surface1 shrink-0">
-              <span className="font-semibold text-text">Jak funguje Robo Filler?</span>
+              <span className="font-semibold text-text">Jak funguje Schoogle?</span>
               <button onClick={() => setOpen(false)} className="text-overlay1 hover:text-text transition-colors">
                 <X size={18} />
               </button>
@@ -67,7 +67,7 @@ export function HowItWorks() {
                   <span className="text-xs font-semibold px-1.5 py-0.5 bg-peach/15 text-peach rounded-lg shrink-0 mt-0.5">Kanban DB</span>
                   <p className="text-xs text-subtext1">
                     <span className="text-text font-medium">Databáze sypkého materiálu</span> — přes <span className="text-text font-medium">500 artiklů</span> kanban materiálu (dutinky, kabelová oka, fastony, smršťovací bužírky, stahovací pásky a další).
-                    Najdeš ji v kartě <span className="text-text font-medium">📦 Sypký materiál</span> vedle Vodičů &amp; Kabelů — filtruje se po kategoriích a podskupinách, karta artiklu ukazuje i pozici v kanbanu.
+                    Najdeš ji v kartě <span className="text-text font-medium">Sypký materiál</span> vedle Vodičů &amp; Kabelů — filtruje se po kategoriích a podskupinách, karta artiklu ukazuje i pozici v kanbanu.
                   </p>
                 </div>
               </section>
@@ -182,7 +182,7 @@ export function HowItWorks() {
               <section>
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles size={15} className="text-mauve shrink-0" />
-                  <h3 className="font-semibold text-sm text-text">✨ AI mód — tři nástroje</h3>
+                  <h3 className="font-semibold text-sm text-text">AI mód — tři nástroje</h3>
                 </div>
                 <div className="space-y-2.5">
                   <div className="flex items-start gap-2 bg-surface0 rounded-xl p-3">
@@ -281,10 +281,10 @@ export function HowItWorks() {
               <section>
                 <div className="flex items-center gap-2 mb-2">
                   <Database size={15} className="text-sky shrink-0" />
-                  <h3 className="font-semibold text-sm text-text">🛠️ Správa DB (admin)</h3>
+                  <h3 className="font-semibold text-sm text-text">Správa DB (admin)</h3>
                 </div>
                 <p className="text-sm text-subtext1 leading-relaxed mb-2">
-                  Záložka <span className="text-text font-medium">🛠️ Správa DB</span> umožňuje spravovat databáze
+                  Záložka <span className="text-text font-medium">Správa DB</span> umožňuje spravovat databáze
                   Vodiče, Kabely a Sypký materiál jako tabulku — přidávat a mazat řádky i sloupce, upravovat hodnoty,
                   importovat a exportovat CSV (nebo exportovat JSON pro práci v jiných programech). Přístup je chráněn heslem.
                 </p>

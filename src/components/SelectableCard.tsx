@@ -27,7 +27,7 @@ export function SelectableCard({ result, selected, onSelect }: SelectableCardPro
   const getMatchColor = () => {
     if (result.fromAlt) return 'border-l-peach';
     switch (result.matchType) {
-      case 'wildcard': return 'border-l-purple-500';
+      case 'wildcard': return 'border-l-lavender';
       case 'exact':    return 'border-l-green';
       case 'minimal':  return 'border-l-yellow';
       case 'medium':   return 'border-l-peach';
@@ -38,7 +38,7 @@ export function SelectableCard({ result, selected, onSelect }: SelectableCardPro
 
   const getScoreBadgeClass = () => {
     switch (result.matchType) {
-      case 'wildcard': return 'bg-purple-500/20 text-purple-500';
+      case 'wildcard': return 'bg-lavender/20 text-lavender';
       case 'exact':    return 'bg-green/20 text-green';
       case 'minimal':  return 'bg-yellow/20 text-yellow';
       case 'medium':   return 'bg-peach/20 text-peach';

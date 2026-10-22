@@ -1,4 +1,4 @@
-import { Settings, Upload, Trash2, X } from 'lucide-react';
+import { SlidersHorizontal, Upload, Trash2, X } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { Tooltip } from './Tooltip';
 import type { Article } from '../types';
@@ -56,13 +56,13 @@ export function AdvancedSettings({
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+        className={`btn ${
           isOpen || hasCustomData
-            ? 'bg-mauve text-crust shadow-lg'
-            : 'bg-surface0 text-subtext1 hover:bg-surface1'
+            ? 'bg-mauve/10 border-mauve/40 text-mauve'
+            : 'btn-secondary'
         }`}
       >
-        <Settings size={18} />
+        <SlidersHorizontal size={16} />
         Pokročilé možnosti
         <Tooltip content="Nahrajte vlastní CSV databázi nebo vymažte načtenou databázi" />
       </button>
@@ -76,7 +76,7 @@ export function AdvancedSettings({
           />
 
           {/* Modal */}
-          <div className="absolute top-full mt-2 right-0 w-96 bg-surface0 rounded-2xl shadow-2xl z-50 animate-fade-in border border-surface2">
+          <div className="absolute top-full mt-2 right-0 w-96 bg-mantle rounded-lg shadow-xl z-50 animate-fade-in border border-surface1">
             <div className="p-5 space-y-4">
               {/* Header */}
               <div className="flex items-center justify-between">

@@ -802,7 +802,7 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
             <button
               onClick={submit}
               disabled={activeRows.length === 0}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl font-medium bg-mauve text-crust hover:bg-pink disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-2 px-5 py-2 rounded-xl font-medium bg-mauve text-on-accent hover:bg-pink disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <Play size={16} />
               Spustit ({activeRows.length} {activeRows.length === 1 ? 'položka' : activeRows.length < 5 ? 'položky' : 'položek'})
@@ -896,7 +896,7 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
                       <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${
                         clarifyAnswers[q.id] === choice ? 'border-mauve bg-mauve' : 'border-surface2 group-hover:border-mauve/50'
                       }`}>
-                        {clarifyAnswers[q.id] === choice && <div className="w-1.5 h-1.5 rounded-full bg-crust" />}
+                        {clarifyAnswers[q.id] === choice && <div className="w-1.5 h-1.5 rounded-full bg-on-accent" />}
                       </div>
                       <input type="radio" name={q.id} value={choice} checked={clarifyAnswers[q.id] === choice}
                         onChange={() => setClarifyAnswers(prev => ({ ...prev, [q.id]: choice }))} className="sr-only" />
@@ -916,7 +916,7 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
 
         <div className="flex items-center gap-3 pt-1">
           <button onClick={confirmAnswers} disabled={!allAnswered}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl font-medium bg-mauve text-crust hover:bg-pink disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm">
+            className="flex items-center gap-2 px-5 py-2 rounded-xl font-medium bg-mauve text-on-accent hover:bg-pink disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm">
             <Play size={14} /> Znovu prohledat nenalezené
           </button>
           <button onClick={() => setPhase('results')}
@@ -1035,7 +1035,7 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
         <button
           onClick={() => setResultTab('bom')}
           className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-            resultTab === 'bom' ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
+            resultTab === 'bom' ? 'bg-mauve text-on-accent shadow' : 'text-subtext1 hover:text-text'
           }`}
         >
           Kusovník ({bomRows.length})
@@ -1043,7 +1043,7 @@ export function AiBomBuilder({ onOpenInZbom }: BomBuilderProps) {
         <button
           onClick={() => setResultTab('create')}
           className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-            resultTab === 'create' ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
+            resultTab === 'create' ? 'bg-mauve text-on-accent shadow' : 'text-subtext1 hover:text-text'
           }`}
         >
           K založení ({toCreate.length})

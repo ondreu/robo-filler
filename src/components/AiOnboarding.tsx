@@ -4,7 +4,7 @@ import { ArrowRight, ArrowLeft, X, Bot, Sparkles, ClipboardList } from 'lucide-r
 
 const LS_KEY = 'ai-onboarding-v1';
 const CARD_W = 340;
-const MANTLE_HEX = '#181825';
+const MANTLE_HEX = 'rgb(var(--c-mantle))';
 
 interface StepDef {
   targetId: string | null;
@@ -25,8 +25,8 @@ const STEPS: StepDef[] = [
     icon: <Sparkles size={20} />,
     title: 'Vítej v AI módu',
     body: 'Tato část aplikace kombinuje AI s databází artiklů. Jsou tu dva nástroje — pojďme si je krátce projít.',
-    ringHex: '#cba6f7',
-    nextClass: 'bg-mauve text-crust hover:bg-mauve/90',
+    ringHex: 'mauve',
+    nextClass: 'bg-mauve text-on-accent hover:bg-mauve/90',
   },
   {
     targetId: 'onb-chat',
@@ -34,8 +34,8 @@ const STEPS: StepDef[] = [
     icon: <Bot size={20} />,
     title: 'Chat bot — Karel Bot',
     body: 'Ptej se přirozenou češtinou. Pro vyhledávání komponent AI automaticky nabídne Průvodce vyhledáváním — krok za krokem ti pomůže přesně specifikovat díl.',
-    ringHex: '#cba6f7',
-    nextClass: 'bg-mauve text-crust hover:bg-mauve/90',
+    ringHex: 'mauve',
+    nextClass: 'bg-mauve text-on-accent hover:bg-mauve/90',
   },
   {
     targetId: 'onb-bom',
@@ -45,8 +45,8 @@ const STEPS: StepDef[] = [
     body: 'Experimentální funkce: vlož tabulku typových označení z projektu — AI každé vyhledá a sestaví kusovník (ZBOM) i seznam artiklů k založení. Používej s rozvahou.',
     badge: 'BETA',
     badgeClass: 'bg-yellow/20 text-yellow',
-    ringHex: '#f9e2af',
-    nextClass: 'bg-yellow text-crust hover:bg-yellow/90',
+    ringHex: 'yellow',
+    nextClass: 'bg-yellow text-on-accent hover:bg-yellow/90',
   },
 ];
 function StepCard({
@@ -184,7 +184,7 @@ export function AiOnboarding() {
     <>
       {/* Backdrop — click to skip */}
       <div
-        className="fixed inset-0 bg-crust/75 backdrop-blur-[2px]"
+        className="fixed inset-0 bg-black/50 backdrop-blur-[2px]"
         style={{ zIndex: 40 }}
         onClick={finish}
       />
@@ -214,8 +214,8 @@ export function AiOnboarding() {
               width: targetRect.width + 12,
               height: targetRect.height + 12,
               borderRadius: 10,
-              border: `2px solid ${s.ringHex}`,
-              boxShadow: `0 0 0 4px ${s.ringHex}28, 0 0 20px ${s.ringHex}50`,
+              border: `2px solid rgb(var(--c-${s.ringHex}))`,
+              boxShadow: `0 0 0 4px rgb(var(--c-${s.ringHex}) / 0.16), 0 0 20px rgb(var(--c-${s.ringHex}) / 0.3)`,
               zIndex: 59,
               pointerEvents: 'none',
             }}

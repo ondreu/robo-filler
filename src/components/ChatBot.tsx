@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Copy, Check, ExternalLink, Settings, PenLine } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Copy, Check, ExternalLink, Settings, PenLine, RotateCcw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import type { Article } from '../types';
@@ -280,7 +280,7 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
         className={`fixed bottom-6 right-6 z-[60] rounded-full p-3 transition-all duration-200
           ${isOpen
             ? 'bg-surface2 hover:bg-overlay0 text-text shadow-lg'
-            : 'bg-mauve/60 hover:bg-mauve/80 text-crust shadow-md'
+            : 'bg-mauve/60 hover:bg-mauve/80 text-on-accent shadow-md'
           }`}
         aria-label={isOpen ? 'Zavřít Karla' : 'Otevřít Karel Bot'}
         title={isOpen ? 'Zavřít Karla' : 'Karel Bot — AI asistent artiklů'}
@@ -374,7 +374,7 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
                 <div className="max-w-[88%] space-y-2">
                   <div className={`rounded-2xl px-3 py-2 text-sm leading-relaxed ${
                     msg.role === 'user'
-                      ? 'bg-mauve text-crust rounded-br-sm'
+                      ? 'bg-mauve text-on-accent rounded-br-sm'
                       : 'bg-surface0 text-text rounded-bl-sm'
                   }`}>
                     {msg.role === 'user' ? msg.content : (
@@ -415,7 +415,7 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
                       webSearchEnabled ? 'bg-mauve' : 'bg-surface2'
                     }`}
                   >
-                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-crust rounded-full shadow transition-transform ${
+                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
                       webSearchEnabled ? 'translate-x-5' : 'translate-x-0'
                     }`} />
                   </button>
@@ -428,7 +428,7 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
                       <button
                         key={m.value}
                         onClick={() => { setSynthModelState(m.value); localStorage.setItem(SYNTH_MODEL_KEY, JSON.stringify({ model: m.value, ts: Date.now() })); }}
-                        className={`px-3 py-1 text-xs transition-colors ${synthModel === m.value ? 'bg-mauve text-crust font-semibold' : 'text-subtext1 hover:text-text'}`}
+                        className={`px-3 py-1 text-xs transition-colors ${synthModel === m.value ? 'bg-mauve text-on-accent font-semibold' : 'text-subtext1 hover:text-text'}`}
                       >
                         {m.label}
                       </button>
@@ -454,7 +454,7 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
                       onClick={restoreLastChat}
                       className="mt-2 w-full text-left text-xs text-subtext1 hover:text-mauve transition-colors py-1"
                     >
-                      ↩ Obnovit poslední chat
+                      <span className="inline-flex items-center gap-1.5"><RotateCcw size={12} /> Obnovit poslední chat</span>
                     </button>
                   ) : null;
                 })()}
@@ -487,7 +487,7 @@ export function ChatBot({ onTeleportToAi }: { onTeleportToAi?: () => void }) {
             <button
               onClick={sendMessage}
               disabled={isLoading || !input.trim()}
-              className="bg-mauve hover:bg-pink disabled:opacity-40 text-crust rounded-xl px-3 py-2 transition-colors"
+              className="bg-mauve hover:bg-pink disabled:opacity-40 text-on-accent rounded-xl px-3 py-2 transition-colors"
               aria-label="Odeslat"
             >
               <Send size={15} />

@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { X, Plus, Trash2, Download, FileSpreadsheet, ArrowLeft, GripVertical, Undo2 } from 'lucide-react';
+import { X, Plus, Trash2, Download, FileSpreadsheet, ArrowLeft, GripVertical, Undo2, Check } from 'lucide-react';
 import type { Article, BomRow, BomHeader, BulkQueryResult, SearchResult } from '../types';
 import { exportZbomTxt, exportZbomExcel, orderLabel, type ImportResult, type DecimalSep } from '../utils/bomExport';
 
@@ -696,7 +696,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
               {startAtTable ? 'Zpět' : 'Zrušit'}
             </button>
             <button onClick={handleConfirmHeader} disabled={!header.cisloVrcholu.trim()}
-              className="px-6 py-2 rounded-xl font-medium bg-mauve text-crust hover:bg-mauve/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm">
+              className="px-6 py-2 rounded-xl font-medium bg-mauve text-on-accent hover:bg-mauve/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm">
               {exportAfterHeader ? 'Stáhnout .txt' : 'Pokračovat →'}
             </button>
           </div>
@@ -728,12 +728,12 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
                     onClick={() => { onCloseTab?.(tab.id); setConfirmCloseTabId(null); }}
                     className="text-green hover:text-green/80 transition-colors ml-0.5"
                     title="Potvrdit zavření"
-                  >✓</button>
+                  ><Check size={13} /></button>
                   <button
                     onClick={() => setConfirmCloseTabId(null)}
                     className="text-overlay0 hover:text-text transition-colors"
                     title="Zrušit"
-                  >✗</button>
+                  ><X size={13} /></button>
                 </span>
               ) : (
                 <button
@@ -777,7 +777,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
                 key={s}
                 onClick={() => setDecimalSep(s)}
                 className={`px-2 py-0.5 rounded text-xs font-mono font-medium transition-all ${
-                  decimalSep === s ? 'bg-mauve text-crust shadow' : 'text-subtext1 hover:text-text'
+                  decimalSep === s ? 'bg-mauve text-on-accent shadow' : 'text-subtext1 hover:text-text'
                 }`}
               >
                 {s === '.' ? '1.5' : '1,5'}
@@ -796,7 +796,7 @@ export function BomWizard({ bulkResults, selections, articles, onClose, importDa
                 exportZbomTxt(header, rows, decimalSep);
               }
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-mauve text-crust hover:bg-mauve/80 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-mauve text-on-accent hover:bg-mauve/80 transition-all"
           >
             <Download size={13} /> Export ZBOM .txt
           </button>

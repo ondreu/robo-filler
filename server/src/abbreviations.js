@@ -1,9 +1,9 @@
-// Domain-specific abbreviation knowledge for the Robo Filler database.
+// Domain-specific abbreviation knowledge for the Schoogle database.
 // Inject this into the expand system prompt so Mistral generates correct search terms.
 // Add new mappings here as you discover them — no logic changes needed.
 
 export const ABBREVIATIONS_CONTEXT = `
-ZNALOSTI DATABÁZE ROBO FILLER — zkratky a konvence:
+ZNALOSTI DATABÁZE SCHOOGLE — zkratky a konvence:
 
 MATERIÁLY:
 - nerez, nerezový, nerezová = A2, A4, INOX, V2A, V4A, NEREZ, Edelstahl, stainless

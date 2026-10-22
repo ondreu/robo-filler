@@ -1,4 +1,4 @@
-# Robo Filler — Průvodce pro AI
+# Schoogle (dříve Robo Filler) — Průvodce pro AI
 
 Nástroj pro vyhledávání průmyslových artiklů a sestavení kusovníků. Interní aplikace Schaltag.
 
@@ -8,7 +8,12 @@ Nástroj pro vyhledávání průmyslových artiklů a sestavení kusovníků. In
 - **Backend**: Node.js + Express, Server-Sent Events (SSE) pro streaming
 - **AI**: Mistral AI (`@mistralai/mistralai` SDK) — `mistral-small-latest` pro matching/derive, `mistral-medium-latest` pro Karel Bot synthesis
 - **Vyhledávání**: BM25 + Wildcard + Fuzzy (vlastní `server/src/search.js`)
-- **Styling konvence**: Catppuccin — `bg-base`, `bg-mantle`, `bg-surface0/1/2`, `text-mauve`, `text-teal`, `text-text`, `text-subtext1`, `text-overlay0/1`
+- **Styling konvence**: názvy tokenů z Catppuccinu (`bg-base`, `bg-mantle`, `bg-surface0/1/2`, `text-mauve`, `text-teal`, `text-text`, `text-subtext1`, `text-overlay0/1`), ale **hodnoty jsou CSS proměnné s paletou DZL** pro světlý i tmavý režim (`src/index.css`, `data-theme` na `<html>`). Nepiš barvy natvrdo (hex) — nefungovaly by v obou režimech.
+  - `mauve` = hlavní akcent (červená), `red` = chyba, `teal` = sekundární zvýraznění. Text na barevné výplni je **`text-on-accent`** (ne `text-crust` — crust je světlý ve světlém režimu).
+  - Sdílené třídy `.panel`, `.btn` + `.btn-secondary`/`.btn-primary`, `.input`, `.field-label`; přepínač voleb `components/ui/Segmented.tsx`.
+  - Horní lišta je tmavá v obou režimech (`bg-nav`, `text-nav-text`, `text-nav-muted`) — barvy stránky na ní nepoužívej.
+  - Ikony jen z `lucide-react`, žádné emoji v UI.
+- **Název aplikace je Schoogle.** Cesta `/robo-filler/` (GitHub Pages / vite `base`) a klíče `robo-filler-*` v `localStorage` zůstávají — jejich změna by smazala uživatelům uložené kusovníky a historii.
 
 ## Klíčové soubory
 
@@ -124,6 +129,22 @@ L/T řádky odpovídají SAP ZBOM formátu — L = materiál, T = text/placehold
 - **Produktivita** — `Ctrl/⌘+Z` undo (stack 50, mimo editaci inputu), filtry per sloupec, najít&nahradit (textová záměna napříč sloupci, lze vrátit).
 - **Snapshoty/rollback** — `dataStore` po každém uložení vytvoří snapshot do `DATA_DIR/.snapshots/<name>/`; GFS retence (vše posledních 5 dní, týdně 3 týdny, měsíčně 1 měsíc). Restore nejdřív zazálohuje aktuální stav. Snapshoty ani `.audit.jsonl` nejsou veřejné ani v GitHub záloze.
 - **Denní záloha na GitHub** — workflow `.github/workflows/backup-databases.yml` (cron 02:00 UTC + ruční spuštění) stáhne živá data z backendu (`GET /api/db/:name`) a commitne `public/<name>.json` + `public/<name>.schema.json` do repa. Pojistka: pokud DB vrátí 0 řádků, soubor se nepřepíše. Vyžaduje secret `VITE_BACKEND_URL` (veřejná URL API). Tím se admin editace verzují a zároveň slouží jako seed pro budoucí build image.
+
+## Skill pro agenty (`skills/schoogle-article-search/`)
+
+Aplikace je čistě statická (GitHub Pages), takže agenti hledají přes **skill**:
+`SKILL.md` + `scripts/search.py` (jen standardní knihovna Pythonu) stáhne master
+CSV z `raw.githubusercontent.com`, uloží je do cache na 6 h a hledá v nich.
+Do claude.ai se nahrává jako ZIP složky.
+
+- **Stejný algoritmus má nástroj `find_article` v DZL Konfigurátoru**
+  (`packages/api/src/articles/articleSearch.ts`). Změna normalizace nebo
+  skórování patří do obou — na 30 dotazech nad celou DB dávají shodné
+  výsledky včetně skóre.
+- Je záměrně jednodušší než `src/utils/searchEngine.ts` (bez fuzzy): agent
+  formuluje dotaz přesně a potřebuje předvídatelný výsledek.
+- Přejmenování nebo přesun `public/master-data*.csv` rozbije skill i DZL
+  (oba čtou tyhle adresy).
 
 ## Changelog konvence
 

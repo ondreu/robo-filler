@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Copy, Check, Loader2, Search, X } from 'lucide-react';
+import { Copy, Check, Loader2, Search, X, AlertTriangle } from 'lucide-react';
 import { type KanbanArticle, loadKanban, loadSchema } from '../utils/csvParser';
 import { DynamicFilters } from './DynamicFilters';
 import { applyDynamicFilters, type DbSchema, type DbRow, type DynamicFilterState } from '../utils/dbSchema';
@@ -247,7 +247,7 @@ function KanbanCard({ item, onClick }: { item: KanbanArticle; onClick: () => voi
           <span className="text-[10px] bg-green/10 text-green border border-green/20 rounded px-1.5 py-0.5">Kanban</span>
         )}
         {item.poznamka && (
-          <span className="text-[10px] bg-yellow/10 text-yellow border border-yellow/20 rounded px-1.5 py-0.5">⚠</span>
+          <span className="text-[10px] bg-yellow/10 text-yellow border border-yellow/20 rounded px-1 py-0.5 inline-flex items-center" title="Poznámka"><AlertTriangle size={11} /></span>
         )}
       </div>
     </div>

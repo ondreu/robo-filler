@@ -40,16 +40,16 @@ export function FilterPanel({
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+        className={`btn h-8 ${
           isOpen || selectedManufacturers.length > 0
-            ? 'bg-mauve text-crust shadow-lg'
-            : 'bg-surface0 text-subtext1 hover:bg-surface1'
+            ? 'bg-mauve/10 border-mauve/40 text-mauve'
+            : 'btn-secondary'
         }`}
       >
-        <Filter size={18} />
+        <Filter size={15} />
         Filtrovat výrobce
         {selectedManufacturers.length > 0 && (
-          <span className="px-2 py-0.5 bg-crust/30 rounded-full text-xs">
+          <span className="px-1.5 py-px bg-mauve text-on-accent rounded text-[11px] font-semibold">
             {selectedManufacturers.length}
           </span>
         )}
@@ -65,7 +65,7 @@ export function FilterPanel({
           />
 
           {/* Dropdown */}
-          <div className="absolute top-full mt-2 left-0 w-80 bg-surface0 rounded-2xl shadow-2xl z-50 animate-fade-in border border-surface2">
+          <div className="absolute top-full mt-2 left-0 w-80 bg-mantle rounded-lg shadow-xl z-50 animate-fade-in border border-surface1">
             <div className="p-4 space-y-3">
               {/* Search */}
               <input
@@ -73,23 +73,22 @@ export function FilterPanel({
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Hledat výrobce..."
-                className="w-full px-3 py-2 bg-surface1 text-text rounded-xl border border-surface2
-                  focus:border-mauve focus:outline-none transition-colors placeholder:text-overlay1"
+                className="input"
               />
 
               {/* Actions */}
               <div className="flex gap-2">
                 <button
                   onClick={selectAll}
-                  className="flex-1 px-3 py-1.5 text-sm bg-surface1 text-subtext1 rounded-lg
-                    hover:bg-surface2 transition-colors"
+                  className="flex-1 px-3 py-1.5 text-sm bg-surface0 border border-surface1 text-subtext1 rounded-md
+                    hover:bg-surface1 transition-colors"
                 >
                   Vybrat vše
                 </button>
                 <button
                   onClick={clearAll}
-                  className="flex-1 px-3 py-1.5 text-sm bg-surface1 text-subtext1 rounded-lg
-                    hover:bg-surface2 transition-colors"
+                  className="flex-1 px-3 py-1.5 text-sm bg-surface0 border border-surface1 text-subtext1 rounded-md
+                    hover:bg-surface1 transition-colors"
                 >
                   Zrušit výběr
                 </button>
