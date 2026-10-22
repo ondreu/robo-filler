@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Tag } from 'lucide-react';
+import { X, Tag, Star } from 'lucide-react';
 
 interface ChangelogEntry {
   version: string;   // VDDMMYY
@@ -9,6 +9,19 @@ interface ChangelogEntry {
 }
 
 const ENTRIES: ChangelogEntry[] = [
+  {
+    version: 'V221026',
+    date: '22. 10. 2026',
+    major: true,
+    changes: [
+      'Nový název a vzhled — aplikace se jmenuje Schoogle; vzhled je sjednocený s DZL Konfigurátorem (tmavá horní lišta, písmo IBM Plex, střídmé barvy)',
+      'Světlý a tmavý režim — přepínač v horní liště; bez ruční volby se řídí nastavením systému',
+      'Navigace mezi režimy je v horní liště; Vodiče a kabely a Sypký materiál jsou označené jako „deprecated" — fungují dál, ale už se nerozvíjejí',
+      'Výchozí počet výsledků je 200; zobrazuje se postupně a další odkryje tlačítko „Zobrazit další" na samostatném řádku pod seznamem',
+      'Přehlednější karta výsledku — artikl, typové označení a číslo dílu výrobce vedle sebe, shoda a výrobce v záhlaví',
+      'Ikony místo emoji v celé aplikaci',
+    ],
+  },
   {
     version: 'V070926',
     date: '7. 9. 2026',
@@ -54,7 +67,7 @@ const ENTRIES: ChangelogEntry[] = [
     date: '13. 6. 2026',
     major: true,
     changes: [
-      'Správa databází (admin) — nová záložka 🛠️ Správa DB pro úpravu databází Vodiče, Kabely a Sypký materiál jako tabulky (chráněno heslem přes backend)',
+      'Správa databází (admin) — nová záložka Správa DB pro úpravu databází Vodiče, Kabely a Sypký materiál jako tabulky (chráněno heslem přes backend)',
       'Admin: přidávání/mazání řádků i sloupců, editace buněk, duplikace řádků, fulltextové hledání a stránkování',
       'Admin: u každého sloupce lze nastavit popisek, typ (text / číslo / ano-ne) a příznak „filtrovatelný"',
       'Dynamické filtry — sloupec označený jako filtrovatelný se automaticky objeví jako filtr ve vyhledávání (např. přidám sloupec „Nákupčí" → vyskočí filtr)',
@@ -110,7 +123,7 @@ const ENTRIES: ChangelogEntry[] = [
       'Poradce komponent v Karel Botu — nový přepínač v nastavení; při aktivaci AI čerpá znalosti z průvodce kategoriemi a radí s výběrem komponent a produktových řad',
       'Kompletní onboarding pro nové uživatele — průvodce při prvním spuštění provede hlavními funkcemi aplikace (Jednotlivé, Hromadné, AI mód, ZBOM); reset přes tlačítko "průvodce" v zápatí',
       'Tabulkové zpracování z hromadného vyhledávání nyní otevře plnohodnotné ZBOM s kartami a persistencí (stejně jako ZBOM z hlavního menu)',
-      'Přepínač módů: "AI mód" přejmenován na ✨ AI ✨ s barevnými třpytkami',
+      'Přepínač módů: "AI mód" přejmenován na „AI" s barevným zvýrazněním',
       'Řízený režim: odstraněn BETA badge, nahrazen "Doporučeno"',
       'Plovoucí Karel Bot bublina zmenšena o 20 %',
       'Onboarding: aktualizovány popisy módů — Běžný = obecné dotazy, Řízený = doporučený pro hledání komponent',
@@ -250,7 +263,7 @@ const ENTRIES: ChangelogEntry[] = [
     version: 'V051225',
     date: '5. 12. 2025',
     changes: [
-      'Spuštění aplikace Article Search App / Robo Filler',
+      'Spuštění aplikace (dnes Schoogle)',
       'Vyhledávání v databázi materiálů (fuzzy, wildcard)',
       'Zvýrazňování shod, filtr výrobců, kopírování artiklu',
       'Export výsledků do CSV',
@@ -283,11 +296,12 @@ export function Changelog() {
         )}
         <button
           onClick={handleOpen}
-          className="relative inline-flex items-center gap-1.5 text-overlay0 hover:text-subtext0 transition-colors text-sm"
+          className="relative inline-flex items-center gap-1.5 text-overlay1 hover:text-text transition-colors text-xs"
           title="Zobrazit historii změn"
         >
-          <span>changelog</span>
-          <span className="font-mono text-xs px-1.5 py-0.5 bg-surface1 rounded-lg">{LATEST}</span>
+          <Tag size={12} />
+          <span>Historie změn</span>
+          <span className="font-mono text-[11px] px-1.5 py-px bg-surface0 border border-surface1 rounded">{LATEST}</span>
         </button>
       </div>
 
@@ -296,7 +310,7 @@ export function Changelog() {
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           onClick={() => setOpen(false)}
         >
-          <div className="absolute inset-0 bg-crust/80 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
           <div
             className="relative z-10 bg-mantle rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col"
             onClick={e => e.stopPropagation()}
@@ -329,7 +343,7 @@ export function Changelog() {
                       <span className="text-xs px-1.5 py-0.5 bg-green/20 text-green rounded-lg">nejnovější</span>
                     )}
                     {entry.major && (
-                      <span className="text-xs px-1.5 py-0.5 bg-mauve text-crust rounded-lg font-semibold">★ major release</span>
+                      <span className="text-xs px-1.5 py-0.5 bg-mauve text-on-accent rounded-lg font-semibold inline-flex items-center gap-1"><Star size={11} /> major release</span>
                     )}
                   </div>
                   <ul className="space-y-1">

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Send, Loader2, Copy, Check, ExternalLink, Settings,
   PenLine, Download, ChevronDown, ChevronUp, MessageCircle, Globe,
-  Search, Sparkles, BookOpen, X,
+  Search, Sparkles, BookOpen, X, AlertTriangle,
 } from 'lucide-react';
 import { GuidedSearch, type GuidedResultSnapshot } from './GuidedSearch';
 import ReactMarkdown from 'react-markdown';
@@ -144,7 +144,7 @@ function AiArticleCard({ article, dim = false }: { article: Article; dim?: boole
         </div>
       )}
       {article.vybehovyDil === 'U' && (
-        <span className="text-[10px] text-red font-medium">⚠ Výběhový díl</span>
+        <span className="inline-flex items-center gap-1 text-[10px] text-red font-medium"><AlertTriangle size={11} /> Výběhový díl</span>
       )}
     </div>
   );
@@ -618,7 +618,7 @@ export function AiChat() {
   return (
     <div
       className="flex rounded-2xl overflow-hidden border border-surface1"
-      style={{ height: 'calc(100vh - 130px)', minHeight: '600px', boxShadow: '0 0 32px 4px rgba(203,166,247,0.08), 0 0 8px 0px rgba(203,166,247,0.06)' }}
+      style={{ height: 'calc(100vh - 130px)', minHeight: '600px', boxShadow: '0 0 32px 4px rgb(0 0 0 / 0.06), 0 0 8px 0px rgb(0 0 0 / 0.06)' }}
     >
       {guidedSearchActive ? (
         <GuidedSearch
@@ -737,7 +737,7 @@ export function AiChat() {
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.role === 'user' ? (
-                <div className="bg-mauve text-crust text-sm rounded-2xl rounded-br-sm px-5 py-3 max-w-[75%] leading-relaxed">
+                <div className="bg-mauve text-on-accent text-sm rounded-2xl rounded-br-sm px-5 py-3 max-w-[75%] leading-relaxed">
                   {msg.content}
                 </div>
               ) : msg.type === 'guided_offer' ? null
@@ -869,7 +869,7 @@ export function AiChat() {
                   onClick={() => setWebSearchEnabled(v => !v)}
                   className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${webSearchEnabled ? 'bg-mauve' : 'bg-surface2'}`}
                 >
-                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-crust rounded-full shadow transition-transform ${webSearchEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${webSearchEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
                 </button>
               </label>
 
@@ -881,7 +881,7 @@ export function AiChat() {
                     <button
                       key={m.value}
                       onClick={() => { setSynthModelState(m.value); localStorage.setItem(SYNTH_MODEL_KEY, JSON.stringify({ model: m.value, ts: Date.now() })); }}
-                      className={`px-3 py-1 text-xs transition-colors ${synthModel === m.value ? 'bg-mauve text-crust font-semibold' : 'text-subtext1 hover:text-text'}`}
+                      className={`px-3 py-1 text-xs transition-colors ${synthModel === m.value ? 'bg-mauve text-on-accent font-semibold' : 'text-subtext1 hover:text-text'}`}
                     >
                       {m.label}
                     </button>
@@ -949,7 +949,7 @@ export function AiChat() {
           <button
             onClick={sendMessage}
             disabled={isLoading || !input.trim()}
-            className="bg-mauve hover:bg-pink disabled:opacity-40 text-crust rounded-xl px-4 py-2.5 transition-colors"
+            className="bg-mauve hover:bg-pink disabled:opacity-40 text-on-accent rounded-xl px-4 py-2.5 transition-colors"
           >
             {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
           </button>
@@ -962,12 +962,12 @@ export function AiChat() {
 
       {/* Usage warning popup */}
       {showUsageWarning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-crust/70 backdrop-blur-sm"
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
           onClick={() => setShowUsageWarning(false)}>
           <div className="bg-mantle border border-surface1 rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4"
             onClick={e => e.stopPropagation()}>
             <div className="flex items-start gap-3 mb-4">
-              <span className="text-yellow text-xl leading-none mt-0.5">⚠</span>
+              <AlertTriangle size={20} className="text-yellow shrink-0 mt-0.5" />
               <div>
                 <h3 className="text-text font-semibold text-base mb-2">Používejte s rozvahou</h3>
                 <p className="text-subtext1 text-sm leading-relaxed">
@@ -981,7 +981,7 @@ export function AiChat() {
             <div className="flex justify-end">
               <button
                 onClick={() => setShowUsageWarning(false)}
-                className="px-4 py-1.5 rounded-lg text-sm font-medium bg-mauve text-crust hover:bg-mauve/90 transition-colors"
+                className="px-4 py-1.5 rounded-lg text-sm font-medium bg-mauve text-on-accent hover:bg-mauve/90 transition-colors"
               >
                 Rozumím
               </button>

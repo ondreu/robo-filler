@@ -1,12 +1,103 @@
+/* Typografie: IBM Plex (latin + latin-ext kvůli češtině), self-hosted — jako DZL. */
+@import '@fontsource/ibm-plex-sans/latin-ext-400.css';
+@import '@fontsource/ibm-plex-sans/latin-400.css';
+@import '@fontsource/ibm-plex-sans/latin-ext-500.css';
+@import '@fontsource/ibm-plex-sans/latin-500.css';
+@import '@fontsource/ibm-plex-sans/latin-ext-600.css';
+@import '@fontsource/ibm-plex-sans/latin-600.css';
+@import '@fontsource/ibm-plex-sans/latin-ext-700.css';
+@import '@fontsource/ibm-plex-sans/latin-700.css';
+@import '@fontsource/ibm-plex-mono/latin-ext-400.css';
+@import '@fontsource/ibm-plex-mono/latin-400.css';
+@import '@fontsource/ibm-plex-mono/latin-ext-500.css';
+@import '@fontsource/ibm-plex-mono/latin-500.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Barevné tokeny (RGB kanály, čte je tailwind.config.js). Názvy jsou historické
+ * z Catppuccinu, hodnoty odpovídají paletě DZL Konfigurátoru. Režim přepíná
+ * atribut `data-theme` na <html> (nastavuje ho skript v index.html ještě před
+ * vykreslením, jinak by stránka při načtení blikla světlou).
+ * Horní lišta (`nav*`) je tmavá v obou režimech — kotva aplikace, nese značku.
+ */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+  --c-base: 244 245 246; /* #f4f5f6 */
+  --c-mantle: 255 255 255; /* #ffffff */
+  --c-crust: 236 236 237; /* #ececed */
+  --c-surface0: 240 241 242; /* #f0f1f2 */
+  --c-surface1: 227 228 230; /* #e3e4e6 */
+  --c-surface2: 200 202 205; /* #c8cacd */
+  --c-overlay0: 134 137 143; /* #86898f */
+  --c-overlay1: 113 116 123; /* #71747b */
+  --c-overlay2: 93 96 103; /* #5d6067 */
+  --c-subtext0: 82 85 91; /* #52555b */
+  --c-subtext1: 61 64 69; /* #3d4045 */
+  --c-text: 26 26 26; /* #1a1a1a */
+  --c-mauve: 211 32 41; /* #d32029 */
+  --c-lavender: 109 63 216; /* #6d3fd8 */
+  --c-blue: 31 111 235; /* #1f6feb */
+  --c-sapphire: 11 111 164; /* #0b6fa4 */
+  --c-sky: 3 105 161; /* #0369a1 */
+  --c-teal: 14 116 144; /* #0e7490 */
+  --c-green: 26 127 55; /* #1a7f37 */
+  --c-yellow: 138 90 0; /* #8a5a00 */
+  --c-peach: 180 83 10; /* #b4530a */
+  --c-maroon: 163 58 75; /* #a33a4b */
+  --c-red: 161 5 16; /* #a10510 */
+  --c-pink: 181 48 122; /* #b5307a */
+  --c-flamingo: 176 84 90; /* #b0545a */
+  --c-rosewater: 156 90 80; /* #9c5a50 */
+  --c-raised: 255 255 255; /* #ffffff — vybraná položka přepínače */
+  --c-on-accent: 255 255 255; /* #ffffff */
+  --c-nav: 31 31 31; /* #1f1f1f */
+  --c-nav-text: 232 232 232; /* #e8e8e8 */
+  --c-nav-muted: 154 154 154; /* #9a9a9a */
+  --c-nav-hover: 46 46 46; /* #2e2e2e */
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --c-base: 26 26 26; /* #1a1a1a */
+  --c-mantle: 35 35 35; /* #232323 */
+  --c-crust: 24 24 24; /* #181818 */
+  --c-surface0: 44 44 44; /* #2c2c2c */
+  --c-surface1: 55 55 55; /* #373737 */
+  --c-surface2: 75 75 75; /* #4b4b4b */
+  --c-overlay0: 111 111 111; /* #6f6f6f */
+  --c-overlay1: 134 134 134; /* #868686 */
+  --c-overlay2: 155 155 155; /* #9b9b9b */
+  --c-subtext0: 171 171 171; /* #ababab */
+  --c-subtext1: 198 198 198; /* #c6c6c6 */
+  --c-text: 242 242 242; /* #f2f2f2 */
+  --c-mauve: 229 72 77; /* #e5484d */
+  --c-lavender: 177 151 252; /* #b197fc */
+  --c-blue: 110 168 254; /* #6ea8fe */
+  --c-sapphire: 88 180 232; /* #58b4e8 */
+  --c-sky: 79 179 232; /* #4fb3e8 */
+  --c-teal: 63 184 201; /* #3fb8c9 */
+  --c-green: 76 195 138; /* #4cc38a */
+  --c-yellow: 245 182 37; /* #f5b625 */
+  --c-peach: 240 136 62; /* #f0883e */
+  --c-maroon: 235 160 172; /* #eba0ac */
+  --c-red: 255 99 105; /* #ff6369 */
+  --c-pink: 240 140 192; /* #f08cc0 */
+  --c-flamingo: 242 167 167; /* #f2a7a7 */
+  --c-rosewater: 240 196 187; /* #f0c4bb */
+  --c-raised: 64 64 64; /* #404040 */
+  --c-on-accent: 20 20 20; /* #141414 */
+  --c-nav: 20 20 20; /* #141414 */
+  --c-nav-text: 237 237 237; /* #ededed */
+  --c-nav-muted: 143 143 143; /* #8f8f8f */
+  --c-nav-hover: 38 38 38; /* #262626 */
+}
 body {
   @apply bg-base text-text;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
@@ -18,9 +109,11 @@ body {
 }
 
 mark {
-  @apply bg-mauve/30 text-mauve font-semibold;
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.25rem;
+  background: rgb(var(--c-yellow) / 0.22);
+  color: inherit;
+  font-weight: 600;
+  padding: 0 0.125rem;
+  border-radius: 0.125rem;
 }
 
 /* Custom scrollbar */
@@ -78,4 +171,44 @@ mark {
 }
 .cell-glow {
   animation: cell-glow 0.85s ease-out forwards;
+}
+
+/* Štítek „deprecated" u záložek, které se už nerozvíjejí. */
+.badge-deprecated {
+  @apply inline-flex items-center rounded px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide leading-none;
+  color: rgb(var(--c-yellow));
+  background: rgb(var(--c-yellow) / 0.14);
+  border: 1px solid rgb(var(--c-yellow) / 0.35);
+}
+
+/* Sdílené stavební prvky rozhraní. */
+@layer components {
+  .panel {
+    @apply bg-mantle border border-surface1 rounded-xl;
+  }
+  .field-label {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-overlay1;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 h-9 px-3 rounded-lg text-sm font-medium border transition-colors
+      disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-mantle border-surface1 text-subtext1 hover:bg-surface0 hover:text-text;
+  }
+  .btn-primary {
+    @apply bg-mauve border-mauve text-on-accent hover:bg-mauve/90;
+  }
+  .btn-icon {
+    @apply inline-flex items-center justify-center w-8 h-8 rounded-md transition-colors;
+  }
+  .input {
+    @apply w-full h-9 px-3 bg-mantle text-text text-sm rounded-lg border border-surface2
+      placeholder:text-overlay0 focus:outline-none focus:border-mauve focus:ring-2 focus:ring-mauve/15 transition-colors;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid rgb(var(--c-blue) / 0.6);
+  outline-offset: 1px;
 }

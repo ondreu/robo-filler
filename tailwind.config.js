@@ -1,4 +1,22 @@
 /** @type {import('tailwindcss').Config} */
+
+// Barvy jsou CSS proměnné (RGB kanály) definované v `src/index.css` pro světlý
+// i tmavý režim — `rgb(var(--x) / <alpha-value>)` drží funkční i zápisy typu
+// `bg-mauve/20`. Názvy tokenů zůstaly z Catppuccinu (používají je všechny
+// komponenty), hodnoty ale odpovídají paletě DZL Konfigurátoru:
+// `mauve` = hlavní akcent (červená), `red` = chyba, `teal` = sekundární zvýraznění.
+const token = (name) => `rgb(var(--c-${name}) / <alpha-value>)`;
+
+const NAMES = [
+  'base', 'mantle', 'crust',
+  'surface0', 'surface1', 'surface2',
+  'overlay0', 'overlay1', 'overlay2',
+  'subtext0', 'subtext1', 'text',
+  'mauve', 'lavender', 'blue', 'sapphire', 'sky', 'teal', 'green',
+  'yellow', 'peach', 'maroon', 'red', 'pink', 'flamingo', 'rosewater',
+  'raised', 'on-accent', 'nav', 'nav-text', 'nav-muted', 'nav-hover',
+];
+
 export default {
   content: [
     "./index.html",
@@ -6,39 +24,25 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        // Catppuccin Mocha palette
-        base: '#1e1e2e',
-        mantle: '#181825',
-        crust: '#11111b',
-        surface0: '#313244',
-        surface1: '#45475a',
-        surface2: '#585b70',
-        overlay0: '#6c7086',
-        overlay1: '#7f849c',
-        overlay2: '#9399b2',
-        subtext0: '#a6adc8',
-        subtext1: '#bac2de',
-        text: '#cdd6f4',
-        mauve: '#cba6f7',
-        lavender: '#b4befe',
-        blue: '#89b4fa',
-        sapphire: '#74c7ec',
-        sky: '#89dceb',
-        teal: '#94e2d5',
-        green: '#a6e3a1',
-        yellow: '#f9e2af',
-        peach: '#fab387',
-        maroon: '#eba0ac',
-        red: '#f38ba8',
-        pink: '#f5c2e7',
-        flamingo: '#f2cdcd',
-        rosewater: '#f5e0dc',
+      colors: Object.fromEntries(NAMES.map(n => [n, token(n)])),
+      fontFamily: {
+        sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
       },
+      // Ploší, „úřednější" tvary než výchozí bublinové zaoblení.
       borderRadius: {
-        'xl': '1rem',
-        '2xl': '1.5rem',
-      }
+        'lg': '6px',
+        'xl': '8px',
+        '2xl': '10px',
+      },
+      boxShadow: {
+        'sm': '0 1px 2px rgb(0 0 0 / 0.06)',
+        DEFAULT: '0 1px 3px rgb(0 0 0 / 0.08)',
+        'md': '0 2px 8px rgb(0 0 0 / 0.08)',
+        'lg': '0 2px 8px rgb(0 0 0 / 0.08)',
+        'xl': '0 8px 32px rgb(0 0 0 / 0.18)',
+        '2xl': '0 12px 40px rgb(0 0 0 / 0.22)',
+      },
     },
   },
   plugins: [],

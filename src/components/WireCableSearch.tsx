@@ -577,7 +577,7 @@ export function WireCableSearch() {
           <button
             onClick={() => setSubMode('wire')}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              subMode === 'wire' ? 'bg-teal text-crust shadow' : 'text-subtext1 hover:text-text'
+              subMode === 'wire' ? 'bg-teal text-on-accent shadow' : 'text-subtext1 hover:text-text'
             }`}
           >
             Vodiče
@@ -585,7 +585,7 @@ export function WireCableSearch() {
           <button
             onClick={() => setSubMode('cable')}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              subMode === 'cable' ? 'bg-teal text-crust shadow' : 'text-subtext1 hover:text-text'
+              subMode === 'cable' ? 'bg-teal text-on-accent shadow' : 'text-subtext1 hover:text-text'
             }`}
           >
             Kabely

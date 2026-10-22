@@ -27,20 +27,20 @@ export function Tooltip({ content, className = '' }: TooltipProps) {
       <button
         ref={buttonRef}
         type="button"
-        className="text-overlay1 hover:text-mauve transition-colors"
+        className="text-overlay0 hover:text-subtext1 transition-colors"
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
         onFocus={() => setIsVisible(true)}
         onBlur={() => setIsVisible(false)}
-        aria-label="Help"
+        aria-label="Nápověda"
       >
-        <HelpCircle size={16} />
+        <HelpCircle size={14} />
       </button>
 
       {isVisible && (
         <div
           ref={tooltipRef}
-          className={`absolute z-50 px-3 py-2 text-sm bg-surface1 text-text rounded-xl shadow-lg
+          className={`absolute z-50 px-3 py-2 text-xs leading-relaxed font-normal normal-case tracking-normal bg-nav text-nav-text rounded-lg shadow-xl w-64
             whitespace-normal max-w-xs animate-fade-in
             ${position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}
             left-1/2 transform -translate-x-1/2`}
@@ -48,7 +48,7 @@ export function Tooltip({ content, className = '' }: TooltipProps) {
         >
           {content}
           <div
-            className={`absolute left-1/2 transform -translate-x-1/2 w-2 h-2 bg-surface1 rotate-45
+            className={`absolute left-1/2 transform -translate-x-1/2 w-2 h-2 bg-nav rotate-45
               ${position === 'top' ? '-bottom-1' : '-top-1'}`}
           />
         </div>

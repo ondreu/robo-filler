@@ -1,4 +1,4 @@
-# Robo Filler — Průvodce pro AI
+# Schoogle (dříve Robo Filler) — Průvodce pro AI
 
 Nástroj pro vyhledávání průmyslových artiklů a sestavení kusovníků. Interní aplikace Schaltag.
 
@@ -8,7 +8,12 @@ Nástroj pro vyhledávání průmyslových artiklů a sestavení kusovníků. In
 - **Backend**: Node.js + Express, Server-Sent Events (SSE) pro streaming
 - **AI**: Mistral AI (`@mistralai/mistralai` SDK) — `mistral-small-latest` pro matching/derive, `mistral-medium-latest` pro Karel Bot synthesis
 - **Vyhledávání**: BM25 + Wildcard + Fuzzy (vlastní `server/src/search.js`)
-- **Styling konvence**: Catppuccin — `bg-base`, `bg-mantle`, `bg-surface0/1/2`, `text-mauve`, `text-teal`, `text-text`, `text-subtext1`, `text-overlay0/1`
+- **Styling konvence**: názvy tokenů z Catppuccinu (`bg-base`, `bg-mantle`, `bg-surface0/1/2`, `text-mauve`, `text-teal`, `text-text`, `text-subtext1`, `text-overlay0/1`), ale **hodnoty jsou CSS proměnné s paletou DZL** pro světlý i tmavý režim (`src/index.css`, `data-theme` na `<html>`). Nepiš barvy natvrdo (hex) — nefungovaly by v obou režimech.
+  - `mauve` = hlavní akcent (červená), `red` = chyba, `teal` = sekundární zvýraznění. Text na barevné výplni je **`text-on-accent`** (ne `text-crust` — crust je světlý ve světlém režimu).
+  - Sdílené třídy `.panel`, `.btn` + `.btn-secondary`/`.btn-primary`, `.input`, `.field-label`; přepínač voleb `components/ui/Segmented.tsx`.
+  - Horní lišta je tmavá v obou režimech (`bg-nav`, `text-nav-text`, `text-nav-muted`) — barvy stránky na ní nepoužívej.
+  - Ikony jen z `lucide-react`, žádné emoji v UI.
+- **Název aplikace je Schoogle.** Cesta `/robo-filler/` (GitHub Pages / vite `base`) a klíče `robo-filler-*` v `localStorage` zůstávají — jejich změna by smazala uživatelům uložené kusovníky a historii.
 
 ## Klíčové soubory
 

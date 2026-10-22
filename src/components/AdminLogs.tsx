@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Loader2, RefreshCw, ChevronDown, ChevronRight, MessageSquare, Bot, User, Braces } from 'lucide-react';
+import { Loader2, RefreshCw, ChevronDown, ChevronRight, MessageSquare, Bot, User, Braces, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { fetchLogs, type ChatLogRecord } from '../utils/adminApi';
 
 const TYPES = [
@@ -129,11 +129,11 @@ function BomDetail({ rec }: { rec: ChatLogRecord }) {
         {result && (
           <>
             <div className="bg-green/10 border border-green/20 rounded-lg px-3 py-1.5">
-              <span className="text-green">✓ Nalezeno: </span>
+              <span className="text-green inline-flex items-center gap-1"><CheckCircle2 size={13} /> Nalezeno: </span>
               <span className="text-text font-medium">{bomRows.length}</span>
             </div>
             <div className="bg-yellow/10 border border-yellow/20 rounded-lg px-3 py-1.5">
-              <span className="text-yellow">⚠ K založení: </span>
+              <span className="text-yellow inline-flex items-center gap-1"><AlertTriangle size={13} /> K založení: </span>
               <span className="text-text font-medium">{toCreate.length}</span>
             </div>
           </>
@@ -246,7 +246,7 @@ export function AdminLogs({ password }: { password: string }) {
               key={t.value}
               onClick={() => setType(t.value)}
               className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                type === t.value ? 'bg-mauve text-crust' : 'text-subtext1 hover:text-text'
+                type === t.value ? 'bg-mauve text-on-accent' : 'text-subtext1 hover:text-text'
               }`}
             >
               {t.label}

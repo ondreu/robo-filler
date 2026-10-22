@@ -4,7 +4,7 @@ import { ArrowRight, ArrowLeft, X, Search, Layers, Sparkles, Table2, Cable, Pack
 
 export const APP_ONBOARDING_KEY = 'app-onboarding-v1';
 const CARD_W = 360;
-const MANTLE_HEX = '#181825';
+const MANTLE_HEX = 'rgb(var(--c-mantle))';
 
 interface StepDef {
   targetId: string | null;
@@ -21,10 +21,10 @@ const STEPS: StepDef[] = [
     targetId: null,
     iconClass: 'text-mauve',
     icon: <Sparkles size={20} />,
-    title: 'Vítej v Robo Filleru!',
+    title: 'Vítejte ve Schooglu',
     body: 'Průmyslová databáze s AI vyhledáváním — přes 90 000 artiklů ze dvou závodů. Pojďme si rychle projít hlavní funkce.',
-    ringHex: '#cba6f7',
-    nextClass: 'bg-mauve text-crust hover:bg-mauve/90',
+    ringHex: 'mauve',
+    nextClass: 'bg-mauve text-on-accent hover:bg-mauve/90',
   },
   {
     targetId: 'onb-single',
@@ -32,8 +32,8 @@ const STEPS: StepDef[] = [
     icon: <Search size={20} />,
     title: 'Jednotlivé vyhledávání',
     body: 'Zadej typové označení, název nebo výrobce. Kombinovaný mód (výchozí) zkusí wildcard i fuzzy hledání a sloučí výsledky.',
-    ringHex: '#cba6f7',
-    nextClass: 'bg-mauve text-crust hover:bg-mauve/90',
+    ringHex: 'mauve',
+    nextClass: 'bg-mauve text-on-accent hover:bg-mauve/90',
   },
   {
     targetId: 'onb-bulk',
@@ -41,26 +41,26 @@ const STEPS: StepDef[] = [
     icon: <Layers size={20} />,
     title: 'Hromadné vyhledávání',
     body: 'Vložte seznam typových označení (každé na řádek — např. zkopíruj sloupec z Excelu). Výsledky lze exportovat do CSV nebo otevřít v Tabulkovém zpracování.',
-    ringHex: '#cba6f7',
-    nextClass: 'bg-mauve text-crust hover:bg-mauve/90',
+    ringHex: 'mauve',
+    nextClass: 'bg-mauve text-on-accent hover:bg-mauve/90',
   },
   {
     targetId: 'onb-wirecable',
     iconClass: 'text-teal',
     icon: <Cable size={20} />,
-    title: '🔌 Vodiče & Kabely',
+    title: 'Vodiče a kabely (deprecated)',
     body: 'Samostatná databáze vodičů a kabelů (přes 600 artiklů). Hledej podle průřezu, barvy nebo skupiny. Výrobci: LAPP, Helukabel, HUBER+SUHNER, Nexans.',
-    ringHex: '#94e2d5',
-    nextClass: 'bg-teal text-crust hover:bg-teal/90',
+    ringHex: 'teal',
+    nextClass: 'bg-teal text-on-accent hover:bg-teal/90',
   },
   {
     targetId: 'onb-kanban',
     iconClass: 'text-peach',
     icon: <Package size={20} />,
-    title: '📦 Sypký materiál',
+    title: 'Sypký materiál (deprecated)',
     body: 'Kanban databáze sypkého materiálu — šrouby, matice, kabelbindy a další drobné položky (přes 500 artiklů). Filtry podle kategorie, provedení a barvy dle DIN.',
-    ringHex: '#fab387',
-    nextClass: 'bg-peach text-crust hover:bg-peach/90',
+    ringHex: 'peach',
+    nextClass: 'bg-peach text-on-accent hover:bg-peach/90',
   },
   {
     targetId: null,
@@ -68,8 +68,8 @@ const STEPS: StepDef[] = [
     icon: <Table2 size={20} />,
     title: 'Tabulkové zpracování (ZBOM)',
     body: 'Editor pro sestavení výstupního kusovníku ve formátu SAP ZBOM. Zadáš artikl, aplikace doplní popis z databáze. Více záložek, undo (Ctrl+Z), export do TXT a Excel.',
-    ringHex: '#94e2d5',
-    nextClass: 'bg-teal text-crust hover:bg-teal/90',
+    ringHex: 'teal',
+    nextClass: 'bg-teal text-on-accent hover:bg-teal/90',
   },
 ];
 
@@ -206,7 +206,7 @@ export function AppOnboarding() {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-crust/75 backdrop-blur-[2px]"
+        className="fixed inset-0 bg-black/50 backdrop-blur-[2px]"
         style={{ zIndex: 40 }}
         onClick={finish}
       />
@@ -235,8 +235,8 @@ export function AppOnboarding() {
               width: targetRect.width + 12,
               height: targetRect.height + 12,
               borderRadius: 10,
-              border: `2px solid ${s.ringHex}`,
-              boxShadow: `0 0 0 4px ${s.ringHex}28, 0 0 20px ${s.ringHex}50`,
+              border: `2px solid rgb(var(--c-${s.ringHex}))`,
+              boxShadow: `0 0 0 4px rgb(var(--c-${s.ringHex}) / 0.16), 0 0 20px rgb(var(--c-${s.ringHex}) / 0.3)`,
               zIndex: 59,
               pointerEvents: 'none',
             }}

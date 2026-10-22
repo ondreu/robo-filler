@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Send, Loader2, Copy, Check, ExternalLink, ChevronDown, ChevronUp,
-  Sparkles, Search, PenLine, X, ArrowRight,
+  Sparkles, Search, PenLine, X, ArrowRight, AlertTriangle,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
@@ -118,7 +118,7 @@ function AiArticleCard({ article, dim = false }: { article: Article; dim?: boole
         </div>
       )}
       {article.vybehovyDil === 'U' && (
-        <span className="text-[10px] text-red font-medium">⚠ Výběhový díl</span>
+        <span className="inline-flex items-center gap-1 text-[10px] text-red font-medium"><AlertTriangle size={11} /> Výběhový díl</span>
       )}
     </div>
   );
@@ -622,7 +622,7 @@ export function GuidedSearch({ embedded = false, onBack, onResult }: GuidedSearc
           {onBack && (
             <button
               onClick={onBack}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-surface1 hover:bg-mauve hover:text-crust text-subtext1 transition-colors mr-2 shrink-0 border border-surface2 hover:border-mauve"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-surface1 hover:bg-mauve hover:text-on-accent text-subtext1 transition-colors mr-2 shrink-0 border border-surface2 hover:border-mauve"
             >
               <ArrowRight size={12} className="rotate-180" />
               Zpět do chatu
@@ -788,7 +788,7 @@ export function GuidedSearch({ embedded = false, onBack, onResult }: GuidedSearc
                   <button
                     onClick={handleParamFormSubmit}
                     disabled={isLoading}
-                    className="flex items-center gap-2 px-4 py-2 bg-teal hover:bg-teal/80 text-crust rounded-xl text-sm font-medium transition-colors disabled:opacity-40"
+                    className="flex items-center gap-2 px-4 py-2 bg-teal hover:bg-teal/80 text-on-accent rounded-xl text-sm font-medium transition-colors disabled:opacity-40"
                   >
                     <Search size={14} />
                     Hledat
@@ -974,7 +974,7 @@ export function GuidedSearch({ embedded = false, onBack, onResult }: GuidedSearc
               <button
                 onClick={handleSubmit}
                 disabled={isLoading || !input.trim()}
-                className="bg-teal hover:bg-teal/80 disabled:opacity-40 text-crust rounded-xl px-4 py-2.5 transition-colors"
+                className="bg-teal hover:bg-teal/80 disabled:opacity-40 text-on-accent rounded-xl px-4 py-2.5 transition-colors"
               >
                 {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
               </button>
@@ -991,7 +991,7 @@ export function GuidedSearch({ embedded = false, onBack, onResult }: GuidedSearc
   return (
     <div
       className="flex rounded-2xl overflow-hidden border border-surface1"
-      style={{ height: 'calc(100vh - 130px)', minHeight: '600px', boxShadow: '0 0 32px 4px rgba(203,166,247,0.08)' }}
+      style={{ height: 'calc(100vh - 130px)', minHeight: '600px', boxShadow: '0 0 32px 4px rgb(0 0 0 / 0.06)' }}
     >
       {inner}
     </div>

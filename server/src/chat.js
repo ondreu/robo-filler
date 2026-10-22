@@ -65,7 +65,7 @@ Odpovídej POUZE jako JSON: {"type": "search", "terms": [...], "manufacturer": n
 
 ${ABBREVIATIONS_CONTEXT}`;
 
-const SYNTH_SYSTEM = `Jsi Karel Bot, průmyslový asistent pro vyhledávání artiklů v databázi Robo Filler.
+const SYNTH_SYSTEM = `Jsi Karel Bot, průmyslový asistent pro vyhledávání artiklů v databázi Schoogle.
 
 Odpovídej VŽDY jako JSON: {"answer": "česky, markdown povolen", "selected": [], "refinement": null}
 
@@ -95,10 +95,10 @@ NENALEZENO: stručně co a proč, navrhni alternativní hledání. Žádná typo
 DISCUSSION/FOLLOW-UP: Odpovídej na základě konverzace a znalostní báze. "selected": [] pokud nová hledání neproběhla.
 KRITICKÉ: nikdy nepiš typová označení ani artikl čísla která nejsou v kandidátech.`;
 
-const APP_DOCS = `# Dokumentace aplikace Robo Filler
+const APP_DOCS = `# Dokumentace aplikace Schoogle
 
 ## Co aplikace dělá
-Robo Filler je vyhledávač průmyslových artiklů (materiálů, komponent, dílů) ze dvou interních databází — Ústí nad Orlicí a Effretikon. Databáze obsahuje přes 90 000 položek. Aplikace slouží k rychlému vyhledání správného artiklu, sestavení kusovníku (ZBOM) pro export a obecné podpoře při práci s průmyslovými díly.
+Schoogle je vyhledávač průmyslových artiklů (materiálů, komponent, dílů) ze dvou interních databází — Ústí nad Orlicí a Effretikon. Databáze obsahuje přes 90 000 položek. Aplikace slouží k rychlému vyhledání správného artiklu, sestavení kusovníku (ZBOM) pro export a obecné podpoře při práci s průmyslovými díly.
 
 ---
 
@@ -286,7 +286,7 @@ async function synthesize(userMessage, articles, webResults, history, type, webS
   }
 
   if (type === 'support') {
-    context = `\n\nDokumentace aplikace Robo Filler:\n${APP_DOCS}`;
+    context = `\n\nDokumentace aplikace Schoogle:\n${APP_DOCS}`;
   } else if (type === 'discussion') {
     // Discussion: use knowledge + conversation history, skip candidates section
     // The history already contains previous search results as text

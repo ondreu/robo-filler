@@ -1,5 +1,23 @@
 # Changelog
 
+## V221026 — Schoogle: nový název a vzhled (2026-10-22)
+
+### Vzhled
+- **Nový název Schoogle** — v záhlaví, titulku okna, ikoně, instalované aplikaci (PWA) i v odpovědích Karel Bota. Cesta nasazení (`/robo-filler/`) a klíče v `localStorage` zůstaly, aby nezmizely uložené kusovníky a historie.
+- **Vzhled sjednocený s DZL Konfigurátorem** — tmavá horní lišta s navigací, písmo IBM Plex Sans / Mono, paleta DZL (červený akcent střídmě, chyby odlišené), ploší rohy a jemnější stíny.
+- **Světlý a tmavý režim** — přepínač v liště, volba v `localStorage` (`schoogle-theme`), bez volby podle systému. Režim se nastavuje ještě před vykreslením (bez bliknutí).
+- **Ikony lucide místo emoji** v celé aplikaci.
+- **Vodiče a kabely, Sypký materiál** — štítek „deprecated" v navigaci a upozornění v sekci; funkčnost beze změny.
+
+### Vyhledávání
+- Výchozí počet výsledků **200** (dřív 10). Zobrazuje se prvních 10, tlačítko „Zobrazit další" je nově **na samostatném řádku** pod seznamem a ukazuje, kolik je zobrazeno.
+- Karta výsledku: název a shoda v záhlaví, artikl / typové označení / číslo dílu výrobce v mřížce, kódy neproporcionálním písmem.
+
+### Implementace
+- `tailwind.config.js` — barvy jsou CSS proměnné (`rgb(var(--c-…) / <alpha-value>)`), hodnoty pro oba režimy v `src/index.css`. Názvy tokenů (`mauve`, `surface0`, …) zůstaly, takže se přepnuly všechny komponenty bez úprav tříd.
+- Nové tokeny `on-accent` (text na barevné výplni, dřív `text-crust`), `raised`, `nav*`; sdílené třídy `.panel`, `.btn`, `.input`, `.field-label`.
+- `src/components/ui/Segmented.tsx` — přepínač voleb; `ThemeToggle.tsx`, `BrandMark.tsx`, `utils/theme.ts`.
+
 ## V070926 — Pokročilé vyhledávání (2026-09-07)
 
 ### Nové funkce

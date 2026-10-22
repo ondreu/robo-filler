@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Loader2, Download, ClipboardList, Zap, Eye, EyeOff, Plus, Trash2, X, FileDown } from 'lucide-react';
+import { Loader2, Download, ClipboardList, Zap, Eye, EyeOff, Plus, Trash2, X, FileDown, Check } from 'lucide-react';
 import type { Article, SearchResult, BulkQueryResult } from '../types';
 import { search } from '../utils/searchEngine';
 import { exportBulkCSV } from '../utils/excelHandler';
@@ -274,7 +274,7 @@ function ExportDialog({ unmatchedCount, onClose, onExport }: ExportDialogProps) 
           <button
             onClick={() => onExport({ prodHier, artiklVrcholu, unit: unit.trim() || 'PC' })}
             disabled={!prodHier.trim()}
-            className="flex items-center gap-2 px-6 py-2 rounded-xl font-medium bg-mauve text-crust hover:bg-mauve/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm"
+            className="flex items-center gap-2 px-6 py-2 rounded-xl font-medium bg-mauve text-on-accent hover:bg-mauve/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm"
           >
             <Download size={14} />
             Exportovat
@@ -451,7 +451,7 @@ export function BulkSearch({ articles, onOpenInZbom }: BulkSearchProps) {
                   onClick={() => setTopN(n)}
                   className={`px-4 py-1.5 rounded-lg font-medium text-sm transition-all ${
                     topN === n
-                      ? 'bg-mauve text-crust shadow'
+                      ? 'bg-mauve text-on-accent shadow'
                       : 'text-subtext1 hover:text-text'
                   }`}
                 >
@@ -470,7 +470,7 @@ export function BulkSearch({ articles, onOpenInZbom }: BulkSearchProps) {
             <button
               onClick={handleSearch}
               disabled={activeRows.length === 0 || isSearching}
-              className="px-6 py-2 rounded-xl font-medium transition-all bg-mauve text-crust
+              className="px-6 py-2 rounded-xl font-medium transition-all bg-mauve text-on-accent
                 hover:bg-mauve/80 disabled:opacity-40 disabled:cursor-not-allowed shadow"
             >
               Vyhledat
@@ -629,7 +629,7 @@ export function BulkSearch({ articles, onOpenInZbom }: BulkSearchProps) {
                       }`}
                     >
                       {isRowSelected
-                        ? `✓ ${selections[rowIndex]!.vybehovyDil || selections[rowIndex]!.artikl}`
+                        ? <span className="inline-flex items-center gap-1"><Check size={12} /> {selections[rowIndex]!.vybehovyDil || selections[rowIndex]!.artikl}</span>
                         : 'Nic nevybráno'}
                     </span>
                   </div>
