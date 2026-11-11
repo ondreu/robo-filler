@@ -9,23 +9,6 @@ interface ResultCardProps {
 export function ResultCard({ result }: ResultCardProps) {
   const [copied, setCopied] = useState(false);
 
-  const getMatchColor = () => {
-    switch (result.matchType) {
-      case 'wildcard':
-        return 'border-l-lavender';
-      case 'exact':
-        return 'border-l-green';
-      case 'minimal':
-        return 'border-l-yellow';
-      case 'medium':
-        return 'border-l-peach';
-      case 'large':
-        return 'border-l-red';
-      default:
-        return 'border-l-overlay0';
-    }
-  };
-
   const effectiveArtikl = result.vybehovyDil || result.artikl;
 
   const handleCopy = async () => {
@@ -95,7 +78,8 @@ export function ResultCard({ result }: ResultCardProps) {
 
   return (
     <article
-      className={`panel border-l-[3px] ${getMatchColor()} px-4 py-3 hover:border-surface2 transition-colors animate-fade-in`}
+      className="panel result-card px-4 py-3 animate-fade-in"
+      data-match={result.matchType}
     >
       {/* Title row */}
       <div className="flex items-start gap-3">

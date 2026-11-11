@@ -1,5 +1,12 @@
 # Changelog
 
+## V111126 — Výraznější akcent karty výsledku (2026-11-11)
+
+### Vzhled
+- **Barevný akcent karty výsledku** — levý pruh podle typu shody je širší (5 px) a plynule se zatáčí i do horní hrany karty, kde se rozplyne; karta má jemné podbarvení ve stejné barvě.
+- **Najetí myší kartu zvýrazní, místo aby akcent potlačilo** — dřív akcent na hoveru přebila šedá, teď pruh zbělá na plnou barvu a ztlustne, karta dostane 2px obrys a stín v barvě shody.
+- Akcent se řídí atributem `data-match` a tokeny palety, takže funguje ve světlém i tmavém režimu; respektuje `prefers-reduced-motion`.
+
 ## V221026 — Schoogle: nový název a vzhled (2026-10-22)
 
 ### Vzhled

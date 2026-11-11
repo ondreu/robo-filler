@@ -10,6 +10,14 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V111126',
+    date: '11. 11. 2026',
+    changes: [
+      'Karta výsledku má výraznější akcent podle typu shody — levý pruh je širší a plynule se zatáčí i do horní hrany karty',
+      'Najetí myší kartu zvýrazní (dřív akcent na hoveru zmizel) — pruh zbělá na plnou barvu, karta dostane obrys a jemné podbarvení v barvě shody',
+    ],
+  },
+  {
     version: 'V221026',
     date: '22. 10. 2026',
     major: true,

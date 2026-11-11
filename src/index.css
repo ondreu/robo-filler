@@ -208,6 +208,81 @@ mark {
   }
 }
 
+/* Karta výsledku — barevný pruh podle typu shody.
+ *
+ * Barvu pruhu i jemného podbarvení řídí atribut `data-match`
+ * (wildcard / exact / minimal / medium / large). Hodnoty jsou tokeny palety,
+ * takže to funguje ve světlém i tmavém režimu.
+ * Dřív pruh na hoveru mizel (`hover:border-surface2` ho přebil šedou) — teď
+ * naopak zesílí: plná barva, silnější podbarvení, obrys a jemný stín v barvě
+ * shody. Neleží v @layer, aby přebil `border` z .panel.
+ */
+.result-card {
+  --accent: var(--c-overlay0);
+  position: relative;
+  overflow: hidden;
+  border-left: 5px solid rgb(var(--accent) / 0.85);
+  background-image: linear-gradient(
+    90deg,
+    rgb(var(--accent) / 0.13) 0%,
+    rgb(var(--accent) / 0) 50%
+  );
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+/* Horizontální rameno: akcent se zatáčí i do horní hrany a postupně mizí. */
+.result-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  opacity: 0.9;
+  pointer-events: none;
+  background-image: linear-gradient(
+    90deg,
+    rgb(var(--accent)) 0%,
+    rgb(var(--accent) / 0.6) 22%,
+    rgb(var(--accent) / 0) 60%
+  );
+  transition: opacity 160ms ease, height 160ms ease;
+}
+.result-card[data-match='wildcard'] { --accent: var(--c-lavender); }
+.result-card[data-match='exact']    { --accent: var(--c-green); }
+.result-card[data-match='minimal']  { --accent: var(--c-yellow); }
+.result-card[data-match='medium']   { --accent: var(--c-peach); }
+.result-card[data-match='large']    { --accent: var(--c-red); }
+
+.result-card:hover {
+  border-left-color: rgb(var(--accent));
+  background-image: linear-gradient(
+    90deg,
+    rgb(var(--accent) / 0.34) 0%,
+    rgb(var(--accent) / 0.12) 38%,
+    rgb(var(--accent) / 0) 75%
+  );
+  box-shadow:
+    inset 6px 0 0 rgb(var(--accent) / 0.5),
+    0 0 0 2px rgb(var(--accent) / 0.8),
+    0 16px 32px -14px rgb(var(--accent) / 0.7);
+  transform: translateY(-2px);
+}
+.result-card:hover::before {
+  opacity: 1;
+  height: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .result-card,
+  .result-card::before,
+  .result-card:hover,
+  .result-card:hover::before {
+    transition: none;
+    transform: none;
+  }
+}
+
 :focus-visible {
   outline: 2px solid rgb(var(--c-blue) / 0.6);
   outline-offset: 1px;
