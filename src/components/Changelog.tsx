@@ -10,6 +10,14 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
+    version: 'V121126',
+    date: '12. 11. 2026',
+    changes: [
+      'Akcent karty výsledku je střídmější — pruh podle typu shody je užší a podbarvení karty je jen mírné (dřív přes celou plochu)',
+      'Najetí myší už kartu neobkresluje ani neposouvá — pruh jen zesílí a karta dostane jemný nádech se stínem',
+    ],
+  },
+  {
     version: 'V111126',
     date: '11. 11. 2026',
     changes: [

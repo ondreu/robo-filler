@@ -1,5 +1,12 @@
 # Changelog
 
+## V121126 — Střídmější akcent karty výsledku (2026-11-12)
+
+### Vzhled
+- **Akcent karty výsledku je klidnější** — levý pruh podle typu shody je 4 px (dřív 5 px), podbarvení karty je jen mírné (6 % u pruhu, dřív 13 % přes celou plochu) a horní rameno je jen 2px náznak (dřív 4 px).
+- **Hover kartu nerozhazuje** — místo 2px obrysu, vnitřního pruhu a posunu o 2 px pruh jen zesílí na plnou barvu, podsvícení se zvedne na 16 % a karta dostane jemný stín.
+- Zůstává, že akcent na hoveru nezmizí (barvu řídí `data-match` a tokeny palety v obou režimech).
+
 ## V111126 — Výraznější akcent karty výsledku (2026-11-11)
 
 ### Vzhled
